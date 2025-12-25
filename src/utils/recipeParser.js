@@ -57,8 +57,16 @@ const fetchRecipeFromUrl = async (url) => {
     return parseRecipeFromText(doc.body.innerText);
 };
 
+// Helper to clean text (decode HTML entities & separate lines)
+const cleanText = (str) => {
+    if (!str) return '';
+    const txt = document.createElement('textarea');
+    txt.innerHTML = str;
+    return txt.value.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').trim();
+};
+
 const parseJsonLd = (data) => {
-    // Helper to parse duration (ISO 8601 duration format: PT1H10M)
+    // ... existing parseDuration logic ... 
     const parseDuration = (isoStr) => {
         if (!isoStr) return '';
         const regex = /PT(?:(\d+)H)?(?:(\d+)M)?/i;
@@ -69,30 +77,27 @@ const parseJsonLd = (data) => {
         return (hours * 60) + mins;
     };
 
-    // Helper to clean arrays
     const cleanList = (list) => {
         if (!list) return '';
-        if (typeof list === 'string') return list;
-        if (Array.isArray(list)) return list.join('\n');
+        if (typeof list === 'string') return cleanText(list);
+        if (Array.isArray(list)) return list.map(cleanText).join('\n');
         return '';
     };
 
-    // Helper to extract instructions
     const extractInstructions = (inst) => {
         if (!inst) return '';
-        if (typeof inst === 'string') return inst;
+        if (typeof inst === 'string') return cleanText(inst);
         if (Array.isArray(inst)) {
-            // Can be array of strings or objects { "@type": "HowToStep", "text": "..." }
-            return inst.map(i => i.text || i.name || i).join('\n');
+            return inst.map(i => cleanText(i.text || i.name || i)).join('\n');
         }
         return '';
     };
 
     return {
-        title: data.name || '',
+        title: cleanText(data.name) || '',
         prepTime: parseDuration(data.prepTime) || '',
         cookTime: parseDuration(data.cookTime) || '',
-        servings: parseInt(data.recipeYield) || '', // recipeYield might be "4 servings", parseInt catches "4"
+        servings: parseInt(data.recipeYield) || '',
         ingredients: cleanList(data.recipeIngredient),
         instructions: extractInstructions(data.recipeInstructions)
     };
