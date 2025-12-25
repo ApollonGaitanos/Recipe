@@ -72,7 +72,7 @@ const translations = {
             or: "OR",
             urlPlaceholder: "https://www.example.com/recipe...",
             textPlaceholder: "Paste recipe title, ingredients and instructions...",
-            button: "Magic Parse",
+            button: "Magic Import",
             parsing: "Processing..."
         }
     },
@@ -141,7 +141,7 @@ const translations = {
             or: "Ή",
             urlPlaceholder: "https://www.site.gr/syntagi...",
             textPlaceholder: "Επικολλήστε τίτλο, υλικά και εκτέλεση...",
-            button: "Μαγική Ανάλυση",
+            button: "Αυτόματη Δημιουργία",
             parsing: "Επεξεργασία..."
         }
     }
