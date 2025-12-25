@@ -1,7 +1,9 @@
 import React from 'react';
 import { Clock, Users } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function RecipeCard({ recipe, onClick }) {
+    const { t } = useLanguage();
     return (
         <div className="recipe-card" onClick={() => onClick(recipe.id)}>
             <div className="card-content">
@@ -10,7 +12,7 @@ export default function RecipeCard({ recipe, onClick }) {
                 <div className="card-meta">
                     <div className="meta-item">
                         <Clock size={16} />
-                        <span>{recipe.prepTime + recipe.cookTime}m</span>
+                        <span>{parseInt(recipe.prepTime) + parseInt(recipe.cookTime)}{t('minSuffix')}</span>
                     </div>
                     <div className="meta-item">
                         <Users size={16} />
