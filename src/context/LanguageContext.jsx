@@ -66,10 +66,10 @@ const translations = {
         },
         magicImport: {
             title: "Magic Recipe Import",
-            description: "Paste the full text of a recipe below (from a website, chat, or doc) and we'll automatically organize it for you.",
-            placeholder: "Paste recipe text here...",
+            description: "Paste a URL or recipe text below, and we'll automatically organize it for you.",
+            placeholder: "Paste website URL or recipe text here...",
             button: "Magic Parse",
-            parsing: "Parsing..."
+            parsing: "Fetching & Parsing..."
         }
     },
     el: {
@@ -131,8 +131,8 @@ const translations = {
         },
         magicImport: {
             title: "Μαγική Εισαγωγή",
-            description: "Επικολλήστε το πλήρες κείμενο της συνταγής παρακάτω και θα το οργανώσουμε αυτόματα για εσάς.",
-            placeholder: "Επικολλήστε το κείμενο εδώ...",
+            description: "Επικολλήστε ένα URL ή κείμενο συνταγής και θα το οργανώσουμε αυτόματα για εσάς.",
+            placeholder: "Επικολλήστε URL ή κείμενο εδώ...",
             button: "Μαγική Ανάλυση",
             parsing: "Ανάλυση..."
         }

@@ -10,16 +10,19 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
     if (!isOpen) return null;
 
-    const handleParse = () => {
+    const handleParse = async () => {
         setIsParsing(true);
-        // Simulate a small delay for "magic" feel
-        setTimeout(() => {
-            const result = parseRecipe(text);
+        try {
+            const result = await parseRecipe(text);
             onImport(result);
-            setIsParsing(false);
             setText('');
             onClose();
-        }, 600);
+        } catch (error) {
+            console.error(error);
+            // Optionally set error message state here
+        } finally {
+            setIsParsing(false);
+        }
     };
 
     return (

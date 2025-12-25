@@ -1,4 +1,107 @@
-export const parseRecipe = (text) => {
+export const parseRecipe = async (input) => {
+    // Check if input is a URL
+    const urlRegex = /^(http|https):\/\/[^ "]+$/;
+    if (urlRegex.test(input.trim())) {
+        try {
+            return await fetchRecipeFromUrl(input.trim());
+        } catch (error) {
+            console.error("URL Fetch failed, falling back to basic text parsing if possible", error);
+            // Fallback: if fetch fails, maybe they pasted a URL but didn't mean to fetch? 
+            // Or maybe it's just raw text that looks like a url? Unexpected but safe to fall back.
+        }
+    }
+
+    // Default: Parse as text
+    return parseRecipeFromText(input);
+};
+
+// --- URL Fetching & JSON-LD Extraction ---
+
+const fetchRecipeFromUrl = async (url) => {
+    // Use AllOrigins proxy to bypass CORS
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+
+    if (!data.contents) throw new Error("No content found");
+
+    const html = data.contents;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // 1. Try to find JSON-LD (Best Accuracy)
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    for (let script of scripts) {
+        try {
+            const json = JSON.parse(script.innerText);
+            // JSON-LD can be an array or a graph or a single object
+            const findRecipe = (obj) => {
+                if (Array.isArray(obj)) return obj.find(findRecipe);
+                if (obj['@graph']) return obj['@graph'].find(findRecipe);
+                if (obj['@type'] === 'Recipe' || (Array.isArray(obj['@type']) && obj['@type'].includes('Recipe'))) return obj;
+                return null;
+            };
+
+            const recipeData = findRecipe(json);
+            if (recipeData) {
+                return parseJsonLd(recipeData);
+            }
+        } catch (e) {
+            console.error("Error parsing JSON-LD", e);
+        }
+    }
+
+    // 2. Fallback: Parse visible text from the HTML body
+    // We clean up script/style tags first to avoid junk
+    doc.querySelectorAll('script, style, nav, footer, header').forEach(el => el.remove());
+    return parseRecipeFromText(doc.body.innerText);
+};
+
+const parseJsonLd = (data) => {
+    // Helper to parse duration (ISO 8601 duration format: PT1H10M)
+    const parseDuration = (isoStr) => {
+        if (!isoStr) return '';
+        const regex = /PT(?:(\d+)H)?(?:(\d+)M)?/i;
+        const match = isoStr.match(regex);
+        if (!match) return '';
+        const hours = parseInt(match[1] || 0);
+        const mins = parseInt(match[2] || 0);
+        return (hours * 60) + mins;
+    };
+
+    // Helper to clean arrays
+    const cleanList = (list) => {
+        if (!list) return '';
+        if (typeof list === 'string') return list;
+        if (Array.isArray(list)) return list.join('\n');
+        return '';
+    };
+
+    // Helper to extract instructions
+    const extractInstructions = (inst) => {
+        if (!inst) return '';
+        if (typeof inst === 'string') return inst;
+        if (Array.isArray(inst)) {
+            // Can be array of strings or objects { "@type": "HowToStep", "text": "..." }
+            return inst.map(i => i.text || i.name || i).join('\n');
+        }
+        return '';
+    };
+
+    return {
+        title: data.name || '',
+        prepTime: parseDuration(data.prepTime) || '',
+        cookTime: parseDuration(data.cookTime) || '',
+        servings: parseInt(data.recipeYield) || '', // recipeYield might be "4 servings", parseInt catches "4"
+        ingredients: cleanList(data.recipeIngredient),
+        instructions: extractInstructions(data.recipeInstructions)
+    };
+};
+
+
+// --- Text Parsing (Original + Enhanced) ---
+
+const parseRecipeFromText = (text) => {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
     const result = {
         title: '',
@@ -12,19 +115,14 @@ export const parseRecipe = (text) => {
     if (lines.length === 0) return result;
 
     // --- 1. Identify Sections ---
-    // We look for known headers to split the text.
-    // Keywords for Ingredients
     const ingKeywords = ['ingredients', 'υλικά', 'shopping list', 'what you need', 'components'];
-    // Keywords for Instructions
-    const instKeywords = ['instructions', 'directions', 'method', 'εκτέλεση', 'οδηγίες', 'preparation', 'process'];
+    const instKeywords = ['instructions', 'directions', 'method', 'εκτέλεση', 'οδηγίες', 'preparation', 'process', 'steps'];
 
     let ingStartIndex = -1;
     let instStartIndex = -1;
 
-    // Find the first occurrence of these headers
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].toLowerCase();
-        // Remove common punctuation for checking
         const cleanLine = line.replace(/[:\-]/g, '').trim();
 
         if (ingStartIndex === -1 && ingKeywords.some(k => cleanLine === k || cleanLine.startsWith(k + ' '))) {
@@ -36,45 +134,48 @@ export const parseRecipe = (text) => {
     }
 
     // --- 2. Extract Title ---
-    // If ingredients start heavily down, the first line is likely the title.
-    // If ingredients start immediately (line 0), maybe there is no title or it's above.
-    // We assume the first non-empty line that isn't a "Time" metadata line is the title.
     for (let i = 0; i < lines.length; i++) {
-        if (i === ingStartIndex) break; // Don't go into ingredients
-        // Skip if it looks like metadata (e.g. "Prep: 10m")
+        if (i === ingStartIndex) break;
         if (hasTimeMetadata(lines[i])) continue;
-
-        // This is likely the title
         result.title = lines[i];
         break;
     }
 
-    // --- 3. Extract Time & Servings (Metadata) ---
-    // We scan the first chunk of lines (before ingredients) and also the whole text just in case.
-    const timeRegex = /(\d+)\s*(min|minute|minutes|m|hr|hour|hours|h|λεπτά|λ|ώρες|ώρα|wres)\b/i;
-    const servRegex = /(\d+)\s*(servings|people|portions|μερίδες|άτομα)/i;
+    // --- 3. Extract Time & Servings (Enhanced) ---
+    // Composite time extraction: "1 hr 10 mins" or "1 ώρα 10 λεπτά"
 
-    // Helper to normalize time to minutes
-    const toMinutes = (val, unit) => {
-        val = parseInt(val);
-        if (['hr', 'hour', 'hours', 'h', 'ώρες', 'ώρα'].some(u => unit.toLowerCase().startsWith(u))) {
-            return val * 60;
-        }
-        return val;
+    const extractCompositeTime = (text, labelRegex) => {
+        // Look for the label first, e.g. "Prep Time: ..."
+        const labelMatch = text.match(labelRegex);
+        if (!labelMatch) return null;
+
+        // Take the chunk after the label
+        const chunk = text.slice(labelMatch.index + labelMatch[0].length, labelMatch.index + labelMatch[0].length + 20); // 20 chars should cover the time
+
+        // Match hours and minutes
+        const hrMatch = chunk.match(/(\d+)\s*(?:h|hr|hour|hours|ώρα|ώρες|wres)/i);
+        const minMatch = chunk.match(/(\d+)\s*(?:m|min|minute|minutes|λεπτά|λ)/i);
+
+        let total = 0;
+        if (hrMatch) total += parseInt(hrMatch[1]) * 60;
+        if (minMatch) total += parseInt(minMatch[1]);
+
+        return total > 0 ? total : null;
     };
 
-    // Scan for Prep/Cook specific labels
-    const fullText = text; // Search in full text for "Prep: 10m" patterns
+    const fullText = text;
 
     // Prep
-    const prepMatch = fullText.match(/(?:prep|preparation|προετοιμασία)[:\s]+(\d+)\s*([a-zα-ω]+)/i);
-    if (prepMatch) result.prepTime = toMinutes(prepMatch[1], prepMatch[2]);
+    const prepLabel = /(?:prep|preparation|προετοιμασία)(?:[\s:]*time)?[:\s]+/i;
+    result.prepTime = extractCompositeTime(fullText, prepLabel) || ''; // Fallback to basic math if needed but logic handles composite
 
     // Cook
-    const cookMatch = fullText.match(/(?:cook|cooking|μαγείρεμα|ψησιμο)[:\s]+(\d+)\s*([a-zα-ω]+)/i);
-    if (cookMatch) result.cookTime = toMinutes(cookMatch[1], cookMatch[2]);
+    // Handles "psinoume for X time" or "Cooking time X"
+    const cookLabel = /(?:cook|cooking|μαγείρεμα|ψησιμο|ψηνουμε)(?:[\s:]*time|(?:\s+για))?[:\s]+/i;
+    result.cookTime = extractCompositeTime(fullText, cookLabel) || '';
 
     // Servings
+    const servRegex = /(\d+)\s*(?:servings|people|portions|μερίδες|άτομα)/i;
     const servMatch = fullText.match(servRegex);
     if (servMatch) result.servings = servMatch[1];
 
@@ -82,20 +183,14 @@ export const parseRecipe = (text) => {
     // --- 4. Extract Ingredients ---
     if (ingStartIndex !== -1) {
         let endIndex = instStartIndex !== -1 && instStartIndex > ingStartIndex ? instStartIndex : lines.length;
-
-        // Collect lines, removing the header itself
         const rawIngs = lines.slice(ingStartIndex + 1, endIndex);
-
-        // Clean up bullets
         result.ingredients = rawIngs.map(l => l.replace(/^[\u2022\-\*]\s*/, '')).join('\n');
     }
 
     // --- 5. Extract Instructions ---
     if (instStartIndex !== -1) {
         let endIndex = lines.length;
-        // If ingredients follow instructions (rare but possible)
-        if (ingStartIndex > instStartIndex) endIndex = ingStartIndex;
-
+        if (ingStartIndex > instStartIndex) endIndex = ingStartIndex; // if reversed
         const rawInst = lines.slice(instStartIndex + 1, endIndex);
         result.instructions = rawInst.join('\n');
     }
@@ -103,9 +198,9 @@ export const parseRecipe = (text) => {
     return result;
 };
 
-// Helper to check if a line is just metadata like "Prep time: 10m"
+// Helper
 function hasTimeMetadata(line) {
-    const keywords = ['prep', 'cook', 'time', 'total', 'servings', 'yield', 'προετοιμασία', 'μαγείρεμα', 'χρόνος', 'μερίδες'];
+    const keywords = ['prep', 'cook', 'time', 'total', 'servings', 'yield', 'προετοιμασία', 'μαγείρεμα', 'χρόνος', 'μερίδες', 'ψήνουμε'];
     const lower = line.toLowerCase();
     return keywords.some(k => lower.includes(k) && /\d/.test(lower));
 }
