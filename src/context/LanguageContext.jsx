@@ -63,6 +63,13 @@ const translations = {
             save: "Save Changes",
             saved: "Saved!",
             error: "Error saving changes"
+        },
+        magicImport: {
+            title: "Magic Recipe Import",
+            description: "Paste the full text of a recipe below (from a website, chat, or doc) and we'll automatically organize it for you.",
+            placeholder: "Paste recipe text here...",
+            button: "Magic Parse",
+            parsing: "Parsing..."
         }
     },
     el: {
@@ -121,6 +128,13 @@ const translations = {
             save: "Αποθήκευση",
             saved: "Αποθηκεύτηκε!",
             error: "Σφάλμα αποθήκευσης"
+        },
+        magicImport: {
+            title: "Μαγική Εισαγωγή",
+            description: "Επικολλήστε το πλήρες κείμενο της συνταγής παρακάτω και θα το οργανώσουμε αυτόματα για εσάς.",
+            placeholder: "Επικολλήστε το κείμενο εδώ...",
+            button: "Μαγική Ανάλυση",
+            parsing: "Ανάλυση..."
         }
     }
 };

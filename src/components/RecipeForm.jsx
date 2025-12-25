@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X } from 'lucide-react';
+import { Save, X, Sparkles } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
+import MagicImportModal from './MagicImportModal';
 
 export default function RecipeForm({ recipeId, onSave, onCancel }) {
-    const { recipes, addRecipe, updateRecipe } = useRecipes();
+    const { addRecipe, updateRecipe, recipes } = useRecipes();
     const { t } = useLanguage();
+    const [showMagicImport, setShowMagicImport] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
-        ingredients: '',
-        instructions: '',
         prepTime: '',
         cookTime: '',
         servings: '',
-        tags: ''
+        ingredients: '',
+        instructions: '',
+        tags: '' // stored as string for input
     });
 
     useEffect(() => {
@@ -29,16 +31,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
     }, [recipeId, recipes]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         const recipeData = {
             ...formData,
-            tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+            tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
             prepTime: Number(formData.prepTime) || 0,
             cookTime: Number(formData.cookTime) || 0,
             servings: Number(formData.servings) || 1
@@ -52,82 +49,131 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         onSave();
     };
 
+    const handleMagicImport = (data) => {
+        setFormData(prev => ({
+            ...prev,
+            title: data.title || prev.title,
+            prepTime: data.prepTime || prev.prepTime,
+            cookTime: data.cookTime || prev.cookTime,
+            servings: data.servings || prev.servings,
+            ingredients: data.ingredients || prev.ingredients,
+            instructions: data.instructions || prev.instructions
+        }));
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="recipe-form">
-            <div className="form-header">
-                <h2 className="title" style={{ marginBottom: 0 }}>
-                    {recipeId ? t('editRecipe') : t('newRecipe')}
-                </h2>
-                <div className="form-actions">
-                    <button type="button" className="btn-secondary" onClick={onCancel}>
-                        <X size={20} /> {t('cancel')}
-                    </button>
-                    <button type="submit" className="btn-primary">
-                        <Save size={20} /> {t('saveRecipe')}
-                    </button>
+        <div className="recipe-form-container">
+            <MagicImportModal
+                isOpen={showMagicImport}
+                onClose={() => setShowMagicImport(false)}
+                onImport={handleMagicImport}
+            />
+
+            <form onSubmit={handleSubmit} className="recipe-form">
+                <div className="form-header">
+                    <h2 className="title" style={{ marginBottom: 0 }}>
+                        {recipeId ? t('editRecipe') : t('newRecipe')}
+                    </h2>
+                    <div className="form-actions">
+                        {/* Magic Import Button */}
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => setShowMagicImport(true)}
+                            style={{ color: '#c026d3', borderColor: '#f0abfc', background: '#fdf4ff', marginRight: '8px' }}
+                            title={t('magicImport.title')}
+                        >
+                            <Sparkles size={18} /> <span className="hide-mobile">{t('magicImport.button')}</span>
+                        </button>
+
+                        <button type="button" className="btn-secondary" onClick={onCancel}>
+                            <X size={20} /> {t('cancel')}
+                        </button>
+                        <button type="submit" className="btn-primary">
+                            <Save size={20} /> {t('saveRecipe')}
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className="form-group">
-                <label>{t('recipeTitle')}</label>
-                <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    placeholder={t('placeholders.title')}
-                    required
-                    autoFocus
-                />
-            </div>
-
-            <div className="form-row">
                 <div className="form-group">
-                    <label>{t('prepTimeLabel')}</label>
-                    <input type="number" name="prepTime" value={formData.prepTime} onChange={handleChange} placeholder="15" />
+                    <label>{t('recipeTitle')}</label>
+                    <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder={t('placeholders.title')}
+                        required
+                        autoFocus
+                    />
                 </div>
+
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>{t('prepTimeLabel')}</label>
+                        <input
+                            type="number"
+                            name="prepTime"
+                            value={formData.prepTime}
+                            onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
+                            placeholder="15"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>{t('cookTimeLabel')}</label>
+                        <input
+                            type="number"
+                            name="cookTime"
+                            value={formData.cookTime}
+                            onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
+                            placeholder="45"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>{t('servingsLabel')}</label>
+                        <input
+                            type="number"
+                            name="servings"
+                            value={formData.servings}
+                            onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
+                            placeholder="4"
+                        />
+                    </div>
+                </div>
+
                 <div className="form-group">
-                    <label>{t('cookTimeLabel')}</label>
-                    <input type="number" name="cookTime" value={formData.cookTime} onChange={handleChange} placeholder="45" />
+                    <label>{t('ingredientsLabel')}</label>
+                    <textarea
+                        name="ingredients"
+                        value={formData.ingredients}
+                        onChange={(e) => setFormData(prev => ({ ...prev, ingredients: e.target.value }))}
+                        rows={8}
+                        placeholder={t('placeholders.ingredients')}
+                    />
                 </div>
+
                 <div className="form-group">
-                    <label>{t('servingsLabel')}</label>
-                    <input type="number" name="servings" value={formData.servings} onChange={handleChange} placeholder="4" />
+                    <label>{t('instructionsLabel')}</label>
+                    <textarea
+                        name="instructions"
+                        value={formData.instructions}
+                        onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
+                        rows={8}
+                        placeholder={t('placeholders.instructions')}
+                    />
                 </div>
-            </div>
 
-            <div className="form-group">
-                <label>{t('ingredientsLabel')}</label>
-                <textarea
-                    name="ingredients"
-                    value={formData.ingredients}
-                    onChange={handleChange}
-                    rows={8}
-                    placeholder={t('placeholders.ingredients')}
-                />
-            </div>
-
-            <div className="form-group">
-                <label>{t('instructionsLabel')}</label>
-                <textarea
-                    name="instructions"
-                    value={formData.instructions}
-                    onChange={handleChange}
-                    rows={8}
-                    placeholder={t('placeholders.instructions')}
-                />
-            </div>
-
-            <div className="form-group">
-                <label>{t('tagsLabel')}</label>
-                <input
-                    type="text"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleChange}
-                    placeholder={t('placeholders.tags')}
-                />
-            </div>
-        </form>
+                <div className="form-group">
+                    <label>{t('tagsLabel')}</label>
+                    <input
+                        type="text"
+                        name="tags"
+                        value={formData.tags}
+                        onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                        placeholder={t('placeholders.tags')}
+                    />
+                </div>
+            </form>
+        </div>
     );
 }
