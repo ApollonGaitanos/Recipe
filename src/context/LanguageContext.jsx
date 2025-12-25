@@ -66,10 +66,13 @@ const translations = {
         },
         magicImport: {
             title: "Magic Recipe Import",
-            description: "Paste a URL or recipe text below, and we'll automatically organize it for you.",
-            placeholder: "Paste website URL or recipe text here...",
+            description: "Choose how you want to import your recipe:",
+            tabUrl: "From Website",
+            tabText: "Paste Text",
+            urlPlaceholder: "https://www.example.com/recipe...",
+            textPlaceholder: "Paste recipe title, ingredients and instructions...",
             button: "Magic Parse",
-            parsing: "Fetching & Parsing..."
+            parsing: "Processing..."
         }
     },
     el: {
@@ -131,10 +134,13 @@ const translations = {
         },
         magicImport: {
             title: "Μαγική Εισαγωγή",
-            description: "Επικολλήστε ένα URL ή κείμενο συνταγής και θα το οργανώσουμε αυτόματα για εσάς.",
-            placeholder: "Επικολλήστε URL ή κείμενο εδώ...",
+            description: "Επιλέξτε τρόπο εισαγωγής:",
+            tabUrl: "Από Ιστοσελίδα",
+            tabText: "Επικόλληση Κειμένου",
+            urlPlaceholder: "https://www.site.gr/syntagi...",
+            textPlaceholder: "Επικολλήστε τίτλο, υλικά και εκτέλεση...",
             button: "Μαγική Ανάλυση",
-            parsing: "Ανάλυση..."
+            parsing: "Επεξεργασία..."
         }
     }
 };
