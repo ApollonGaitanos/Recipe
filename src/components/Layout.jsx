@@ -53,7 +53,7 @@ export default function Layout() {
                     {user ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
-                                {user.email}
+                                {user.user_metadata?.username || user.email}
                             </span>
                             <button className="btn-secondary" onClick={signOut} title="Sign Out">
                                 <LogOut size={18} />

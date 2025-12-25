@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { X, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
     const [isLogin, setIsLogin] = useState(true);
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,6 +20,7 @@ export default function AuthModal({ isOpen, onClose }) {
     useEffect(() => {
         if (!isOpen) {
             // Reset state when closed
+            setUsername('');
             setEmail('');
             setPassword('');
             setConfirmPassword('');
@@ -76,7 +78,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 if (error) throw error;
                 onClose();
             } else {
-                const { error } = await signUp(email, password);
+                const { error } = await signUp(email, password, username);
                 if (error) throw error;
                 alert(t('auth.emailConfirmAlert'));
                 onClose();
@@ -102,6 +104,23 @@ export default function AuthModal({ isOpen, onClose }) {
                 {error && <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                    {/* Username Input (Signup Only) */}
+                    {!isLogin && (
+                        <div className="form-group">
+                            <div className="input-icon-wrapper" style={{ position: 'relative' }}>
+                                <User size={18} style={{ position: 'absolute', top: '14px', left: '12px', color: '#888' }} />
+                                <input
+                                    type="text"
+                                    placeholder={t('auth.usernamePlaceholder')}
+                                    value={username}
+                                    onChange={e => setUsername(e.target.value)}
+                                    required
+                                    style={{ paddingLeft: '40px' }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Email Input */}
                     <div className="form-group">
                         <div className="input-icon-wrapper" style={{ position: 'relative' }}>
