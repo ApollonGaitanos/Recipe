@@ -54,6 +54,13 @@ const translations = {
             mustBeStronger: "Must be stronger",
             noAccount: "Don't have an account?",
             hasAccount: "Already have an account?"
+        },
+        settings: {
+            title: "Account Settings",
+            changeUsername: "Change Username",
+            save: "Save Changes",
+            saved: "Saved!",
+            error: "Error saving changes"
         }
     },
     el: {
@@ -103,6 +110,13 @@ const translations = {
             mustBeStronger: "Πρέπει να είναι πιο ισχυρός",
             noAccount: "Δεν έχετε λογαριασμό;",
             hasAccount: "Έχετε ήδη λογαριασμό;"
+        },
+        settings: {
+            title: "Ρυθμίσεις Λογαριασμού",
+            changeUsername: "Αλλαγή Ονόματος",
+            save: "Αποθήκευση",
+            saved: "Αποθηκεύτηκε!",
+            error: "Σφάλμα αποθήκευσης"
         }
     }
 };

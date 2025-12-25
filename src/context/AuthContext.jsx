@@ -40,10 +40,23 @@ export function AuthProvider({ children }) {
         return { data, error };
     };
 
+    const updateProfile = async (data) => {
+        const { data: { user }, error } = await supabase.auth.updateUser({
+            data: data
+        });
+
+        if (user) {
+            setUser(user);
+        }
+
+        return { data: user, error };
+    };
+
     const value = {
         user,
         signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
         signUp,
+        updateProfile,
         signOut: () => supabase.auth.signOut(),
     };
 

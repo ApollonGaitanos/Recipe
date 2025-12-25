@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut } from 'lucide-react';
+import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut, Settings } from 'lucide-react';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import RecipeDetail from './RecipeDetail';
 import AuthModal from './AuthModal';
 import MigrationBanner from './MigrationBanner';
+import SettingsModal from './SettingsModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,7 @@ export default function Layout() {
     const [view, setView] = useState('list'); // list, add, detail, edit
     const [selectedRecipeId, setSelectedRecipeId] = useState(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
 
     const { t, language, toggleLanguage } = useLanguage();
     const { theme, toggleTheme } = useTheme();
@@ -38,6 +40,7 @@ export default function Layout() {
     return (
         <div className="container">
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+            <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: '12px' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
@@ -55,6 +58,9 @@ export default function Layout() {
                             <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
                                 {user.user_metadata?.username || user.email}
                             </span>
+                            <button className="btn-secondary" onClick={() => setShowSettingsModal(true)} title="Settings">
+                                <Settings size={18} />
+                            </button>
                             <button className="btn-secondary" onClick={signOut} title="Sign Out">
                                 <LogOut size={18} />
                             </button>
