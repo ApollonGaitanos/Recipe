@@ -5,19 +5,22 @@ import { parseRecipe } from '../utils/recipeParser';
 
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t } = useLanguage();
-    const [activeTab, setActiveTab] = useState('url'); // 'url' or 'text'
-    const [inputValue, setInputValue] = useState('');
+    const [urlValue, setUrlValue] = useState('');
+    const [textValue, setTextValue] = useState('');
     const [isParsing, setIsParsing] = useState(false);
 
     if (!isOpen) return null;
 
     const handleParse = async () => {
+        const inputToUse = urlValue.trim() ? urlValue : textValue;
+        if (!inputToUse.trim()) return;
+
         setIsParsing(true);
         try {
-            // parseRecipe handles both, but we can pass the specific input
-            const result = await parseRecipe(inputValue);
+            const result = await parseRecipe(inputToUse);
             onImport(result);
-            setInputValue('');
+            setUrlValue('');
+            setTextValue('');
             onClose();
         } catch (error) {
             console.error(error);
@@ -25,6 +28,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
             setIsParsing(false);
         }
     };
+
+    const hasInput = urlValue.trim().length > 0 || textValue.trim().length > 0;
 
     return (
         <div className="modal-overlay active" onClick={onClose}>
@@ -47,72 +52,53 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     {t('magicImport.description')}
                 </p>
 
-                {/* Tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid #eee', marginTop: '20px' }}>
-                    <button
-                        onClick={() => { setActiveTab('url'); setInputValue(''); }}
-                        style={{
-                            flex: 1,
-                            padding: '12px',
-                            background: activeTab === 'url' ? 'white' : '#f9fafb',
-                            border: 'none',
-                            borderBottom: activeTab === 'url' ? '2px solid #c026d3' : '2px solid transparent',
-                            color: activeTab === 'url' ? '#c026d3' : '#666',
-                            fontWeight: activeTab === 'url' ? '600' : '400',
-                            cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                        }}
-                    >
-                        <Globe size={18} /> {t('magicImport.tabUrl')}
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('text'); setInputValue(''); }}
-                        style={{
-                            flex: 1,
-                            padding: '12px',
-                            background: activeTab === 'text' ? 'white' : '#f9fafb',
-                            border: 'none',
-                            borderBottom: activeTab === 'text' ? '2px solid #c026d3' : '2px solid transparent',
-                            color: activeTab === 'text' ? '#c026d3' : '#666',
-                            fontWeight: activeTab === 'text' ? '600' : '400',
-                            cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                        }}
-                    >
-                        <FileText size={18} /> {t('magicImport.tabText')}
-                    </button>
-                </div>
-
                 {/* Content */}
                 <div style={{ padding: '20px' }}>
-                    {activeTab === 'url' ? (
-                        <div className="form-group">
-                            <div className="input-icon-wrapper" style={{ position: 'relative' }}>
-                                <Link size={18} style={{ position: 'absolute', top: '14px', left: '12px', color: '#888' }} />
-                                <input
-                                    type="url"
-                                    placeholder={t('magicImport.urlPlaceholder')}
-                                    value={inputValue}
-                                    onChange={e => setInputValue(e.target.value)}
-                                    style={{ paddingLeft: '40px', width: '100%' }}
-                                    autoFocus
-                                />
-                            </div>
-                            <p style={{ fontSize: '0.8rem', color: '#888', marginTop: '8px' }}>
-                                Supports extraction from most modern recipe websites.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="form-group">
-                            <textarea
-                                placeholder={t('magicImport.textPlaceholder')}
-                                value={inputValue}
-                                onChange={e => setInputValue(e.target.value)}
-                                style={{ height: '150px', fontSize: '0.9rem', width: '100%' }}
-                                autoFocus
+
+                    {/* URL Input */}
+                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
+                            {t('magicImport.labelUrl')}
+                        </label>
+                        <div className="input-icon-wrapper" style={{ position: 'relative' }}>
+                            <Link size={18} style={{ position: 'absolute', top: '12px', left: '12px', color: '#888' }} />
+                            <input
+                                type="url"
+                                placeholder={t('magicImport.urlPlaceholder')}
+                                value={urlValue}
+                                onChange={e => {
+                                    setUrlValue(e.target.value);
+                                    if (e.target.value) setTextValue(''); // Clear text if URL is typed to avoid confusion
+                                }}
+                                style={{ paddingLeft: '40px', width: '100%' }}
                             />
                         </div>
-                    )}
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+                        <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
+                        <span style={{ padding: '0 10px', fontSize: '0.8rem', color: '#888', fontWeight: 500 }}>
+                            {t('magicImport.or')}
+                        </span>
+                        <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
+                    </div>
+
+                    {/* Text Input */}
+                    <div className="form-group">
+                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
+                            {t('magicImport.labelText')}
+                        </label>
+                        <textarea
+                            placeholder={t('magicImport.textPlaceholder')}
+                            value={textValue}
+                            onChange={e => {
+                                setTextValue(e.target.value);
+                                if (e.target.value) setUrlValue(''); // Clear URL if text is typed
+                            }}
+                            style={{ height: '120px', fontSize: '0.9rem', width: '100%' }}
+                        />
+                    </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', gap: '10px' }}>
                         <button type="button" className="btn-secondary" onClick={onClose}>
@@ -122,7 +108,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             type="button"
                             className="btn-primary"
                             onClick={handleParse}
-                            disabled={!inputValue.trim() || isParsing}
+                            disabled={!hasInput || isParsing}
                             style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', border: 'none' }}
                         >
                             {isParsing ? (
