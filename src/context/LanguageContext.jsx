@@ -1,0 +1,103 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const LanguageContextData = createContext();
+
+export function useLanguage() {
+    return useContext(LanguageContextData);
+}
+
+const translations = {
+    en: {
+        appTitle: 'My Recipes',
+        addRecipe: 'Add Recipe',
+        searchPlaceholder: 'Search recipes, ingredients...',
+        noRecipes: 'No recipes found. Try adding one!',
+        prepTime: 'Prep',
+        cookTime: 'Cook',
+        servings: 'Servings',
+        edit: 'Edit',
+        delete: 'Delete',
+        back: 'Back',
+        saveRecipe: 'Save Recipe',
+        cancel: 'Cancel',
+        editRecipe: 'Edit Recipe',
+        newRecipe: 'New Recipe',
+        recipeTitle: 'Recipe Title',
+        prepTimeLabel: 'Prep Time (min)',
+        cookTimeLabel: 'Cook Time (min)',
+        servingsLabel: 'Servings',
+        ingredientsLabel: 'Ingredients (one per line)',
+        instructionsLabel: 'Instructions',
+        tagsLabel: 'Tags (comma separated)',
+        deleteConfirm: 'Are you sure you want to delete this recipe?',
+        ingredientsSection: 'Ingredients',
+        instructionsSection: 'Instructions',
+        placeholders: {
+            title: "e.g. Grandma's Apple Pie",
+            ingredients: "2 cups flour\n1 tsp salt\n...",
+            instructions: "1. Preheat oven...\n2. Mix ingredients...",
+            tags: "dessert, easy, holiday"
+        }
+    },
+    el: {
+        appTitle: 'Οι Συνταγές μου',
+        addRecipe: 'Προσθήκη',
+        searchPlaceholder: 'Αναζήτηση συνταγών, υλικών...',
+        noRecipes: 'Δεν βρέθηκαν συνταγές. Προσθέστε μία!',
+        prepTime: 'Προετοιμασία',
+        cookTime: 'Μαγείρεμα',
+        servings: 'Μερίδες',
+        edit: 'Επεξεργασία',
+        delete: 'Διαγραφή',
+        back: 'Πίσω',
+        saveRecipe: 'Αποθήκευση',
+        cancel: 'Ακύρωση',
+        editRecipe: 'Επεξεργασία Συνταγής',
+        newRecipe: 'Νέα Συνταγή',
+        recipeTitle: 'Τίτλος Συνταγής',
+        prepTimeLabel: 'Προετοιμασία (λεπτά)',
+        cookTimeLabel: 'Μαγείρεμα (λεπτά)',
+        servingsLabel: 'Μερίδες',
+        ingredientsLabel: 'Υλικά (ένα ανά γραμμή)',
+        instructionsLabel: 'Οδηγίες',
+        tagsLabel: 'Ετικέτες (χωρισμένες με κόμμα)',
+        deleteConfirm: 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνταγή;',
+        ingredientsSection: 'Υλικά',
+        instructionsSection: 'Οδηγίες',
+        placeholders: {
+            title: "π.χ. Μηλόπιτα της Γιαγιάς",
+            ingredients: "2 κούπες αλεύρι\n1 κ.γ. αλάτι\n...",
+            instructions: "1. Προθερμάνετε τον φούρνο...\n2. Ανακατέψτε τα υλικά...",
+            tags: "γλυκό, εύκολο, γιορτινό"
+        }
+    }
+};
+
+export default function LanguageContext({ children }) {
+    const [language, setLanguage] = useState(() => {
+        return localStorage.getItem('language') || 'en';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('language', language);
+    }, [language]);
+
+    const toggleLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'el' : 'en');
+    };
+
+    const t = (key) => {
+        const keys = key.split('.');
+        let value = translations[language];
+        for (const k of keys) {
+            value = value?.[k];
+        }
+        return value || key;
+    };
+
+    return (
+        <LanguageContextData.Provider value={{ language, toggleLanguage, t }}>
+            {children}
+        </LanguageContextData.Provider>
+    );
+}

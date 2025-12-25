@@ -1,0 +1,554 @@
+:root {
+  /* Color Palette - Premium & Clean */
+  --color-bg: #fdfbf7;
+  /* Warm, creamy off-white */
+  --color-text: #2d2a26;
+  /* Soft charcoal */
+  --color-text-light: #6e6b65;
+  --color-primary: #d35400;
+  /* Burnt Orange - appetizing & premium */
+  --color-primary-hover: #e67e22;
+  --color-accent: #f4d03f;
+  /* Subtle gold accent */
+  --color-surface: #ffffff;
+  --color-border: #eae6e0;
+
+  /* Shadows & Glass */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --glass: rgba(255, 255, 255, 0.85);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+
+  /* Spacing & Layout */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --max-width: 1200px;
+  /* Mobile-first/Focused view */
+}
+
+/* Dark Mode Support */
+body.dark-mode {
+  --color-bg: #121212;
+  --color-text: #e0e0e0;
+  --color-text-light: #a0a0a0;
+  --color-surface: #1e1e1e;
+  --color-border: #333333;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --color-primary: #e67e22;
+  /* Slightly brighter for dark mode */
+}
+
+/* Specific component overrides for dark mode */
+body.dark-mode input,
+body.dark-mode textarea {
+  background: #2d2d2d;
+  color: var(--color-text);
+}
+
+body.dark-mode input:focus,
+body.dark-mode textarea:focus {
+  background: #333333;
+}
+
+body.dark-mode .tag {
+  background: rgba(230, 126, 34, 0.2);
+}
+
+body.dark-mode .btn-secondary:hover,
+body.dark-mode .btn-icon:hover {
+  background: #333333;
+}
+
+body.dark-mode .ingredient-item {
+  border-bottom-color: #333;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Utilities */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Component Styles */
+
+/* Search */
+.search-container {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-light);
+}
+
+.search-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(211, 84, 0, 0.1);
+}
+
+/* Recipe Grid */
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Recipe Card */
+.recipe-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+  color: var(--color-text);
+}
+
+.card-meta {
+  display: flex;
+  gap: 16px;
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.tag {
+  background: #fdf2e9;
+  /* Light orange bg */
+  color: var(--color-primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Forms */
+.recipe-form {
+  background: var(--color-surface);
+  padding: 32px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.1);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f5f5f5;
+}
+
+/* Detail View */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: #f5f5f5;
+  transform: translateY(-2px);
+}
+
+.btn-icon.danger {
+  color: #e74c3c;
+  border-color: #fab1a0;
+}
+
+.btn-icon.danger:hover {
+  background: #fff5f5;
+}
+
+.detail-content {
+  background: var(--color-surface);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.detail-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.detail-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.meta-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-light);
+  font-weight: 500;
+}
+
+.detail-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+@media (min-width: 768px) {
+  .detail-grid {
+    grid-template-columns: 1fr 1.5fr;
+  }
+}
+
+.detail-section h3 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: var(--color-primary);
+  letter-spacing: 1px;
+}
+
+.ingredient-item {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bullet {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.instruction-item {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.step-number {
+  background: var(--color-primary);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.instruction-item p {
+  margin-top: 2px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-text-light);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--color-border);
+}
+/* Modal - Premium Redesign */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(0px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.modal-overlay.active {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: var(--color-surface);
+  padding: 40px 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid var(--color-border);
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+
+.modal-content.active {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--color-text-light);
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #f5f5f5;
+  color: var(--color-text);
+}
+
+.modal-icon-container {
+  width: 64px;
+  height: 64px;
+  background: #fee2e2; /* Soft red bg */
+  color: #dc2626; /* Red icon */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.modal-description {
+  color: var(--color-text-light);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-actions button {
+  flex: 1;
+  justify-content: center;
+}
+
+.danger-btn-modern {
+  background-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.danger-btn-modern:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+/* Dark mode adjustments for modal */
+body.dark-mode .modal-icon-container {
+  background: rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+}
+
+body.dark-mode .modal-close:hover {
+  background: #333;
+}
+
