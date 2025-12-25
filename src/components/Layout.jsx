@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Plus, ChefHat, Moon, Sun, Languages } from 'lucide-react';
+import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut } from 'lucide-react';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import RecipeDetail from './RecipeDetail';
+import AuthModal from './AuthModal';
+import MigrationBanner from './MigrationBanner';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Layout() {
     const [view, setView] = useState('list'); // list, add, detail, edit
     const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     const { t, language, toggleLanguage } = useLanguage();
     const { theme, toggleTheme } = useTheme();
+    const { user, signOut } = useAuth();
 
     const goToList = () => {
         setView('list');
@@ -32,13 +37,34 @@ export default function Layout() {
 
     return (
         <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '12px', paddingTop: '12px' }}>
-                <button className="btn-secondary" onClick={toggleLanguage} title="Switch Language">
-                    <Languages size={18} /> {language.toUpperCase()}
-                </button>
-                <button className="btn-secondary" onClick={toggleTheme} title="Switch Theme">
-                    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-                </button>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button className="btn-secondary" onClick={toggleLanguage} title="Switch Language">
+                        <Languages size={18} /> {language.toUpperCase()}
+                    </button>
+                    <button className="btn-secondary" onClick={toggleTheme} title="Switch Theme">
+                        {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                    </button>
+                </div>
+
+                <div>
+                    {user ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
+                                {user.email}
+                            </span>
+                            <button className="btn-secondary" onClick={signOut} title="Sign Out">
+                                <LogOut size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button className="btn-primary" onClick={() => setShowAuthModal(true)} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+                            <User size={18} /> Login / Sign Up
+                        </button>
+                    )}
+                </div>
             </div>
 
             <header style={{
@@ -46,7 +72,7 @@ export default function Layout() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '32px',
-                marginTop: '12px'
+                marginTop: '24px'
             }}>
                 <div
                     onClick={goToList}
@@ -79,6 +105,7 @@ export default function Layout() {
             </header>
 
             <main>
+                <MigrationBanner />
                 {view === 'list' && <RecipeList onSelect={goToDetail} />}
                 {view === 'add' && <RecipeForm onSave={goToList} onCancel={goToList} />}
                 {view === 'edit' && <RecipeForm recipeId={selectedRecipeId} onSave={() => goToDetail(selectedRecipeId)} onCancel={() => goToDetail(selectedRecipeId)} />}
