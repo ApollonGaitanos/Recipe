@@ -15,10 +15,37 @@ export default function AuthModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
+    // Password Strength Logic
+    const getPasswordStrength = (pass) => {
+        let score = 0;
+        if (pass.length > 5) score++;
+        if (pass.length > 7) score++;
+        if (/[A-Z]/.test(pass)) score++;
+        if (/[0-9]/.test(pass)) score++;
+        if (/[^A-Za-z0-9]/.test(pass)) score++;
+        return score; // Max 5
+    };
+
+    const strength = getPasswordStrength(password);
+
+    const getStrengthColor = (s) => {
+        if (s < 2) return '#ff4d4d'; // Red
+        if (s < 4) return '#ffa500'; // Orange
+        return '#2ecc71'; // Green
+    };
+
+    const isPasswordWeak = !isLogin && strength < 3; // Enforce strength on Sign Up
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+
+        if (isPasswordWeak) {
+            setError("Password is too weak. Add numbers/symbols/length.");
+            setLoading(false);
+            return;
+        }
 
         try {
             if (isLogin) {
@@ -78,12 +105,27 @@ export default function AuthModal({ isOpen, onClose }) {
                                 style={{ paddingLeft: '40px' }}
                             />
                         </div>
+                        {!isLogin && password.length > 0 && (
+                            <div style={{ marginTop: '5px', height: '4px', width: '100%', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${(strength / 5) * 100}%`,
+                                    background: getStrengthColor(strength),
+                                    transition: 'all 0.3s ease'
+                                }} />
+                            </div>
+                        )}
+                        {!isLogin && isPasswordWeak && password.length > 0 && (
+                            <div style={{ fontSize: '0.8rem', color: 'gray', marginTop: '4px' }}>
+                                Must be stronger
+                            </div>
+                        )}
                     </div>
 
                     <button
                         type="submit"
                         className="btn-primary"
-                        style={{ width: '100%', marginBottom: '10px' }}
+                        style={{ width: '100%', marginBottom: '10px', opacity: isPasswordWeak ? 0.7 : 1 }}
                         disabled={loading}
                     >
                         {loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}
