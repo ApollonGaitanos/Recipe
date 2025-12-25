@@ -141,13 +141,15 @@ textarea {
 
 .search-input {
   width: 100%;
-  padding: 16px 16px 16px 48px;
+  padding: 16px 20px;
+  padding-left: 50px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: 50px;
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--color-text);
 }
 
 .search-input:focus {
@@ -431,6 +433,7 @@ textarea:focus {
   border-radius: var(--radius-md);
   border: 2px dashed var(--color-border);
 }
+
 /* Modal - Premium Redesign */
 .modal-overlay {
   position: fixed;
@@ -495,8 +498,10 @@ textarea:focus {
 .modal-icon-container {
   width: 64px;
   height: 64px;
-  background: #fee2e2; /* Soft red bg */
-  color: #dc2626; /* Red icon */
+  background: #fee2e2;
+  /* Soft red bg */
+  color: #dc2626;
+  /* Red icon */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -552,3 +557,113 @@ body.dark-mode .modal-close:hover {
   background: #333;
 }
 
+
+/* Main Header (Moved from Inline) */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  /* Allow wrapping */
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+
+  /* Header: Column layout on mobile */
+  .main-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .main-header div:first-child {
+    justify-content: center;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  /* Header controls: Center and wrap */
+  .main-header>div:last-child {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .main-header .btn-primary {
+    width: 100%;
+  }
+
+  /* Buttons: larger touch targets */
+  button,
+  .btn-primary,
+  .btn-secondary,
+  select,
+  input {
+    min-height: 48px;
+    /* Touch friendly */
+    font-size: 1rem;
+  }
+
+  /* Recipe Grid: 1 Column */
+  .recipe-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Detail View: Stacked */
+  .detail-content {
+    padding: 20px;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .detail-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  /* Modals: Full width/bottom sheet feel */
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+    padding: 25px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  /* Tablet: 2 Columns */
+  .recipe-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+
+  /* Desktop: 3 Columns (Default) */
+  .recipe-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  /* Detail View: Side-by-Side */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    /* Ingredients narrow, Instructions wide */
+    gap: 40px;
+    align-items: start;
+  }
+}

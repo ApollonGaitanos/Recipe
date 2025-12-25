@@ -67,13 +67,7 @@ export default function Layout() {
                 </div>
             </div>
 
-            <header style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '32px',
-                marginTop: '24px'
-            }}>
+            <header className="main-header">
                 <div
                     onClick={goToList}
                     style={{
