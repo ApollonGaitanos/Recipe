@@ -59,13 +59,13 @@ export default function AuthModal({ isOpen, onClose }) {
         setError(null);
 
         if (!passwordsMatch) {
-            setError("Passwords do not match.");
+            setError(t('auth.passwordMatchError'));
             setLoading(false);
             return;
         }
 
         if (isPasswordWeak) {
-            setError("Password is too weak. Add numbers/symbols/length.");
+            setError(t('auth.passwordWeakError'));
             setLoading(false);
             return;
         }
@@ -78,7 +78,7 @@ export default function AuthModal({ isOpen, onClose }) {
             } else {
                 const { error } = await signUp(email, password);
                 if (error) throw error;
-                alert('Check your email to confirm account!');
+                alert(t('auth.emailConfirmAlert'));
                 onClose();
             }
         } catch (err) {
@@ -96,7 +96,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 </button>
 
                 <h3 className="modal-title">
-                    {isLogin ? 'Welcome Back' : 'Create Account'}
+                    {isLogin ? t('auth.welcome') : t('auth.createAccount')}
                 </h3>
 
                 {error && <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
@@ -108,7 +108,7 @@ export default function AuthModal({ isOpen, onClose }) {
                             <Mail size={18} style={{ position: 'absolute', top: '14px', left: '12px', color: '#888' }} />
                             <input
                                 type="email"
-                                placeholder="Email"
+                                placeholder={t('auth.emailPlaceholder')}
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                                 required
@@ -123,7 +123,7 @@ export default function AuthModal({ isOpen, onClose }) {
                             <Lock size={18} style={{ position: 'absolute', top: '14px', left: '12px', color: '#888' }} />
                             <input
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Password"
+                                placeholder={t('auth.passwordPlaceholder')}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 required
@@ -166,7 +166,7 @@ export default function AuthModal({ isOpen, onClose }) {
                                 <Lock size={18} style={{ position: 'absolute', top: '14px', left: '12px', color: '#888' }} />
                                 <input
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Re-enter Password"
+                                    placeholder={t('auth.confirmPasswordPlaceholder')}
                                     value={confirmPassword}
                                     onChange={e => setConfirmPassword(e.target.value)}
                                     required
@@ -178,7 +178,7 @@ export default function AuthModal({ isOpen, onClose }) {
                             </div>
                             {confirmPassword && !passwordsMatch && (
                                 <div style={{ fontSize: '0.8rem', color: 'red', marginTop: '4px' }}>
-                                    Passwords do not match
+                                    {t('auth.passwordMatchError')}
                                 </div>
                             )}
                         </div>
@@ -190,17 +190,17 @@ export default function AuthModal({ isOpen, onClose }) {
                         style={{ width: '100%', marginBottom: '10px', opacity: canSubmit ? 1 : 0.6 }}
                         disabled={!canSubmit}
                     >
-                        {loading ? 'Processing...' : (isLogin ? 'Log In' : 'Sign Up')}
+                        {loading ? t('auth.processing') : (isLogin ? t('auth.login') : t('auth.signup'))}
                     </button>
                 </form>
 
                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
-                    {isLogin ? "Don't have an account? " : "Already have an account? "}
+                    {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
                     <button
                         onClick={() => setIsLogin(!isLogin)}
-                        style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'underline' }}
+                        style={{ color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'underline', marginLeft: '5px' }}
                     >
-                        {isLogin ? 'Sign Up' : 'Log In'}
+                        {isLogin ? t('auth.signup') : t('auth.login')}
                     </button>
                 </p>
             </div>

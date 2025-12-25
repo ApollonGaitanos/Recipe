@@ -37,6 +37,22 @@ const translations = {
             ingredients: "2 cups flour\n1 tsp salt\n...",
             instructions: "1. Preheat oven...\n2. Mix ingredients...",
             tags: "dessert, easy, holiday"
+        },
+        auth: {
+            welcome: "Welcome Back",
+            createAccount: "Create Account",
+            login: "Log In",
+            signup: "Sign Up",
+            processing: "Processing...",
+            emailPlaceholder: "Email",
+            passwordPlaceholder: "Password",
+            confirmPasswordPlaceholder: "Re-enter Password",
+            passwordMatchError: "Passwords do not match",
+            passwordWeakError: "Password is too weak. Add numbers/symbols/length.",
+            emailConfirmAlert: "Check your email to confirm account!",
+            mustBeStronger: "Must be stronger",
+            noAccount: "Don't have an account?",
+            hasAccount: "Already have an account?"
         }
     },
     el: {
@@ -69,6 +85,22 @@ const translations = {
             ingredients: "2 κούπες αλεύρι\n1 κ.γ. αλάτι\n...",
             instructions: "1. Προθερμάνετε τον φούρνο...\n2. Ανακατέψτε τα υλικά...",
             tags: "γλυκό, εύκολο, γιορτινό"
+        },
+        auth: {
+            welcome: "Καλώς Ήρθατε",
+            createAccount: "Δημιουργία Λογαριασμού",
+            login: "Σύνδεση",
+            signup: "Εγγραφή",
+            processing: "Επεξεργασία...",
+            emailPlaceholder: "Email",
+            passwordPlaceholder: "Κωδικός",
+            confirmPasswordPlaceholder: "Επαλήθευση Κωδικού",
+            passwordMatchError: "Οι κωδικοί δεν ταιριάζουν",
+            passwordWeakError: "Ο κωδικός είναι αδύναμος. Προσθέστε αριθμούς/σύμβολα.",
+            emailConfirmAlert: "Ελέγξτε το email σας για επιβεβαίωση!",
+            mustBeStronger: "Πρέπει να είναι πιο ισχυρός",
+            noAccount: "Δεν έχετε λογαριασμό;",
+            hasAccount: "Έχετε ήδη λογαριασμό;"
         }
     }
 };
