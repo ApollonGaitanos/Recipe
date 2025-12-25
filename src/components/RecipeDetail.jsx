@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Edit2, Trash2, Clock, Users } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ArrowLeft, Edit2, Trash2, Clock, Users, Download } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import ConfirmModal from './ConfirmModal';
+import { generateRecipePDF } from '../utils/pdfGenerator';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
     const { recipes, deleteRecipe } = useRecipes();
     const { t } = useLanguage();
     const [showConfirm, setShowConfirm] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const contentRef = useRef(null);
     const recipe = recipes.find(r => r.id === id);
 
     if (!recipe) return null;
@@ -20,6 +23,18 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const handleConfirmDelete = () => {
         deleteRecipe(id);
         onBack();
+    };
+
+    const handleDownload = async () => {
+        if (!contentRef.current) return;
+        setIsDownloading(true);
+        try {
+            await generateRecipePDF(contentRef.current, `${recipe.title}.pdf`);
+        } catch (error) {
+            console.error('PDF Generation failed:', error);
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     return (
@@ -36,6 +51,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <ArrowLeft size={20} /> {t('back')}
                 </button>
                 <div className="detail-actions">
+                    <button
+                        className="btn-icon"
+                        onClick={handleDownload}
+                        title={t('downloadPDF')}
+                        disabled={isDownloading}
+                    >
+                        <Download size={20} />
+                    </button>
                     <button className="btn-icon" onClick={onEdit} title={t('edit')}>
                         <Edit2 size={20} />
                     </button>
@@ -45,7 +68,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 </div>
             </div>
 
-            <div className="detail-content">
+            <div className="detail-content" ref={contentRef}>
                 <h1 className="detail-title">{recipe.title}</h1>
 
                 <div className="detail-meta">
