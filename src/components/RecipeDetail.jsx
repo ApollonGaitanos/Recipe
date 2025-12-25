@@ -51,11 +51,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 <div className="detail-meta">
                     <div className="meta-badge">
                         <Clock size={16} />
-                        <span>{t('prepTime')}: {recipe.prepTime}m</span>
+                        <span>{t('prepTime')}: {recipe.prepTime}{t('minSuffix')}</span>
                     </div>
                     <div className="meta-badge">
                         <Clock size={16} />
-                        <span>{t('cookTime')}: {recipe.cookTime}m</span>
+                        <span>{t('cookTime')}: {recipe.cookTime}{t('minSuffix')}</span>
                     </div>
                     <div className="meta-badge">
                         <Users size={16} />
