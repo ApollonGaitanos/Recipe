@@ -8,14 +8,16 @@ import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, toggleVisibility, toggleLike, hasUserLiked, publicRecipes } = useRecipes();
+    const { recipes, deleteRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
     const { t } = useLanguage();
     const { user } = useAuth();
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
-    const [isLiked, setIsLiked] = useState(false);
+
+    // Sync Like Status
+    const isLiked = checkIsLiked(id);
 
     const contentRef = useRef(null);
 
@@ -25,17 +27,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     if (!recipe) {
         recipe = publicRecipes.find(r => r.id === id);
     }
-
-    // Check like status
-    useEffect(() => {
-        const checkLike = async () => {
-            if (recipe && user) {
-                const liked = await hasUserLiked(recipe.id);
-                setIsLiked(liked);
-            }
-        };
-        checkLike();
-    }, [id, user, recipe]);
 
     if (!recipe) return null;
 
@@ -66,7 +57,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const handleLike = async () => {
         if (!user) return;
         await toggleLike(recipe.id);
-        setIsLiked(!isLiked);
+        // No local state update needed, Context syncs it
     };
 
     return (

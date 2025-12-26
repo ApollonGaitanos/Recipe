@@ -202,8 +202,9 @@ export default function RecipeContext({ children }) {
             updateRecipe,
             deleteRecipe,
             toggleVisibility,
-            toggleLike, // Export
-            hasUserLiked, // Export
+            toggleLike,
+            checkIsLiked, // New synchronous check
+            hasUserLiked, // Keep for backward compat if needed
             loading
         }}>
             {children}
