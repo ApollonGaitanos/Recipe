@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,33 +8,34 @@ import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, toggleVisibility } = useRecipes();
+    const { recipes, deleteRecipe, toggleVisibility, toggleLike, hasUserLiked, publicRecipes } = useRecipes();
     const { t } = useLanguage();
     const { user } = useAuth();
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
 
     const contentRef = useRef(null);
 
-    // Find recipe in recipes (my) or publicRecipes (global)
-    // Actually, useRecipes provides `recipes` and `publicRecipes`. 
-    // But `recipes` state in Context is only "My Recipes". 
-    // If I clicked a public recipe, it might not be in `recipes`.
-    // We need to search both arrays or pass the recipe object directly.
-    // However, RecipeDetail prop is `id`. 
-
-    // Let's get both lists from context
-    const { publicRecipes } = useRecipes();
-
-    // Try finding in both
-    // Note: A recipe might be in both if it's mine and public.
-    // Prefer the one from 'recipes' (my) if available to ensure we have edit rights context.
+    // Logic to find recipe in 'my recipes' or 'public recipes'
+    // Prefer 'recipes' (My Recipes) to ensure edit context if I am the owner
     let recipe = recipes.find(r => r.id === id);
     if (!recipe) {
         recipe = publicRecipes.find(r => r.id === id);
     }
+
+    // Check like status
+    useEffect(() => {
+        const checkLike = async () => {
+            if (recipe && user) {
+                const liked = await hasUserLiked(recipe.id);
+                setIsLiked(liked);
+            }
+        };
+        checkLike();
+    }, [id, user, recipe]);
 
     if (!recipe) return null;
 
@@ -62,6 +63,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         }
     };
 
+    const handleLike = async () => {
+        if (!user) return;
+        await toggleLike(recipe.id);
+        setIsLiked(!isLiked);
+    };
+
     return (
         <div className="recipe-detail">
             <ConfirmModal
@@ -83,6 +90,17 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <ArrowLeft size={20} /> {t('back')}
                 </button>
                 <div className="detail-actions">
+                    {/* Like Button */}
+                    <button
+                        className="btn-icon"
+                        onClick={handleLike}
+                        title={isLiked ? "Unlike" : "Like"}
+                        style={{ color: isLiked ? 'var(--color-primary)' : 'inherit' }}
+                    >
+                        <ChefHat size={20} fill={isLiked ? 'currentColor' : 'none'} />
+                        <span style={{ fontSize: '0.8rem', marginLeft: '4px' }}>{recipe.likes_count || 0}</span>
+                    </button>
+
                     <button
                         className="btn-icon"
                         onClick={handleDownload}
