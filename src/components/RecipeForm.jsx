@@ -118,10 +118,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         </button>
 
                         <button type="button" className="btn-secondary" onClick={onCancel} disabled={isSaving}>
-                            <X size={20} /> {t('cancel')}
+                            <X size={20} /> <span className="hide-mobile">{t('cancel')}</span>
                         </button>
                         <button type="submit" className="btn-primary" disabled={isSaving}>
-                            <Save size={20} /> {t('saveRecipe')}
+                            <Save size={20} /> <span className="hide-mobile">{t('saveRecipe')}</span>
                         </button>
                     </div>
                 </div>
@@ -144,7 +144,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 color: !formData.is_public ? '#fff' : 'inherit'
                             }}
                         >
-                            <Lock size={18} /> {t('visibility.privateBadge')}
+                            <Lock size={18} /> <span className="hide-mobile">{t('visibility.privateBadge')}</span>
                         </button>
                         <button
                             type="button"
@@ -161,7 +161,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 color: formData.is_public ? '#fff' : 'inherit'
                             }}
                         >
-                            <Globe size={18} /> {t('visibility.publicBadge')}
+                            <Globe size={18} /> <span className="hide-mobile">{t('visibility.publicBadge')}</span>
                         </button>
                     </div>
                 </div>

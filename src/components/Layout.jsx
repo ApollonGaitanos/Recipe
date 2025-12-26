@@ -84,8 +84,27 @@ export default function Layout({
                 </div>
             )}
 
-            {/* Top Bar: Settings & toggles */}
+            {/* Top Bar: Logo, Desktop Actions, Mobile Menu */}
             <div className="top-bar">
+                {/* Logo & Title (Now in Top Bar) */}
+                <div
+                    onClick={() => onNavigate('home')}
+                    className="app-branding"
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', marginRight: 'auto' }}
+                >
+                    <div style={{
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        padding: '8px',
+                        borderRadius: '12px',
+                        display: 'flex'
+                    }}>
+                        <ChefHat size={24} />
+                    </div>
+                    {/* Hide Title on very small screens if needed, but usually fits now */}
+                    <h1 className="title" style={{ marginBottom: 0, fontSize: '1.2rem' }}>{t('appTitle')}</h1>
+                </div>
+
                 {/* Desktop Actions */}
                 <div className="desktop-actions">
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -126,53 +145,28 @@ export default function Layout({
                 </div>
             </div>
 
-            {/* Main Header with Navigation */}
-            <header className="main-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                    <div
+            {/* Segmented Navigation Control (Formerly Main Header) */}
+            <header className="main-header" style={{ marginTop: '16px' }}>
+                <div className="nav-segmented-control">
+                    <button
+                        className={`segment-item ${currentView === 'home' ? 'active' : ''}`}
                         onClick={() => onNavigate('home')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            cursor: 'pointer',
-                            userSelect: 'none'
-                        }}
                     >
-                        <div style={{
-                            background: 'var(--color-primary)',
-                            color: 'white',
-                            padding: '8px',
-                            borderRadius: '12px',
-                            display: 'flex'
-                        }}>
-                            <ChefHat size={24} />
-                        </div>
-                        <h1 className="title" style={{ marginBottom: 0 }}>{t('appTitle')}</h1>
-                    </div>
+                        <Globe size={18} />
+                        <span className="nav-text-desktop">{t('visibility.publicFeed')}</span>
+                        <span className="nav-text-mobile">Community</span>
+                    </button>
 
-                    {/* Navigation Tabs */}
-                    <div className="nav-tabs">
+                    {user && (
                         <button
-                            className={`btn-secondary nav-item ${currentView === 'home' ? 'active-nav' : ''}`}
-                            onClick={() => onNavigate('home')}
+                            className={`segment-item ${currentView === 'myRecipes' ? 'active' : ''}`}
+                            onClick={() => onNavigate('myRecipes')}
                         >
-                            <Globe size={18} />
-                            <span className="nav-text-desktop">{t('visibility.publicFeed')}</span>
-                            <span className="nav-text-mobile">Community</span>
+                            <BookOpen size={18} />
+                            <span className="nav-text-desktop">{t('visibility.myRecipes')}</span>
+                            <span className="nav-text-mobile">My Recipes</span>
                         </button>
-
-                        {user && (
-                            <button
-                                className={`btn-secondary nav-item ${currentView === 'myRecipes' ? 'active-nav' : ''}`}
-                                onClick={() => onNavigate('myRecipes')}
-                            >
-                                <BookOpen size={18} />
-                                <span className="nav-text-desktop">{t('visibility.myRecipes')}</span>
-                                <span className="nav-text-mobile">My Recipes</span>
-                            </button>
-                        )}
-                    </div>
+                    )}
                 </div>
             </header>
 
