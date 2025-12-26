@@ -84,29 +84,32 @@ serve(async (req) => {
             }
         }
 
-        const systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source text/image.
-DO NOT act as a creative chef. DO NOT improve the recipe. DO NOT add missing ingredients unless they are explicitly listed.
-DO NOT expand instructions.
+        const systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source, but FORMATTED correctly.
+
+RULES:
+1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
+2. **FORMATTING REPAIR**: You MUST fix broken layout.
+    - If instructions are a single block of text, split them into numbered steps.
+    - If ingredients are a comma-separated list, split them into newlines.
+    - Fix capitalization and spacing.
 
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title from Source",
-  "ingredients": "Exact ingredient line 1\\nExact ingredient line 2",
-  "instructions": "Exact instruction step 1.\\nExact instruction step 2.",
+  "ingredients": "Ingredient 1\\nIngredient 2",
+  "instructions": "1. Step one.\\n2. Step two.",
   "prepTime": 0,
   "cookTime": 0,
   "servings": 0,
-  "tags": "category1, category2"
+  "tags": "tag1, tag2"
 }
 
-IMPORTANT RULES:
-1. **NO HALLUCINATIONS**: If the text is an error page or has no recipe, return exactly {"error": "No recipe content found"}.
-2. **NO ALTERATIONS**: Copy the data exactly. Fix only broken formatting (newlines).
-3. **LANGUAGE LOGIC**:
-   - If Source is **Greek** -> Keep it **Greek**.
-   - If Source is **English** -> Keep it **English**.
-   - If Source is **Mixed** (Greek/English) -> Keep it as is, or normalize to **${targetLanguage || 'English'}** if heavily mixed.
-   - If Source is **Any Other Language** -> Translate it to **${targetLanguage || 'English'}**.
+IMPORTANT:
+- **NO HALLUCINATIONS**: If input has no recipe, return {"error": "No recipe content found"}.
+- **LANGUAGE LOGIC**:
+   - Source is Greek -> Output Greek.
+   - Source is English -> Output English.
+   - Source is Other -> Translate to **${targetLanguage || 'English'}**.
 
 Recipe to extract:`;
 
