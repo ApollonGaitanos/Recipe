@@ -14,6 +14,22 @@ export const parseRecipe = async (input, useAI = false) => {
     // Check if input is a URL
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
     if (urlRegex.test(trimmedInput)) {
+        if (useAI) {
+            try {
+                const aiResult = await extractWithAI({ url: trimmedInput });
+                if (aiResult) {
+                    console.log('✅ URL Extracted with AI');
+                    return aiResult;
+                }
+            } catch (error) {
+                console.warn('AI URL extraction failed, falling back to legacy:', error);
+                // Fallback to legacy is handled below if this fails? 
+                // Actually, if AI fails, we might want to try legacy OR just throw. 
+                // Let's try legacy as fallback for robustness, or throw if user specifically asked for AI.
+                // For now, let's allow fallback but log warning.
+            }
+        }
+
         try {
             return await fetchRecipeFromUrl(trimmedInput);
         } catch (error) {

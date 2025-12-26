@@ -14,27 +14,64 @@ serve(async (req) => {
     }
 
     try {
-        // 2. Input Parsing
-        const { text, imageBase64, imageType } = await req.json()
+        try {
+            // 2. Input Parsing
+            const { text, imageBase64, imageType, url } = await req.json()
 
-        // Validate presence of EITHER text OR image
-        if ((!text || typeof text !== 'string' || text.trim().length < 10) && !imageBase64) {
-            throw new Error('Please provide recipe text (at least 10 chars) or an image.')
-        }
+            // Validate presence of EITHER text OR image OR url
+            if ((!text || typeof text !== 'string' || text.trim().length < 10) && !imageBase64 && !url) {
+                throw new Error('Please provide recipe text, an image, or a URL.')
+            }
 
-        // 3. API Configuration
-        const apiKey = Deno.env.get('GEMINI_API_KEY')
-        if (!apiKey) {
-            throw new Error('Gemini API key not configured')
-        }
+            // 3. API Configuration
+            const apiKey = Deno.env.get('GEMINI_API_KEY')
+            if (!apiKey) {
+                throw new Error('Gemini API key not configured')
+            }
 
-        // Using gemini-2.5-flash-lite as the definitive free-tier model (1,000 req/day).
-        // 'flash' models have restricted quotas (20/day). '2.0-flash' is paid.
-        const MODEL_NAME = 'gemini-2.5-flash-lite';
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+            // Using gemini-2.5-flash-lite as the definitive free-tier model (1,000 req/day).
+            // 'flash' models have restricted quotas (20/day). '2.0-flash' is paid.
+            const MODEL_NAME = 'gemini-2.5-flash-lite';
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
-        // 4. API Request Construction
-        const systemPrompt = `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
+            // 4. Input Processing
+            let processingText = text || '';
+
+            // If URL provided, fetch and scrape text
+            if (url) {
+                console.log(`Fetching URL: ${url}`);
+                try {
+                    const urlResp = await fetch(url, {
+                        headers: { 'User-Agent': 'RecipeBot/1.0' }
+                    });
+                    if (!urlResp.ok) throw new Error(`Failed to fetch URL: ${urlResp.statusText}`);
+
+                    const html = await urlResp.text();
+
+                    // Simple HTML-to-Text cleanup
+                    // 1. Remove scripts and styles
+                    let cleanHtml = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                        .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
+
+                    // 2. Remove tags (keep newlines)
+                    // Replace block elements with newlines to preserve structure
+                    cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
+                    // Remove all other tags
+                    processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+                    // Truncate if too long (Gemini 2.5 Flash-Lite has large context, but let's be safe ~30k chars)
+                    if (processingText.length > 30000) {
+                        processingText = processingText.substring(0, 30000);
+                    }
+
+                    console.log(`Extracted ${processingText.length} chars from URL.`);
+
+                } catch (fetchErr) {
+                    throw new Error(`URL Processing Failed: ${fetchErr.message}`);
+                }
+            }
+
+            const systemPrompt = `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -58,107 +95,107 @@ IMPORTANT FORMATTING RULES:
 
 Recipe to format:`;
 
-        const parts = [{ text: systemPrompt }];
+            const parts = [{ text: systemPrompt }];
 
-        // Add User Text if provided
-        if (text) {
-            parts.push({ text: `\n\n${text}` });
-        }
+            // Add User Text if provided
+            if (text) {
+                parts.push({ text: `\n\n${text}` });
+            }
 
-        // Add Image if provided
-        if (imageBase64) {
-            parts.push({
-                inlineData: {
-                    mimeType: imageType || "image/jpeg",
-                    data: imageBase64
+            // Add Image if provided
+            if (imageBase64) {
+                parts.push({
+                    inlineData: {
+                        mimeType: imageType || "image/jpeg",
+                        data: imageBase64
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ parts }],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 4096,
+                    responseMimeType: "application/json"
+                }
+            };
+
+
+            // 5. API Call
+            console.log(`Sending request to ${MODEL_NAME}...`);
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
+                body: JSON.stringify(payload)
+            });
+
+            // 6. Error Handling
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Gemini API Error:', response.status, errorText);
+                throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            // 7. Response Parsing
+            const candidate = data.candidates?.[0];
+            if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
+                console.error('Invalid Gemini Response:', JSON.stringify(data));
+                throw new Error(`Gemini returned an empty or invalid response. Raw data: ${JSON.stringify(data)}`);
+            }
+
+            let aiText = candidate.content.parts[0].text.trim();
+
+            // Extract JSON using regex from first { to last }
+            const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                console.error('No JSON found in response:', aiText);
+                throw new Error(`AI response did not contain valid JSON structure. Raw output: ${aiText.substring(0, 500)}...`);
+            }
+
+            const jsonString = jsonMatch[0];
+
+            let recipeData;
+            try {
+                recipeData = JSON.parse(jsonString);
+            } catch (e) {
+                console.error('JSON Parse Error. Raw text:', jsonString);
+                throw new Error(`Failed to parse AI response as JSON. Raw output: ${jsonString.substring(0, 500)}...`);
+            }
+
+            // validate minimal structure
+            if (!recipeData.title) {
+                throw new Error('AI response missing title');
+            }
+
+            // 8. Success Response
+            return new Response(JSON.stringify({
+                ...recipeData,
+                prepTime: parseInt(recipeData.prepTime) || 0,
+                cookTime: parseInt(recipeData.cookTime) || 0,
+                servings: parseInt(recipeData.servings) || 0,
+            }), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+
+        } catch (error) {
+            console.error('Edge Function Error:', error.message);
+            return new Response(JSON.stringify({
+                error: error.message || 'Internal Server Error'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
                 }
             });
         }
-
-        const payload = {
-            contents: [{ parts }],
-            generationConfig: {
-                temperature: 0.2,
-                maxOutputTokens: 4096,
-                responseMimeType: "application/json"
-            }
-        };
-
-
-        // 5. API Call
-        console.log(`Sending request to ${MODEL_NAME}...`);
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify(payload)
-        });
-
-        // 6. Error Handling
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error:', response.status, errorText);
-            throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
-        }
-
-        const data = await response.json();
-
-        // 7. Response Parsing
-        const candidate = data.candidates?.[0];
-        if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
-            console.error('Invalid Gemini Response:', JSON.stringify(data));
-            throw new Error(`Gemini returned an empty or invalid response. Raw data: ${JSON.stringify(data)}`);
-        }
-
-        let aiText = candidate.content.parts[0].text.trim();
-
-        // Extract JSON using regex from first { to last }
-        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            console.error('No JSON found in response:', aiText);
-            throw new Error(`AI response did not contain valid JSON structure. Raw output: ${aiText.substring(0, 500)}...`);
-        }
-
-        const jsonString = jsonMatch[0];
-
-        let recipeData;
-        try {
-            recipeData = JSON.parse(jsonString);
-        } catch (e) {
-            console.error('JSON Parse Error. Raw text:', jsonString);
-            throw new Error(`Failed to parse AI response as JSON. Raw output: ${jsonString.substring(0, 500)}...`);
-        }
-
-        // validate minimal structure
-        if (!recipeData.title) {
-            throw new Error('AI response missing title');
-        }
-
-        // 8. Success Response
-        return new Response(JSON.stringify({
-            ...recipeData,
-            prepTime: parseInt(recipeData.prepTime) || 0,
-            cookTime: parseInt(recipeData.cookTime) || 0,
-            servings: parseInt(recipeData.servings) || 0,
-        }), {
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-
-    } catch (error) {
-        console.error('Edge Function Error:', error.message);
-        return new Response(JSON.stringify({
-            error: error.message || 'Internal Server Error'
-        }), {
-            status: 400,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-    }
-});
+    });
