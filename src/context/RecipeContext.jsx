@@ -102,7 +102,6 @@ export default function RecipeContext({ children }) {
         load();
 
         // Helper to fetch valid full recipe data on event
-        // This avoids issues with partial updates or missing columns in Realtime payload
         const handleRealtimeEvent = async (id, eventType) => {
             if (eventType === 'DELETE') {
                 // Instant local removal
@@ -118,7 +117,17 @@ export default function RecipeContext({ children }) {
                 .eq('id', id)
                 .single();
 
-            if (!error && data) {
+            // CRITICAL FIX: If fetch fails (e.g. RLS hides it because it's now private), treat as DELETION.
+            if (error || !data) {
+                setPublicRecipes(prev => prev.filter(r => r.id !== id));
+                // Also ensure it's removed from 'recipes' if I can't see it (though usually owner can see private)
+                // This safety check ensures "ghost" recipes don't stick around.
+                setRecipes(prev => prev.filter(r => r.id !== id));
+                return;
+            }
+
+            // If we found data, proceed to Update/Add
+            if (data) {
                 const appRecipe = toAppRecipe(data);
 
                 // Update Public Feed
@@ -130,13 +139,12 @@ export default function RecipeContext({ children }) {
                             ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
                             : [appRecipe, ...prev];
                     } else {
-                        // Remove if it became private
+                        // Remove if it became private (Double safety, though fetch usually fails if private)
                         return prev.filter(r => r.id !== appRecipe.id);
                     }
                 });
 
                 // Update My Recipes
-                // Only if I own it (verified by appRecipe.user_id matching user.id)
                 if (user && appRecipe.user_id === user.id) {
                     setRecipes(prev => {
                         const exists = prev.find(r => r.id === appRecipe.id);
@@ -177,7 +185,6 @@ export default function RecipeContext({ children }) {
                 .from('recipes')
                 .insert([newDbRecipe])
                 .select();
-            // No local update needed, Realtime+Fetch handles it
         }
     };
 
