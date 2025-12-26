@@ -119,9 +119,18 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
             </div>
 
             <div className="detail-content" ref={contentRef}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h1 className="detail-title">{recipe.title}</h1>
-                    {/* Static Badge in Title Area */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ flex: 1 }}>
+                        <h1 className="detail-title" style={{ display: 'inline', marginRight: '10px' }}>{recipe.title}</h1>
+                        {/* Author Name */}
+                        {recipe.is_public && recipe.author_username && (
+                            <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 500 }}>
+                                by {recipe.author_username}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Static Badge */}
                     {recipe.is_public && (
                         <span style={{ fontSize: '0.8rem', background: '#dbeafe', color: '#2563eb', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', height: 'fit-content', marginTop: '8px' }}>
                             <Globe size={12} /> {t('visibility.publicBadge')}
