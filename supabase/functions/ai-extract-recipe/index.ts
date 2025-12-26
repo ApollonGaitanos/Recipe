@@ -88,16 +88,16 @@ serve(async (req) => {
 
 RULES:
 1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
-2. **FORMATTING REPAIR**:
-    - **Instructions**: Return as an **ARRAY** of strings. One string per step. **DO NOT NUMBER THEM.**
-    - **Ingredients**: Return as an **ARRAY** of strings. One string per ingredient. **DO NOT USE BULLETS.**
-    - Fix capitalization and spacing.
+2. **FORMATTING REPAIR (AGGRESSIVE)**:
+    - **Instructions**: **SPLIT BLOCKS OF TEXT.** If a paragraph contains multiple steps (e.g. "Mix flour. Then add sugar."), you MUST split them into separate strings in the array.
+    - **Ingredients**: Split into a clean list of strings.
+    - **DO NOT NUMBER** the output strings.
 
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title from Source",
   "ingredients": ["Ingredient 1", "Ingredient 2"],
-  "instructions": ["Step one.", "Step two.", "Step three."],
+  "instructions": ["Step one.", "Step two.", "Step three (was stuck to step two)."],
   "prepTime": 0,
   "cookTime": 0,
   "servings": 0,
