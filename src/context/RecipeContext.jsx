@@ -25,12 +25,14 @@ export default function RecipeContext({ children }) {
         cookTime: dbRecipe.cook_time,
         servings: dbRecipe.servings,
         tags: dbRecipe.tags || [],
-        is_public: dbRecipe.is_public, // Add is_public
-        user_id: dbRecipe.user_id, // Add user_id for ownership check
+        is_public: dbRecipe.is_public,
+        user_id: dbRecipe.user_id,
+        author_username: dbRecipe.author_username, // New
+        likes_count: dbRecipe.likes_count || 0,   // New
         createdAt: dbRecipe.created_at
     });
 
-    const toDbRecipe = (appRecipe, userId) => ({
+    const toDbRecipe = (appRecipe, userId, username) => ({
         user_id: userId,
         title: appRecipe.title,
         ingredients: appRecipe.ingredients,
@@ -39,7 +41,8 @@ export default function RecipeContext({ children }) {
         cook_time: appRecipe.cookTime,
         servings: appRecipe.servings,
         tags: appRecipe.tags,
-        is_public: appRecipe.is_public || false
+        is_public: appRecipe.is_public || false,
+        author_username: username // New
     });
 
     // Fetch My Recipes
@@ -84,7 +87,9 @@ export default function RecipeContext({ children }) {
 
     const addRecipe = async (recipe) => {
         if (user) {
-            const newDbRecipe = toDbRecipe(recipe, user.id);
+            // Get username from metadata or email
+            const username = user.user_metadata?.full_name || user.email.split('@')[0];
+            const newDbRecipe = toDbRecipe(recipe, user.id, username);
             const { data, error } = await supabase
                 .from('recipes')
                 .insert([newDbRecipe])
@@ -141,14 +146,60 @@ export default function RecipeContext({ children }) {
         await updateRecipe(id, { is_public: !isPublic });
     };
 
+    // New: Handle Likes
+    const toggleLike = async (recipeId) => {
+        if (!user) return; // Must be logged in
+
+        try {
+            // 1. Check if liked
+            const { data: existingLike, error: checkError } = await supabase
+                .from('likes')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('recipe_id', recipeId)
+                .single();
+
+            if (existingLike) {
+                // UNLIKE
+                await supabase.from('likes').delete().eq('user_id', user.id).eq('recipe_id', recipeId);
+                // Trigger handles count update, but let's refresh local state optimistically or re-fetch
+            } else {
+                // LIKE
+                await supabase.from('likes').insert([{ user_id: user.id, recipe_id: recipeId }]);
+            }
+
+            // Re-fetch public recipes to get updated counts
+            // (A bit aggressive but ensures accuracy without complex local state mgmt for now)
+            await fetchPublicRecipes();
+            await fetchRecipes(); // Also my recipes just in case
+
+        } catch (err) {
+            console.error("Like toggle failed", err);
+        }
+    };
+
+    // Check if current user likes a recipe
+    const hasUserLiked = async (recipeId) => {
+        if (!user) return false;
+        const { data } = await supabase
+            .from('likes')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('recipe_id', recipeId)
+            .maybeSingle(); // Safe for no rows
+        return !!data;
+    };
+
     return (
         <RecipeContextData.Provider value={{
             recipes,
-            publicRecipes, // Export publicRecipes
+            publicRecipes,
             addRecipe,
             updateRecipe,
             deleteRecipe,
-            toggleVisibility, // Export toggleVisibility
+            toggleVisibility,
+            toggleLike, // Export
+            hasUserLiked, // Export
             loading
         }}>
             {children}

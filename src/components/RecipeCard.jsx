@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Users, Globe, Lock } from 'lucide-react';
+import { Clock, Users, Globe, Lock, ChefHat } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
