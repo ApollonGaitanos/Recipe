@@ -82,15 +82,26 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 </button>
                 <div className="detail-actions">
                     {/* Like Button */}
-                    <button
-                        className="btn-icon"
-                        onClick={handleLike}
-                        title={isLiked ? "Unlike" : "Like"}
-                        style={{ color: isLiked ? 'var(--color-primary)' : 'inherit' }}
-                    >
-                        <ChefHat size={20} fill={isLiked ? 'currentColor' : 'none'} />
-                        <span style={{ fontSize: '0.8rem', marginLeft: '4px' }}>{recipe.likes_count || 0}</span>
-                    </button>
+                    {/* Like Button & Count */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginRight: '6px' }}>
+                        <button
+                            className="btn-icon"
+                            onClick={handleLike}
+                            title={isLiked ? "Unlike" : "Like"}
+                            style={{
+                                color: isLiked ? 'var(--color-primary)' : '#888',
+                                width: '44px',
+                                height: '44px',
+                                background: isLiked ? '#fdf2f8' : 'transparent',
+                                border: isLiked ? '1px solid #fbcfe8' : 'none'
+                            }}
+                        >
+                            <ChefHat size={28} fill={isLiked ? 'currentColor' : 'none'} strokeWidth={1.5} />
+                        </button>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666' }}>
+                            {recipe.likes_count || 0}
+                        </span>
+                    </div>
 
                     <button
                         className="btn-icon"

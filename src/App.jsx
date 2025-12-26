@@ -30,17 +30,26 @@ function AppContent() {
   // --- VIEW HELPERS ---
 
   const goToList = (type) => {
-    setView({ mode: 'LIST', data: null });
+    const nextView = { mode: 'LIST', data: null };
+    const nextListType = type || listType;
+
+    setView(nextView);
     if (type) setListType(type);
     setSearchQuery('');
+
+    window.history.pushState({ view: nextView, listType: nextListType }, "");
   };
 
   const goToDetail = (recipe) => {
-    setView({ mode: 'DETAIL', data: { id: recipe.id } });
+    const nextView = { mode: 'DETAIL', data: { id: recipe.id } };
+    setView(nextView);
+    window.history.pushState({ view: nextView, listType }, "");
   };
 
   const goToForm = (id = null) => {
-    setView({ mode: 'FORM', data: { id } });
+    const nextView = { mode: 'FORM', data: { id } };
+    setView(nextView);
+    window.history.pushState({ view: nextView, listType }, "");
   };
 
   // Calculate display recipes based on listType
@@ -54,6 +63,23 @@ function AppContent() {
       setListType('public');
     }
   }, [user, authLoading, listType]);
+
+  // --- HISTORY HANDLING ---
+  // Handle Browser Back Button
+  useEffect(() => {
+    // Initial State replacement to ensure we have a base
+    window.history.replaceState({ view: { mode: 'LIST', data: null }, listType: 'public' }, "");
+
+    const handlePopState = (event) => {
+      if (event.state && event.state.view) {
+        setView(event.state.view);
+        if (event.state.listType) setListType(event.state.listType);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // --- SEARCH LOGIC ---
 
