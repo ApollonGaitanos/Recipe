@@ -19,16 +19,16 @@ export default function RecipeContext({ children }) {
     // Helpers to convert between App (camelCase) and DB (snake_case)
     const toAppRecipe = (dbRecipe) => ({
         id: dbRecipe.id,
-        title: dbRecipe.title,
-        ingredients: dbRecipe.ingredients,
-        instructions: dbRecipe.instructions,
-        prepTime: dbRecipe.prep_time,
-        cookTime: dbRecipe.cook_time,
-        servings: dbRecipe.servings,
+        title: dbRecipe.title || '',
+        ingredients: dbRecipe.ingredients || '',
+        instructions: dbRecipe.instructions || '',
+        prepTime: dbRecipe.prep_time || 0,
+        cookTime: dbRecipe.cook_time || 0,
+        servings: dbRecipe.servings || 0,
         tags: dbRecipe.tags || [],
-        is_public: dbRecipe.is_public,
+        is_public: !!dbRecipe.is_public,
         user_id: dbRecipe.user_id,
-        author_username: dbRecipe.author_username,
+        author_username: dbRecipe.author_username || '',
         likes_count: dbRecipe.likes_count || 0,
         createdAt: dbRecipe.created_at
     });
@@ -101,52 +101,64 @@ export default function RecipeContext({ children }) {
         };
         load();
 
-        // Real-time Subscription for All Recipe Changes
+        // Helper to fetch valid full recipe data on event
+        // This avoids issues with partial updates or missing columns in Realtime payload
+        const handleRealtimeEvent = async (id, eventType) => {
+            if (eventType === 'DELETE') {
+                // Instant local removal
+                setPublicRecipes(prev => prev.filter(r => r.id !== id));
+                setRecipes(prev => prev.filter(r => r.id !== id));
+                return;
+            }
+
+            // For INSERT/UPDATE, fetch fresh valid data
+            const { data, error } = await supabase
+                .from('recipes')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (!error && data) {
+                const appRecipe = toAppRecipe(data);
+
+                // Update Public Feed
+                setPublicRecipes(prev => {
+                    const exists = prev.find(r => r.id === appRecipe.id);
+                    if (appRecipe.is_public) {
+                        // Update existing or Add new
+                        return exists
+                            ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
+                            : [appRecipe, ...prev];
+                    } else {
+                        // Remove if it became private
+                        return prev.filter(r => r.id !== appRecipe.id);
+                    }
+                });
+
+                // Update My Recipes
+                // Only if I own it (verified by appRecipe.user_id matching user.id)
+                if (user && appRecipe.user_id === user.id) {
+                    setRecipes(prev => {
+                        const exists = prev.find(r => r.id === appRecipe.id);
+                        return exists
+                            ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
+                            : [appRecipe, ...prev];
+                    });
+                }
+            }
+        };
+
         const channel = supabase
             .channel('public:recipes')
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'recipes' },
                 (payload) => {
-                    const { eventType, new: newRecord, old: oldRecord } = payload;
-
-                    if (eventType === 'INSERT') {
-                        const appRecipe = toAppRecipe(newRecord);
-                        // Add to Public Feed if public
-                        if (appRecipe.is_public) {
-                            setPublicRecipes(prev => [appRecipe, ...prev]);
-                        }
-                        // Add to My Recipes if owned by current user
-                        if (user && appRecipe.user_id === user.id) {
-                            setRecipes(prev => [appRecipe, ...prev]);
-                        }
-                    }
-                    else if (eventType === 'DELETE') {
-                        // Remove from both lists
-                        setPublicRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
-                        setRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
-                    }
-                    else if (eventType === 'UPDATE') {
-                        const appRecipe = toAppRecipe(newRecord);
-
-                        // Handle Public Feed Logic
-                        setPublicRecipes(prev => {
-                            const exists = prev.find(r => r.id === appRecipe.id);
-                            if (appRecipe.is_public) {
-                                // If already exists, update it. If not, add it (previously private or new).
-                                return exists
-                                    ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
-                                    : [appRecipe, ...prev];
-                            } else {
-                                // If it was public but now private (or still private), remove/ensure filtered.
-                                return prev.filter(r => r.id !== appRecipe.id);
-                            }
-                        });
-
-                        // Handle My Recipes Logic
-                        if (user && appRecipe.user_id === user.id) {
-                            setRecipes(prev => prev.map(r => r.id === appRecipe.id ? appRecipe : r));
-                        }
+                    // Trigger fetch-based update
+                    // Use new.id or old.id depending on event
+                    const targetId = payload.new?.id || payload.old?.id;
+                    if (targetId) {
+                        handleRealtimeEvent(targetId, payload.eventType);
                     }
                 }
             )
@@ -159,20 +171,13 @@ export default function RecipeContext({ children }) {
 
     const addRecipe = async (recipe) => {
         if (user) {
-            // Get username priority: metadata.username (SignUp) -> metadata.full_name -> email prefix
             const username = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             const newDbRecipe = toDbRecipe(recipe, user.id, username);
             const { data, error } = await supabase
                 .from('recipes')
                 .insert([newDbRecipe])
                 .select();
-
-            if (!error && data) {
-                // No local update needed if Realtime is working, but harmless to keep for responsiveness if offline/slow
-                // Actually, let's trust Realtime to avoid dupes or handle ID match
-                // For now, removing local optimist update to prevent duplicates if insert event arrives fast
-                // setRecipes(prev => [toAppRecipe(data[0]), ...prev]); 
-            }
+            // No local update needed, Realtime+Fetch handles it
         }
     };
 
@@ -186,10 +191,8 @@ export default function RecipeContext({ children }) {
             if (updatedData.cookTime) dbUpdates.cook_time = updatedData.cookTime;
             if (updatedData.servings) dbUpdates.servings = updatedData.servings;
             if (updatedData.tags) dbUpdates.tags = updatedData.tags;
-            // Explicitly handle is_public updates if passed
             if (updatedData.is_public !== undefined) dbUpdates.is_public = updatedData.is_public;
 
-            // Always update author_username to current one (fixes old recipes)
             const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             dbUpdates.author_username = currentUsername;
 
@@ -197,8 +200,6 @@ export default function RecipeContext({ children }) {
                 .from('recipes')
                 .update(dbUpdates)
                 .eq('id', id);
-
-            // No local refresh needed, Realtime handles it.
         }
     };
 
@@ -216,11 +217,10 @@ export default function RecipeContext({ children }) {
         await updateRecipe(id, { is_public: !isPublic });
     };
 
-    // Toggle Like with Sync
     const toggleLike = async (recipeId) => {
-        if (!user) return; // Must be logged in
+        if (!user) return;
 
-        // Optimistic Update for UserLikes Set (instant UI feedback for "Is Liked")
+        // Optimistic Update for UserLikes Set
         const isLiked = userLikes.has(recipeId);
         setUserLikes(prev => {
             const next = new Set(prev);
@@ -231,13 +231,10 @@ export default function RecipeContext({ children }) {
 
         try {
             if (isLiked) {
-                // UNLIKE
                 await supabase.from('likes').delete().eq('user_id', user.id).eq('recipe_id', recipeId);
             } else {
-                // LIKE
                 await supabase.from('likes').insert([{ user_id: user.id, recipe_id: recipeId }]);
             }
-            // Realtime trigger will update the count locally via the subscription
         } catch (err) {
             console.error("Like toggle failed", err);
             // Revert on error
@@ -250,10 +247,8 @@ export default function RecipeContext({ children }) {
         }
     };
 
-    // Synchronous Check (Fast)
     const checkIsLiked = (recipeId) => userLikes.has(recipeId);
 
-    // Asynchronous Check (Legacy/Backup)
     const hasUserLiked = async (recipeId) => {
         return userLikes.has(recipeId);
     };
