@@ -37,26 +37,36 @@ serve(async (req) => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Extract recipe data from this text and return ONLY valid JSON with this exact structure:
+                            text: `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
+
+Return ONLY valid JSON with this exact structure:
 {
-  "title": "Recipe Title",
-  "ingredients": "ingredient 1\\ningredient 2\\ningredient 3",
-  "instructions": "step 1\\nstep 2\\nstep 3",
+  "title": "Professional Recipe Title",
+  "ingredients": "2 cups all-purpose flour\\n1 cup granulated sugar\\n1/2 cup cocoa powder",
+  "instructions": "Preheat oven to 350°F (175°C).\\nMix all dry ingredients in a large bowl.\\nBake for 30-35 minutes.",
   "prepTime": 15,
   "cookTime": 30,
-  "servings": 4,
-  "tags": "dinner, italian"
+  "servings": 8,
+  "tags": "dessert, chocolate, cake"
 }
 
-Rules:
-- ingredients: newline-separated list
-- instructions: newline-separated steps
-- prepTime/cookTime: numbers in minutes (0 if not mentioned)
-- servings: number (0 if not mentioned)
-- tags: comma-separated categories
-- Return ONLY the JSON, no markdown, no explanation
+IMPORTANT FORMATTING RULES:
+1. **Title**: Make it proper and appetizing (capitalize properly)
+2. **Ingredients**: 
+   - One ingredient per line (use \\n)
+   - Use standard measurements (cups, tbsp, tsp, grams)
+   - Remove casual language ("like", "some", "maybe")
+   - Format: "2 cups flour" not "you need like 2 cups of flour"
+3. **Instructions**:
+   - One clear step per line (use \\n)
+   - Start each step with a verb (Preheat, Mix, Pour, Bake)
+   - Remove casual language ("real good", "just", "kinda")
+   - Be specific with temperatures and times
+4. **Times**: Extract in minutes (0 if not mentioned)
+5. **Servings**: Extract as number (0 if not mentioned)
+6. **Tags**: Add relevant categories (cuisine, meal type, main ingredient)
 
-Recipe text:
+Recipe text to format:
 ${text}`
                         }]
                     }],
