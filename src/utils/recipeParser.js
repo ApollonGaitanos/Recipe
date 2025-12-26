@@ -211,6 +211,20 @@ const parseRecipeFromText = (text) => {
         result.instructions = rawInst.join('\n');
     }
 
+    // --- 6. Fallback: If no sections detected, intelligently split ---
+    if (!result.ingredients && !result.instructions && lines.length > 2) {
+        // Skip the title line
+        const startIdx = result.title ? 1 : 0;
+        const contentLines = lines.slice(startIdx);
+
+        // Simple heuristic: Split at roughly the middle
+        // Ingredients tend to be in the first half, instructions in the second
+        const midpoint = Math.floor(contentLines.length / 2);
+
+        result.ingredients = contentLines.slice(0, midpoint).join('\n');
+        result.instructions = contentLines.slice(midpoint).join('\n');
+    }
+
     return result;
 };
 
