@@ -27,12 +27,12 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
 
                     {/* Visibility Badge - Visual only */}
                     {recipe.is_public ? (
-                        <span style={{ fontSize: '0.7rem', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                             <Globe size={10} /> {t('visibility.publicBadge')}
                         </span>
                     ) : (
                         isOwner && (
-                            <span style={{ fontSize: '0.7rem', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                            <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                                 <Lock size={10} /> {t('visibility.privateBadge')}
                             </span>
                         )
