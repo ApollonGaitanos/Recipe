@@ -85,7 +85,9 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         } catch (error) {
             console.error("Magic Import Error:", error);
-            alert(`Failed to parse: ${error.message || 'Unknown error'}`);
+            // Enhanced error display for mobile debugging
+            const errorMsg = error.message || JSON.stringify(error, Object.getOwnPropertyNames(error));
+            alert(`Failed to parse: ${errorMsg}`);
             setIsParsing(false);
             setScanProgress(0);
         }
@@ -100,8 +102,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024;
-                    const MAX_HEIGHT = 1024;
+                    const MAX_WIDTH = 800;
+                    const MAX_HEIGHT = 800;
                     let width = img.width;
                     let height = img.height;
 
@@ -122,8 +124,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Export as JPEG with 0.7 quality
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    // Export as JPEG with 0.6 quality (Aggressive optimization)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                     // Remove prefix
                     resolve(dataUrl.split(',')[1]);
                 };
@@ -162,7 +164,9 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         <div className="modal-icon-container" style={{ background: '#f5d0fe', color: '#c026d3', width: '36px', height: '36px', margin: 0 }}>
                             <Sparkles size={18} />
                         </div>
-                        <h3 className="modal-title" style={{ margin: 0, fontSize: '1.1rem' }}>{t('magicImport.title')}</h3>
+                        <h3 className="modal-title" style={{ margin: 0, fontSize: '1.1rem' }}>
+                            {t('magicImport.title')} <span style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: 'normal' }}>(v1.1 Beta)</span>
+                        </h3>
                     </div>
                     <button className="modal-close" onClick={onClose} style={{ position: 'static' }}>
                         <X size={20} />
