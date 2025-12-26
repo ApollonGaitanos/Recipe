@@ -12,9 +12,8 @@ export const recognizeText = async (imageFile, onProgress = () => { }) => {
     try {
         const worker = await Tesseract.createWorker({
             logger: m => {
-                if (m.status === 'recognizing text') {
-                    onProgress(m.progress);
-                }
+                // Pass both status and progress
+                onProgress({ status: m.status, progress: m.progress || 0 });
             }
         });
 

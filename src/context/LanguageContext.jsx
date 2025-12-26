@@ -76,7 +76,10 @@ const translations = {
             imageButton: "Choose Image or Take Photo",
             button: "Magic Import",
             parsing: "Processing...",
-            scanning: "Scanning Image..."
+            scanning: "Scanning Text...",
+            statusCore: "Loading OCR Core...",
+            statusDownload: "Downloading Language Data...",
+            statusInit: "Initializing Engine..."
         }
     },
     el: {
@@ -148,7 +151,10 @@ const translations = {
             imageButton: "Επιλογή Εικόνας ή Φωτογραφία",
             button: "Αυτόματη Δημιουργία",
             parsing: "Επεξεργασία...",
-            scanning: "Σάρωση Εικόνας..."
+            scanning: "Σάρωση Κειμένου...",
+            statusCore: "Φόρτωση Μηχανής...",
+            statusDownload: "Λήψη Δεδομένων Γλώσσας...",
+            statusInit: "Αρχικοποίηση..."
         }
     }
 };
