@@ -69,6 +69,7 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
                         className="like-btn-hover"
                     >
                         <ChefHat size={16} color={isLiked ? 'var(--color-primary)' : '#666'} fill={isLiked ? 'var(--color-primary)' : 'none'} />
+                        <span style={{ fontSize: '0.8rem', marginLeft: '2px', color: isLiked ? 'var(--color-primary)' : '#666' }}>{recipe.likes_count || 0}</span>
                     </div>
 
                     {/* Author Name */}
