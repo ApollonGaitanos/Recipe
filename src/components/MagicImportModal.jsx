@@ -11,65 +11,71 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [useAI, setUseAI] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const galleryRef = useRef(null);
-    const cameraRef = useRef(null);
+
+    // Image State
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const fileInputRef = useRef(null);
 
     if (!isOpen) return null;
 
-    const handleParse = async () => {
-        const inputToUse = urlValue.trim() ? urlValue : textValue;
-        if (!inputToUse.trim()) return;
-
-        setIsParsing(true);
-        try {
-            const result = await parseRecipe(inputToUse, useAI);
-            onImport(result);
-            resetAndClose();
-        } catch (error) {
-            console.error("Magic Import Error:", error);
-            alert(`Failed to parse recipe: ${error.message || 'Unknown error'}. Please try entering the text manually.`);
-            setIsParsing(false);
-        }
-    };
-
-    const handleImageUpload = async (e) => {
+    const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Clear other inputs
+        // Reset other inputs
         setUrlValue('');
         setTextValue('');
+
+        // Create Preview
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        setSelectedImage(file);
+    };
+
+    const handleRemoveImage = () => {
+        setPreviewUrl(null);
+        setSelectedImage(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleParse = async () => {
         setIsParsing(true);
         setScanProgress(0);
 
         try {
-            if (useAI) {
-                // AI Mode: Convert to Base64 and send directly
-                setScanProgress(50); // Fake progress for conversion
-                const base64 = await fileToBase64(file);
-                const result = await parseRecipe({ imageBase64: base64, imageType: file.type || 'image/jpeg' }, true);
-                onImport(result);
-                resetAndClose();
-            } else {
-                // Local OCR Mode (Legacy)
-                // 1. OCR Scan
-                const text = await recognizeText(file, (progress) => {
-                    setScanProgress(Math.round(progress * 100));
-                });
-
-                // 2. Parse the extracted text
-                const result = await parseRecipe(text, false);
-                onImport(result);
-                resetAndClose();
+            // Priority 1: Image
+            if (selectedImage) {
+                if (useAI) {
+                    setScanProgress(10); // Start
+                    const base64 = await fileToBase64(selectedImage);
+                    setScanProgress(40); // Uploading
+                    const result = await parseRecipe({ imageBase64: base64, imageType: selectedImage.type || 'image/jpeg' }, true);
+                    onImport(result);
+                    resetAndClose();
+                } else {
+                    // Legacy OCR
+                    const text = await recognizeText(selectedImage, p => setScanProgress(Math.round(p * 100)));
+                    const result = await parseRecipe(text, false);
+                    onImport(result);
+                    resetAndClose();
+                }
+                return;
             }
+
+            // Priority 2: Text/URL
+            const inputToUse = urlValue.trim() ? urlValue : textValue;
+            if (!inputToUse.trim()) return;
+
+            const result = await parseRecipe(inputToUse, useAI);
+            onImport(result);
+            resetAndClose();
+
         } catch (error) {
-            console.error("Image Import Failed:", error);
-            alert("Could not process image. " + (error.message || "Please try a clearer photo."));
-        } finally {
+            console.error("Magic Import Error:", error);
+            alert(`Failed to parse: ${error.message || 'Unknown error'}`);
             setIsParsing(false);
             setScanProgress(0);
-            if (galleryRef.current) galleryRef.current.value = '';
-            if (cameraRef.current) cameraRef.current.value = '';
         }
     };
 
@@ -77,11 +83,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => {
-                // Remove the data URL prefix (e.g. "data:image/jpeg;base64,")
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            };
+            reader.onload = () => resolve(reader.result.split(',')[1]);
             reader.onerror = error => reject(error);
         });
     };
@@ -89,129 +91,155 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const resetAndClose = () => {
         setUrlValue('');
         setTextValue('');
+        setPreviewUrl(null);
+        setSelectedImage(null);
         onClose();
     };
 
-    const hasInput = urlValue.trim().length > 0 || textValue.trim().length > 0;
+    const hasInput = urlValue.trim().length > 0 || textValue.trim().length > 0 || selectedImage;
 
     return (
         <div className="modal-overlay active" onClick={onClose}>
-            <div className="modal-content active" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', padding: '0', overflow: 'hidden' }}>
+            <div className="modal-content active" onClick={e => e.stopPropagation()}
+                style={{
+                    width: '90%',
+                    maxWidth: '500px',
+                    padding: '0',
+                    overflow: 'hidden',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
 
                 {/* Header */}
-                <div style={{ padding: '20px', paddingBottom: '0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f3f3' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="modal-icon-container" style={{ background: '#f5d0fe', color: '#c026d3', width: '40px', height: '40px', margin: 0 }}>
-                            <Sparkles size={20} />
+                        <div className="modal-icon-container" style={{ background: '#f5d0fe', color: '#c026d3', width: '36px', height: '36px', margin: 0 }}>
+                            <Sparkles size={18} />
                         </div>
-                        <h3 className="modal-title" style={{ margin: 0 }}>{t('magicImport.title')}</h3>
+                        <h3 className="modal-title" style={{ margin: 0, fontSize: '1.1rem' }}>{t('magicImport.title')}</h3>
                     </div>
                     <button className="modal-close" onClick={onClose} style={{ position: 'static' }}>
                         <X size={20} />
                     </button>
                 </div>
 
-                <p style={{ padding: '0 20px', marginTop: '10px', color: '#666', fontSize: '0.95rem' }}>
-                    {t('magicImport.description')}
-                </p>
+                {/* Content - Scrollable */}
+                <div style={{ padding: '20px', overflowY: 'auto' }}>
 
-                {/* Content */}
-                <div style={{ padding: '20px' }}>
+                    <p style={{ marginTop: 0, marginBottom: '20px', color: '#666', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                        {t('magicImport.description')}
+                    </p>
 
-                    {/* Option 1: URL */}
-                    <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
-                            {t('magicImport.labelUrl')}
+                    {/* Image Selection Area */}
+                    <div className="form-group" style={{ marginBottom: '20px' }}>
+                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '8px', display: 'block' }}>
+                            {t('magicImport.labelImage')}
                         </label>
+
+                        {!previewUrl ? (
+                            <div
+                                onClick={() => fileInputRef.current.click()}
+                                style={{
+                                    border: '2px dashed #ddd',
+                                    borderRadius: '12px',
+                                    padding: '30px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: '#fafafa',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    style={{ display: 'none' }}
+                                    disabled={isParsing}
+                                />
+                                <div style={{ color: '#c026d3', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                                    <ImageIcon size={32} />
+                                </div>
+                                <div style={{ fontWeight: 600, color: '#555', marginBottom: '4px' }}>
+                                    {t('magicImport.selectImage') || "Select Image"}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: '#999' }}>
+                                    Tap to choose from Gallery or Camera
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #eee' }}>
+                                <img
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    style={{ width: '100%', maxHeight: '250px', objectFit: 'contain', background: '#f9f9f9', display: 'block' }}
+                                />
+                                <button
+                                    onClick={handleRemoveImage}
+                                    disabled={isParsing}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        background: 'rgba(0,0,0,0.6)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '30px',
+                                        height: '30px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <X size={16} />
+                                </button>
+                                <div style={{ padding: '8px 12px', background: '#eef2ff', color: '#4338ca', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Sparkles size={14} />
+                                    Ready to scan!
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="divider-or"><span>{t('magicImport.or')}</span></div>
+
+                    {/* URL Input */}
+                    <div className="form-group" style={{ marginBottom: '15px' }}>
                         <div className="input-icon-wrapper" style={{ position: 'relative' }}>
-                            <Link size={18} style={{ position: 'absolute', top: '12px', left: '12px', color: '#888' }} />
+                            <Link size={16} style={{ position: 'absolute', top: '12px', left: '12px', color: '#aaa' }} />
                             <input
                                 type="url"
                                 placeholder={t('magicImport.urlPlaceholder')}
                                 value={urlValue}
                                 onChange={e => {
                                     setUrlValue(e.target.value);
-                                    if (e.target.value) setTextValue('');
+                                    if (e.target.value) { setTextValue(''); handleRemoveImage(); }
                                 }}
-                                style={{ paddingLeft: '40px', width: '100%' }}
+                                style={{ paddingLeft: '36px', width: '100%', fontSize: '0.9rem', padding: '10px 10px 10px 36px' }}
                                 disabled={isParsing}
                             />
                         </div>
                     </div>
 
-                    <div className="divider-or"><span>{t('magicImport.or')}</span></div>
-
-                    {/* Option 2: Text */}
-                    <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
-                            {t('magicImport.labelText')}
-                        </label>
+                    {/* Text Input */}
+                    <div className="form-group">
                         <textarea
                             placeholder={t('magicImport.textPlaceholder')}
                             value={textValue}
                             onChange={e => {
                                 setTextValue(e.target.value);
-                                if (e.target.value) setUrlValue('');
+                                if (e.target.value) { setUrlValue(''); handleRemoveImage(); }
                             }}
-                            style={{ height: '80px', fontSize: '0.9rem', width: '100%' }}
+                            style={{ height: '70px', fontSize: '0.9rem', width: '100%', padding: '10px' }}
                             disabled={isParsing}
                         />
                     </div>
 
-                    <div className="divider-or"><span>{t('magicImport.or')}</span></div>
-
-                    {/* Option 3: Image */}
-                    <div className="form-group">
-                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
-                            {t('magicImport.labelImage')}
-                        </label>
-
-                        {/* Hidden Inputs */}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={galleryRef}
-                            onChange={handleImageUpload}
-                            style={{ display: 'none' }}
-                            disabled={isParsing}
-                        />
-                        <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            ref={cameraRef}
-                            onChange={handleImageUpload}
-                            style={{ display: 'none' }}
-                            disabled={isParsing}
-                        />
-
-                        {/* Buttons */}
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                onClick={() => galleryRef.current.click()}
-                                disabled={isParsing}
-                                style={{ flex: 1, justifyContent: 'center', gap: '8px', padding: '12px', borderStyle: 'dashed' }}
-                            >
-                                <ImageIcon size={18} />
-                                {t('magicImport.galleryButton') || 'Gallery'}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                onClick={() => cameraRef.current.click()}
-                                disabled={isParsing}
-                                style={{ flex: 1, justifyContent: 'center', gap: '8px', padding: '12px', borderStyle: 'dashed' }}
-                            >
-                                <Camera size={18} />
-                                {t('magicImport.cameraButton') || 'Camera'}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* AI Toggle (for text and image only, not URL) */}
-                    {!urlValue.trim() && (
+                    {/* AI Toggle */}
+                    {(!urlValue.trim() || selectedImage) && (
                         <div style={{ marginTop: '20px', padding: '12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem' }}>
                                 <input
@@ -226,18 +254,18 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                                         ✨ Use AI for better parsing
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: '#78350f', marginTop: '2px' }}>
-                                        Works with messy text, handwriting, any format (~$0.01/use)
+                                        Recommended for images & messy text
                                     </div>
                                 </div>
                             </label>
                         </div>
                     )}
 
-                    {/* Progress Bar for OCR */}
+                    {/* Progress Bar */}
                     {isParsing && scanProgress > 0 && (
                         <div style={{ marginTop: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px', color: '#c026d3', fontWeight: 500 }}>
-                                <span>{t('magicImport.scanning')}</span>
+                                <span>{selectedImage ? "Processing Image..." : "Thinking..."}</span>
                                 <span>{scanProgress}%</span>
                             </div>
                             <div style={{ height: '6px', background: '#f5d0fe', borderRadius: '3px', overflow: 'hidden' }}>
@@ -246,29 +274,31 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         </div>
                     )}
 
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', gap: '10px' }}>
-                        <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>
-                            {t('cancel')}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn-primary"
-                            onClick={handleParse}
-                            disabled={!hasInput || isParsing}
-                            style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', border: 'none' }}
-                        >
-                            {isParsing ? (
-                                <span>{scanProgress > 0 ? t('magicImport.scanning') : t('magicImport.parsing')}</span>
-                            ) : (
-                                <>
-                                    <Sparkles size={18} />
-                                    {t('magicImport.button')}
-                                </>
-                            )}
-                        </button>
-                    </div>
                 </div>
+
+                {/* Footer - Fixed at bottom */}
+                <div style={{ padding: '15px 20px', borderTop: '1px solid #f3f3f3', background: '#fff', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>
+                        {t('cancel')}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleParse}
+                        disabled={!hasInput || isParsing}
+                        style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', border: 'none', minWidth: '120px' }}
+                    >
+                        {isParsing ? (
+                            <span>Processing...</span>
+                        ) : (
+                            <>
+                                <Sparkles size={18} />
+                                {selectedImage ? "Scan Recipe" : t('magicImport.button')}
+                            </>
+                        )}
+                    </button>
+                </div>
+
             </div>
             <style jsx>{`
                 .divider-or {
