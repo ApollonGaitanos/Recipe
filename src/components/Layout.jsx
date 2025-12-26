@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut, Settings } from 'lucide-react';
+import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut, Settings, Globe, BookOpen } from 'lucide-react';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import RecipeDetail from './RecipeDetail';
@@ -10,9 +10,13 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
-export default function Layout() {
-    const [view, setView] = useState('list'); // list, add, detail, edit
-    const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+export default function Layout({
+    children, // Should be main content from App
+    currentView,
+    onNavigate,
+    // Add button action passed from parent
+    onAddClick
+}) {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -20,28 +24,12 @@ export default function Layout() {
     const { theme, toggleTheme } = useTheme();
     const { user, signOut } = useAuth();
 
-    const goToList = () => {
-        setView('list');
-        setSelectedRecipeId(null);
-    };
-
-    const goToAdd = () => setView('add');
-
-    const goToDetail = (id) => {
-        setSelectedRecipeId(id);
-        setView('detail');
-    };
-
-    const goToEdit = (id) => {
-        setSelectedRecipeId(id);
-        setView('edit');
-    };
-
     return (
         <div className="container">
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
             <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
 
+            {/* Top Bar: Settings & toggles */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingTop: '12px' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <button className="btn-secondary" onClick={toggleLanguage} title="Switch Language">
@@ -73,49 +61,65 @@ export default function Layout() {
                 </div>
             </div>
 
-            <header className="main-header">
-                <div
-                    onClick={goToList}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        cursor: 'pointer',
-                        userSelect: 'none'
-                    }}
-                >
-                    <div style={{
-                        background: 'var(--color-primary)',
-                        color: 'white',
-                        padding: '8px',
-                        borderRadius: '12px',
-                        display: 'flex'
-                    }}>
-                        <ChefHat size={24} />
+            {/* Main Header with Navigation */}
+            <header className="main-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <div
+                        onClick={() => onNavigate('home')}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            cursor: 'pointer',
+                            userSelect: 'none'
+                        }}
+                    >
+                        <div style={{
+                            background: 'var(--color-primary)',
+                            color: 'white',
+                            padding: '8px',
+                            borderRadius: '12px',
+                            display: 'flex'
+                        }}>
+                            <ChefHat size={24} />
+                        </div>
+                        <h1 className="title" style={{ marginBottom: 0 }}>{t('appTitle')}</h1>
                     </div>
-                    <h1 className="title" style={{ marginBottom: 0 }}>{t('appTitle')}</h1>
-                </div>
 
-                {view === 'list' && (
-                    <button className="btn-primary" onClick={goToAdd}>
-                        <Plus size={20} />
-                        {t('addRecipe')}
-                    </button>
-                )}
+                    {/* Navigation Tabs */}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            className={`btn-secondary ${currentView === 'home' ? 'active-nav' : ''}`}
+                            onClick={() => onNavigate('home')}
+                            style={{
+                                borderColor: currentView === 'home' ? 'var(--color-primary)' : 'transparent',
+                                color: currentView === 'home' ? 'var(--color-primary)' : 'inherit',
+                                background: currentView === 'home' ? 'var(--bg-secondary)' : 'transparent'
+                            }}
+                        >
+                            <Globe size={18} /> {t('visibility.publicFeed')}
+                        </button>
+
+                        {user && (
+                            <button
+                                className={`btn-secondary ${currentView === 'myRecipes' ? 'active-nav' : ''}`}
+                                onClick={() => onNavigate('myRecipes')}
+                                style={{
+                                    borderColor: currentView === 'myRecipes' ? 'var(--color-primary)' : 'transparent',
+                                    color: currentView === 'myRecipes' ? 'var(--color-primary)' : 'inherit',
+                                    background: currentView === 'myRecipes' ? 'var(--bg-secondary)' : 'transparent'
+                                }}
+                            >
+                                <BookOpen size={18} /> {t('visibility.myRecipes')}
+                            </button>
+                        )}
+                    </div>
+                </div>
             </header>
 
             <main>
                 <MigrationBanner />
-                {view === 'list' && <RecipeList onSelect={goToDetail} />}
-                {view === 'add' && <RecipeForm onSave={goToList} onCancel={goToList} />}
-                {view === 'edit' && <RecipeForm recipeId={selectedRecipeId} onSave={() => goToDetail(selectedRecipeId)} onCancel={() => goToDetail(selectedRecipeId)} />}
-                {view === 'detail' && (
-                    <RecipeDetail
-                        id={selectedRecipeId}
-                        onBack={goToList}
-                        onEdit={() => goToEdit(selectedRecipeId)}
-                    />
-                )}
+                {children}
             </main>
         </div>
     );
