@@ -11,7 +11,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [useAI, setUseAI] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const fileInputRef = useRef(null);
+    const galleryRef = useRef(null);
+    const cameraRef = useRef(null);
 
     if (!isOpen) return null;
 
@@ -67,7 +68,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         } finally {
             setIsParsing(false);
             setScanProgress(0);
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            if (galleryRef.current) galleryRef.current.value = '';
+            if (cameraRef.current) cameraRef.current.value = '';
         }
     };
 
@@ -163,25 +165,49 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
                             {t('magicImport.labelImage')}
                         </label>
+
+                        {/* Hidden Inputs */}
                         <input
                             type="file"
                             accept="image/*"
-                            capture="environment"
-                            ref={fileInputRef}
+                            ref={galleryRef}
                             onChange={handleImageUpload}
                             style={{ display: 'none' }}
                             disabled={isParsing}
                         />
-                        <button
-                            type="button"
-                            className="btn-secondary"
-                            onClick={() => fileInputRef.current.click()}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            ref={cameraRef}
+                            onChange={handleImageUpload}
+                            style={{ display: 'none' }}
                             disabled={isParsing}
-                            style={{ width: '100%', justifyContent: 'center', gap: '10px', padding: '12px', borderStyle: 'dashed' }}
-                        >
-                            <Camera size={18} />
-                            {t('magicImport.imageButton')}
-                        </button>
+                        />
+
+                        {/* Buttons */}
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => galleryRef.current.click()}
+                                disabled={isParsing}
+                                style={{ flex: 1, justifyContent: 'center', gap: '8px', padding: '12px', borderStyle: 'dashed' }}
+                            >
+                                <ImageIcon size={18} />
+                                {t('magicImport.galleryButton') || 'Gallery'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => cameraRef.current.click()}
+                                disabled={isParsing}
+                                style={{ flex: 1, justifyContent: 'center', gap: '8px', padding: '12px', borderStyle: 'dashed' }}
+                            >
+                                <Camera size={18} />
+                                {t('magicImport.cameraButton') || 'Camera'}
+                            </button>
+                        </div>
                     </div>
 
                     {/* AI Toggle (for text and image only, not URL) */}
