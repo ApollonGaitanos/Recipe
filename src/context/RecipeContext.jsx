@@ -87,8 +87,8 @@ export default function RecipeContext({ children }) {
 
     const addRecipe = async (recipe) => {
         if (user) {
-            // Get username from metadata or email
-            const username = user.user_metadata?.full_name || user.email.split('@')[0];
+            // Get username priority: metadata.username (SignUp) -> metadata.full_name -> email prefix
+            const username = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             const newDbRecipe = toDbRecipe(recipe, user.id, username);
             const { data, error } = await supabase
                 .from('recipes')
@@ -113,6 +113,10 @@ export default function RecipeContext({ children }) {
             if (updatedData.tags) dbUpdates.tags = updatedData.tags;
             // Explicitly handle is_public updates if passed
             if (updatedData.is_public !== undefined) dbUpdates.is_public = updatedData.is_public;
+
+            // Always update author_username to current one (fixes old recipes)
+            const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
+            dbUpdates.author_username = currentUsername;
 
             const { error } = await supabase
                 .from('recipes')
