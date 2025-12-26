@@ -88,7 +88,7 @@ export default function Layout({
                 DESKTOP HEADER
                ======================= */}
             <div className="desktop-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
                     <div
                         onClick={() => onNavigate('home')}
                         className="app-branding"
