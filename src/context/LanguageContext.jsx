@@ -69,11 +69,14 @@ const translations = {
             description: "Import from a link or paste text manually:",
             labelUrl: "Option 1: From Website",
             labelText: "Option 2: Paste Text",
+            labelImage: "Option 3: Scan Image",
             or: "OR",
             urlPlaceholder: "https://www.example.com/recipe...",
             textPlaceholder: "Paste recipe title, ingredients and instructions...",
+            imageButton: "Choose Image or Take Photo",
             button: "Magic Import",
-            parsing: "Processing..."
+            parsing: "Processing...",
+            scanning: "Scanning Image..."
         }
     },
     el: {
@@ -138,11 +141,14 @@ const translations = {
             description: "Εισάγετε σύνδεσμο ή επικολλήστε κείμενο:",
             labelUrl: "Επιλογή 1: Από Ιστοσελίδα",
             labelText: "Επιλογή 2: Επικόλληση Κειμένου",
+            labelImage: "Επιλογή 3: Σάρωση Εικόνας",
             or: "Ή",
             urlPlaceholder: "https://www.site.gr/syntagi...",
             textPlaceholder: "Επικολλήστε τίτλο, υλικά και εκτέλεση...",
+            imageButton: "Επιλογή Εικόνας ή Φωτογραφία",
             button: "Αυτόματη Δημιουργία",
-            parsing: "Επεξεργασία..."
+            parsing: "Επεξεργασία...",
+            scanning: "Σάρωση Εικόνας..."
         }
     }
 };

@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Globe, FileText, Link } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Sparkles, Link, Image as ImageIcon, Camera } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
+import { recognizeText } from '../utils/ocr';
 
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t } = useLanguage();
     const [urlValue, setUrlValue] = useState('');
     const [textValue, setTextValue] = useState('');
     const [isParsing, setIsParsing] = useState(false);
+    const [scanProgress, setScanProgress] = useState(0);
+    const fileInputRef = useRef(null);
 
     if (!isOpen) return null;
 
@@ -19,14 +22,47 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         try {
             const result = await parseRecipe(inputToUse);
             onImport(result);
-            setUrlValue('');
-            setTextValue('');
-            onClose();
+            resetAndClose();
         } catch (error) {
             console.error(error);
-        } finally {
             setIsParsing(false);
         }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Clear other inputs
+        setUrlValue('');
+        setTextValue('');
+        setIsParsing(true);
+        setScanProgress(0);
+
+        try {
+            // 1. OCR Scan
+            const text = await recognizeText(file, (progress) => {
+                setScanProgress(Math.round(progress * 100));
+            });
+
+            // 2. Parse the extracted text
+            const result = await parseRecipe(text);
+            onImport(result);
+            resetAndClose();
+        } catch (error) {
+            console.error("Image Import Failed:", error);
+            alert("Could not read text from image. Please try a clearer photo.");
+        } finally {
+            setIsParsing(false);
+            setScanProgress(0);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const resetAndClose = () => {
+        setUrlValue('');
+        setTextValue('');
+        onClose();
     };
 
     const hasInput = urlValue.trim().length > 0 || textValue.trim().length > 0;
@@ -55,7 +91,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Content */}
                 <div style={{ padding: '20px' }}>
 
-                    {/* URL Input */}
+                    {/* Option 1: URL */}
                     <div className="form-group" style={{ marginBottom: '15px' }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
                             {t('magicImport.labelUrl')}
@@ -68,24 +104,18 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                                 value={urlValue}
                                 onChange={e => {
                                     setUrlValue(e.target.value);
-                                    if (e.target.value) setTextValue(''); // Clear text if URL is typed to avoid confusion
+                                    if (e.target.value) setTextValue('');
                                 }}
                                 style={{ paddingLeft: '40px', width: '100%' }}
+                                disabled={isParsing}
                             />
                         </div>
                     </div>
 
-                    {/* Divider */}
-                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
-                        <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
-                        <span style={{ padding: '0 10px', fontSize: '0.8rem', color: '#888', fontWeight: 500 }}>
-                            {t('magicImport.or')}
-                        </span>
-                        <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
-                    </div>
+                    <div className="divider-or"><span>{t('magicImport.or')}</span></div>
 
-                    {/* Text Input */}
-                    <div className="form-group">
+                    {/* Option 2: Text */}
+                    <div className="form-group" style={{ marginBottom: '15px' }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
                             {t('magicImport.labelText')}
                         </label>
@@ -94,14 +124,57 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             value={textValue}
                             onChange={e => {
                                 setTextValue(e.target.value);
-                                if (e.target.value) setUrlValue(''); // Clear URL if text is typed
+                                if (e.target.value) setUrlValue('');
                             }}
-                            style={{ height: '120px', fontSize: '0.9rem', width: '100%' }}
+                            style={{ height: '80px', fontSize: '0.9rem', width: '100%' }}
+                            disabled={isParsing}
                         />
                     </div>
 
+                    <div className="divider-or"><span>{t('magicImport.or')}</span></div>
+
+                    {/* Option 3: Image */}
+                    <div className="form-group">
+                        <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#444', marginBottom: '6px', display: 'block' }}>
+                            {t('magicImport.labelImage')}
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            style={{ display: 'none' }}
+                            disabled={isParsing}
+                        />
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => fileInputRef.current.click()}
+                            disabled={isParsing}
+                            style={{ width: '100%', justifyContent: 'center', gap: '10px', padding: '12px', borderStyle: 'dashed' }}
+                        >
+                            <Camera size={18} />
+                            {t('magicImport.imageButton')}
+                        </button>
+                    </div>
+
+                    {/* Progress Bar for OCR */}
+                    {isParsing && scanProgress > 0 && (
+                        <div style={{ marginTop: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px', color: '#c026d3', fontWeight: 500 }}>
+                                <span>{t('magicImport.scanning')}</span>
+                                <span>{scanProgress}%</span>
+                            </div>
+                            <div style={{ height: '6px', background: '#f5d0fe', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', background: '#d946ef', width: `${scanProgress}%`, transition: 'width 0.3s ease' }}></div>
+                            </div>
+                        </div>
+                    )}
+
+
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', gap: '10px' }}>
-                        <button type="button" className="btn-secondary" onClick={onClose}>
+                        <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>
                             {t('cancel')}
                         </button>
                         <button
@@ -112,7 +185,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', border: 'none' }}
                         >
                             {isParsing ? (
-                                <span>{t('magicImport.parsing')}</span>
+                                <span>{scanProgress > 0 ? t('magicImport.scanning') : t('magicImport.parsing')}</span>
                             ) : (
                                 <>
                                     <Sparkles size={18} />
@@ -123,6 +196,26 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </div>
                 </div>
             </div>
+            <style jsx>{`
+                .divider-or {
+                    display: flex;
+                    align-items: center;
+                    margin: 15px 0;
+                }
+                .divider-or::before,
+                .divider-or::after {
+                    content: '';
+                    flex: 1;
+                    height: 1px;
+                    background: #eee;
+                }
+                .divider-or span {
+                    padding: 0 10px;
+                    font-size: 0.8rem;
+                    color: #999;
+                    font-weight: 500;
+                }
+            `}</style>
         </div>
     );
 }
