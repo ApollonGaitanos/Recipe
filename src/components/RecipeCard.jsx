@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Users, Edit2, Trash2, Globe, Lock } from 'lucide-react';
+import { Clock, Users, Globe, Lock } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -50,42 +50,8 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
                     </div>
                 )}
 
-                {/* Action Buttons (Edit/Delete) - Only for Owner */}
-                {/* Removed Toggle Button as requested */}
-                {isOwner && (
-                    <div className="card-actions" style={{ marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <button className="icon-btn-small" onClick={(e) => { e.stopPropagation(); onEdit(recipe.id); }} title={t('edit')}>
-                            <Edit2 size={16} />
-                        </button>
-
-                        <button className="icon-btn-small delete" onClick={(e) => { e.stopPropagation(); onDelete(recipe.id); }} title={t('delete')}>
-                            <Trash2 size={16} />
-                        </button>
-                    </div>
-                )}
+                {/* Removed Action Buttons (Edit/Delete) - Only for Owner */}
             </div>
-            <style jsx>{`
-                .icon-btn-small {
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    padding: 4px;
-                    border-radius: 4px;
-                    color: var(--color-text-light);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.2s;
-                }
-                .icon-btn-small:hover {
-                    background: var(--bg-hover);
-                    color: var(--color-primary);
-                }
-                .icon-btn-small.delete:hover {
-                    color: #ef4444;
-                    background: #fee2e2;
-                }
-            `}</style>
         </div>
     );
 }
