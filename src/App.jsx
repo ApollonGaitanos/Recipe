@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import RecipeContext, { useRecipes } from './context/RecipeContext';
 import LanguageContext, { useLanguage } from './context/LanguageContext';
 import ThemeContext from './context/ThemeContext';
-import AuthContext, { useAuth, AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import RecipeCard from './components/RecipeCard';
 import RecipeForm from './components/RecipeForm';
@@ -59,6 +59,16 @@ function AppContent() {
     }
   }, [user, authLoading, currentView]);
 
+
+  // Clear selection when switching views
+  const handleNavigate = (view) => {
+    setCurrentView(view);
+    setSelectedRecipe(null);
+    setIsFormOpen(false);
+    setEditingRecipeId(null);
+    setSearchQuery('');
+  };
+
   const handleFormSubmit = async (data) => {
     if (editingRecipeId) {
       await updateRecipe(editingRecipeId, data);
@@ -67,15 +77,29 @@ function AppContent() {
     }
     setIsFormOpen(false);
     setEditingRecipeId(null);
-    // If we added a recipe, maybe switch to myRecipes? 
-    // For now, let's switch to myRecipes to see it if logged in.
-    if (!editingRecipeId && user) setCurrentView('myRecipes');
+    if (!editingRecipeId && user) {
+      setCurrentView('myRecipes'); // Go to my recipes to see new one
+      setSelectedRecipe(null); // Ensure we go to list
+    }
   };
 
   if (authLoading || loading) return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>{t('auth.processing')}</div>;
 
+  // Detail View Mode - Hides everything else to feel like a separate page
+  if (selectedRecipe) {
+    return (
+      <Layout currentView={currentView} onNavigate={handleNavigate}>
+        <RecipeDetail
+          id={selectedRecipe.id}
+          onBack={() => setSelectedRecipe(null)}
+          onEdit={() => { setSelectedRecipe(null); handleEdit(selectedRecipe.id); }}
+        />
+      </Layout>
+    );
+  }
+
   return (
-    <Layout currentView={currentView} onNavigate={setCurrentView}>
+    <Layout currentView={currentView} onNavigate={handleNavigate}>
 
       {/* Action Bar */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
@@ -110,7 +134,15 @@ function AppContent() {
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              onClick={(id) => setSelectedRecipe(recipe)}
+              onClick={(id) => setSelectedRecipe(recipe)} // Pass ID listener, but setSelectedRecipe uses object. Wait, onClick in Card calls onClick(recipe.id).
+              // Let's fix this. Card calls onClick(id). We need to verify if setSelectedRecipe expects object.
+              // In filteredRecipes.map(recipe ...), selectedRecipe is used to render Detail with ID.
+              // RecipeDetail expects 'id'.
+              // So setSelectedRecipe expects an object? In previous code: setSelectedRecipe(recipe).
+              // Let's look at previous App.jsx: onClick={(id) => setSelectedRecipe(recipe)}. Yes.
+              // Wait, previous code was: onClick={(id) => setSelectedRecipe(recipe)} inside the map.
+              // The recipe variable is from map scope. So it sets the whole object.
+              // Detail uses selectedRecipe.id. It works.
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleVisibility={toggleVisibility}
@@ -126,26 +158,10 @@ function AppContent() {
       {/* Modals */}
       {isFormOpen && (
         <RecipeForm
-          isOpen={true} // It's modal based now? Or inline?
-          // Original layout used inline. Let's adapt RecipeForm to be modal or full screen.
-          // Actually Layout.jsx previously handled views.
-          // But here I'm using modals for Form and Detail on top of the list.
-          // Let's check RecipeForm component... It assumes it's rendered in main.
-          // I'll wrap it in a modal-like overlay if it's not one.
+          isOpen={true}
           recipeId={editingRecipeId}
-          onSave={() => { setIsFormOpen(false); setEditingRecipeId(null); handleFormSubmit(); }} // RecipeForm handles save internally, wait...
-          // The previous Layout logic passed onSave/onCancel.
-          // Let's render it as a full screen overlay for now which matches the previous "View" style.
+          onSave={handleFormSubmit}
           onCancel={() => { setIsFormOpen(false); setEditingRecipeId(null); }}
-        />
-      )}
-
-      {/* Detail Modal/Overlay */}
-      {selectedRecipe && (
-        <RecipeDetail
-          id={selectedRecipe.id}
-          onBack={() => setSelectedRecipe(null)}
-          onEdit={() => { setSelectedRecipe(null); handleEdit(selectedRecipe.id); }}
         />
       )}
 
