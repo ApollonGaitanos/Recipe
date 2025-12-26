@@ -165,15 +165,6 @@ function AppContent() {
         </div>
       )}
 
-      {/* Modals */}
-      {isFormOpen && (
-        <RecipeForm
-          isOpen={true}
-          recipeId={editingRecipeId}
-          onSave={handleFormSubmit}
-          onCancel={() => { setIsFormOpen(false); setEditingRecipeId(null); }}
-        />
-      )}
 
       <ConfirmationModal
         isOpen={!!deleteId}
