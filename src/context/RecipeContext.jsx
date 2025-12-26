@@ -92,7 +92,7 @@ export default function RecipeContext({ children }) {
         }
     };
 
-    // Initial Fetch
+    // Initial Fetch & Real-time Subscription
     useEffect(() => {
         const load = async () => {
             setLoading(true);
@@ -100,6 +100,30 @@ export default function RecipeContext({ children }) {
             setLoading(false);
         };
         load();
+
+        // Real-time Subscription for Likes Count Updates
+        const channel = supabase
+            .channel('public:recipes')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'recipes' },
+                (payload) => {
+                    const updatedRecipe = payload.new;
+                    // Update Public Feed
+                    setPublicRecipes(prev => prev.map(r =>
+                        r.id === updatedRecipe.id ? { ...r, likes_count: updatedRecipe.likes_count } : r
+                    ));
+                    // Update My Recipes
+                    setRecipes(prev => prev.map(r =>
+                        r.id === updatedRecipe.id ? { ...r, likes_count: updatedRecipe.likes_count } : r
+                    ));
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user]);
 
     const addRecipe = async (recipe) => {
