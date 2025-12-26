@@ -50,7 +50,21 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
                     </div>
                 )}
 
-                {/* Removed Action Buttons (Edit/Delete) - Only for Owner */}
+                {/* Footer: Likes & Author */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', fontSize: '0.8rem', color: '#666' }}>
+
+                    {/* Like Icon (No Counter) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <ChefHat size={16} color="var(--color-primary)" />
+                    </div>
+
+                    {/* Author Name */}
+                    {recipe.is_public && recipe.author_username && (
+                        <div style={{ fontStyle: 'italic' }}>
+                            by {recipe.author_username}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
