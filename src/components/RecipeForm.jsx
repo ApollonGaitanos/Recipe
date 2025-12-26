@@ -99,7 +99,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             <X size={20} /> {t('cancel')}
                         </button>
                         <button type="submit" className="btn-primary" disabled={isSaving}>
-                            <Save size={20} /> {isSaving ? t('auth.processing') : t('saveRecipe')}
+                            <Save size={20} /> {t('saveRecipe')}
                         </button>
                     </div>
                 </div>
