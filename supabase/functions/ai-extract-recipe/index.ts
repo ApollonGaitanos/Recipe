@@ -16,7 +16,7 @@ serve(async (req) => {
     try {
 
         // 2. Input Parsing
-        const { text, imageBase64, imageType, url } = await req.json()
+        const { text, imageBase64, imageType, url, targetLanguage } = await req.json()
 
         // Validate presence of EITHER text OR image OR url
         if ((!text || typeof text !== 'string' || text.trim().length < 10) && !imageBase64 && !url) {
@@ -72,7 +72,7 @@ serve(async (req) => {
                     throw new Error("Could not read recipe content (Page blocked or empty). Try pasting the recipe text instead.");
                 }
 
-                // Truncate if too long (Gemini 2.5 Flash-Lite has large context, but let's be safe ~30k chars)
+                // Truncate if too long
                 if (processingText.length > 30000) {
                     processingText = processingText.substring(0, 30000);
                 }
@@ -84,30 +84,31 @@ serve(async (req) => {
             }
         }
 
-        const systemPrompt = `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
+        const systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source text/image.
+DO NOT act as a creative chef. DO NOT improve the recipe. DO NOT add missing ingredients unless they are explicitly listed.
+DO NOT expand instructions.
 
 Return ONLY valid JSON with this exact structure:
 {
-  "title": "Professional Recipe Title",
-  "ingredients": "2 cups all-purpose flour\\n1 cup granulated sugar",
-  "instructions": "Preheat oven to 350°F (175°C).\\nMix ingredients.",
-  "prepTime": 15,
-  "cookTime": 30,
-  "servings": 8,
-  "tags": "dessert, cake"
+  "title": "Exact Title from Source",
+  "ingredients": "Exact ingredient line 1\\nExact ingredient line 2",
+  "instructions": "Exact instruction step 1.\\nExact instruction step 2.",
+  "prepTime": 0,
+  "cookTime": 0,
+  "servings": 0,
+  "tags": "category1, category2"
 }
 
-IMPORTANT FORMATTING RULES:
-1. **Title**: Make it proper and appetizing.
-2. **Ingredients**: One per line, standard measurements, remove casual language.
-3. **Instructions**: One clear step per line, start with verbs, remove casual language.
-4. **Times**: In minutes (0 if missing).
-5. **Servings**: Number (0 if missing).
-6. **Tags**: Relevant categories.
-7. **LANGUAGE**: Detect the language of the input text (e.g., Greek, English) and generate the **Title**, **Ingredients**, and **Instructions** IN THAT SAME LANGUAGE. Do not translate unless explicitly asked.
-8. **NO RECIPE**: If the input text contains NO recipe content or looks like an error page (e.g. 'Access Denied', 'Captcha'), return exactly: {"error": "No recipe content found on this page"}
+IMPORTANT RULES:
+1. **NO HALLUCINATIONS**: If the text is an error page or has no recipe, return exactly {"error": "No recipe content found"}.
+2. **NO ALTERATIONS**: Copy the data exactly. Fix only broken formatting (newlines).
+3. **LANGUAGE LOGIC**:
+   - If Source is **Greek** -> Keep it **Greek**.
+   - If Source is **English** -> Keep it **English**.
+   - If Source is **Mixed** (Greek/English) -> Keep it as is, or normalize to **${targetLanguage || 'English'}** if heavily mixed.
+   - If Source is **Any Other Language** -> Translate it to **${targetLanguage || 'English'}**.
 
-Recipe to format:`;
+Recipe to extract:`;
 
         const parts = [{ text: systemPrompt }];
 
@@ -134,7 +135,7 @@ Recipe to format:`;
         const payload = {
             contents: [{ parts }],
             generationConfig: {
-                temperature: 0.2,
+                temperature: 0.1, // Very low temp for precision
                 maxOutputTokens: 4096,
                 responseMimeType: "application/json"
             }

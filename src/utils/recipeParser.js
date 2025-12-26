@@ -1,4 +1,4 @@
-export const parseRecipe = async (input, useAI = false) => {
+export const parseRecipe = async (input, useAI = false, language = 'en') => {
     // Validate input
     // Validate input
     if (!input) {
@@ -16,7 +16,7 @@ export const parseRecipe = async (input, useAI = false) => {
     if (urlRegex.test(trimmedInput)) {
         if (useAI) {
             try {
-                const aiResult = await extractWithAI({ url: trimmedInput });
+                const aiResult = await extractWithAI({ url: trimmedInput, targetLanguage: language });
                 if (aiResult) {
                     console.log('✅ URL Extracted with AI');
                     return aiResult;
@@ -41,7 +41,7 @@ export const parseRecipe = async (input, useAI = false) => {
     // For text input: Try AI first if enabled
     if (useAI || isImage) {
         try {
-            const aiResult = await extractWithAI(isImage ? input : trimmedInput);
+            const aiResult = await extractWithAI(isImage ? { ...input, targetLanguage: language } : (typeof input === 'string' ? { text: input, targetLanguage: language } : { ...input, targetLanguage: language }));
             if (aiResult) {
                 console.log('✅ Recipe extracted with AI');
                 return aiResult;
@@ -77,7 +77,12 @@ const extractWithAI = async (input) => {
     // Construct body based on input type
     const body = typeof input === 'string'
         ? { text: input }
-        : { text: 'Extract recipe from this image', ...input };
+        : { ...input }; // Spread input directly (allows targetLanguage, imageBase64, url, text)
+
+    // Ensure text is set for image-only input if missing
+    if (!body.text && !body.url && body.imageBase64) {
+        body.text = 'Extract recipe from this image';
+    }
 
     // Use direct fetch to get better error details
     const { data: { session } } = await supabase.auth.getSession();
