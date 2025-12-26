@@ -282,15 +282,17 @@ textarea {
   }
 }
 
-background: var(--color-surface);
-border-radius: var(--radius-md);
-padding: 24px;
-box-shadow: var(--shadow-sm);
-border: 1px solid var(--color-border);
-cursor: pointer;
-transition: all 0.2s ease;
-display: flex;
-flex-direction: column;
+/* Recipe Card */
+.recipe-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .recipe-card:hover {
