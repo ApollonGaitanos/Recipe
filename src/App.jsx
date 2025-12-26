@@ -110,15 +110,16 @@ function AppContent() {
       {view.mode === 'LIST' && (
         <>
           {/* Action Bar */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
-              <Search size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+          <div className="action-bar">
+            {/* Search */}
+            <div className="search-wrapper">
+              <Search className="search-icon" size={20} />
               <input
                 type="text"
+                className="search-input"
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '100%', paddingLeft: '40px' }}
               />
             </div>
 
