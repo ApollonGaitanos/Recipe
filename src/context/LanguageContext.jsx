@@ -80,6 +80,16 @@ const translations = {
             statusCore: "Loading OCR Core...",
             statusDownload: "Downloading Language Data...",
             statusInit: "Initializing Engine..."
+        },
+        visibility: {
+            makePublic: "Make Public",
+            makePrivate: "Make Private",
+            publicFeed: "Public Community Recipes",
+            myRecipes: "My Recipe Collection",
+            confirmPublic: "Are you sure you want to make this recipe PUBLIC? It will be visible to everyone.",
+            confirmPrivate: "Are you sure you want to make this recipe PRIVATE? Only you will be able to see it.",
+            publicBadge: "Public",
+            privateBadge: "Private"
         }
     },
     el: {
@@ -155,6 +165,16 @@ const translations = {
             statusCore: "Φόρτωση Μηχανής...",
             statusDownload: "Λήψη Δεδομένων Γλώσσας...",
             statusInit: "Αρχικοποίηση..."
+        },
+        visibility: {
+            makePublic: "Δημοσιοποίηση",
+            makePrivate: "Απόκρυψη",
+            publicFeed: "Συνταγές της Κοινότητας",
+            myRecipes: "Η Συλλογή μου",
+            confirmPublic: "Θέλετε σίγουρα να κάνετε τη συνταγή ΔΗΜΟΣΙΑ; Θα είναι ορατή σε όλους.",
+            confirmPrivate: "Θέλετε σίγουρα να κάνετε τη συνταγή ΙΔΙΩΤΙΚΗ; Θα είναι ορατή μόνο σε εσάς.",
+            publicBadge: "Δημόσια",
+            privateBadge: "Ιδιωτική"
         }
     }
 };
