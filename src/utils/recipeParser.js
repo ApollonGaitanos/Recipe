@@ -1,10 +1,15 @@
 export const parseRecipe = async (input, useAI = false) => {
     // Validate input
-    if (!input || typeof input !== 'string' || !input.trim()) {
-        throw new Error('Please provide some recipe text to parse');
+    // Validate input
+    if (!input) {
+        throw new Error('Please provide some recipe text or image to parse');
+    }
+    const isImage = typeof input === 'object' && input.imageBase64;
+    if (!isImage && (typeof input !== 'string' || !input.trim())) {
+        throw new Error('Invalid input provided');
     }
 
-    const trimmedInput = input.trim();
+    const trimmedInput = isImage ? null : input.trim();
 
     // Check if input is a URL
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
@@ -18,9 +23,9 @@ export const parseRecipe = async (input, useAI = false) => {
     }
 
     // For text input: Try AI first if enabled
-    if (useAI) {
+    if (useAI || isImage) {
         try {
-            const aiResult = await extractWithAI(trimmedInput);
+            const aiResult = await extractWithAI(isImage ? input : trimmedInput);
             if (aiResult) {
                 console.log('✅ Recipe extracted with AI');
                 return aiResult;
@@ -40,10 +45,16 @@ export const parseRecipe = async (input, useAI = false) => {
 };
 
 // AI Extraction function
-const extractWithAI = async (text) => {
+const extractWithAI = async (input) => {
     const { supabase } = await import('../supabaseClient');
+
+    // Construct body based on input type
+    const body = typeof input === 'string'
+        ? { text: input }
+        : { text: 'Extract recipe from this image', ...input };
+
     const { data, error } = await supabase.functions.invoke('ai-extract-recipe', {
-        body: { text }
+        body
     });
 
     if (error || (data && data.error)) {

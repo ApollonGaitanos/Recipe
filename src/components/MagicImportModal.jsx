@@ -42,23 +42,46 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         setScanProgress(0);
 
         try {
-            // 1. OCR Scan
-            const text = await recognizeText(file, (progress) => {
-                setScanProgress(Math.round(progress * 100));
-            });
+            if (useAI) {
+                // AI Mode: Convert to Base64 and send directly
+                setScanProgress(50); // Fake progress for conversion
+                const base64 = await fileToBase64(file);
+                const result = await parseRecipe({ imageBase64: base64, imageType: file.type || 'image/jpeg' }, true);
+                onImport(result);
+                resetAndClose();
+            } else {
+                // Local OCR Mode (Legacy)
+                // 1. OCR Scan
+                const text = await recognizeText(file, (progress) => {
+                    setScanProgress(Math.round(progress * 100));
+                });
 
-            // 2. Parse the extracted text (with AI if enabled)
-            const result = await parseRecipe(text, useAI);
-            onImport(result);
-            resetAndClose();
+                // 2. Parse the extracted text
+                const result = await parseRecipe(text, false);
+                onImport(result);
+                resetAndClose();
+            }
         } catch (error) {
             console.error("Image Import Failed:", error);
-            alert("Could not read text from image. Please try a clearer photo.");
+            alert("Could not process image. " + (error.message || "Please try a clearer photo."));
         } finally {
             setIsParsing(false);
             setScanProgress(0);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
+    };
+
+    const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                // Remove the data URL prefix (e.g. "data:image/jpeg;base64,")
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
     };
 
     const resetAndClose = () => {

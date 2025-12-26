@@ -15,10 +15,11 @@ serve(async (req) => {
 
     try {
         // 2. Input Parsing
-        const { text } = await req.json()
+        const { text, imageBase64, imageType } = await req.json()
 
-        if (!text || typeof text !== 'string' || text.trim().length < 10) {
-            throw new Error('Please provide recipe text (at least 10 characters)')
+        // Validate presence of EITHER text OR image
+        if ((!text || typeof text !== 'string' || text.trim().length < 10) && !imageBase64) {
+            throw new Error('Please provide recipe text (at least 10 chars) or an image.')
         }
 
         // 3. API Configuration
@@ -33,10 +34,7 @@ serve(async (req) => {
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
         // 4. API Request Construction
-        const payload = {
-            contents: [{
-                parts: [{
-                    text: `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
+        const systemPrompt = `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -58,16 +56,34 @@ IMPORTANT FORMATTING RULES:
 6. **Tags**: Relevant categories.
 7. **LANGUAGE**: Detect the language of the input text (e.g., Greek, English) and generate the **Title**, **Ingredients**, and **Instructions** IN THAT SAME LANGUAGE. Do not translate unless explicitly asked.
 
-Recipe to format:
-${text}`
-                }]
-            }],
+Recipe to format:`;
+
+        const parts = [{ text: systemPrompt }];
+
+        // Add User Text if provided
+        if (text) {
+            parts.push({ text: `\n\n${text}` });
+        }
+
+        // Add Image if provided
+        if (imageBase64) {
+            parts.push({
+                inlineData: {
+                    mimeType: imageType || "image/jpeg",
+                    data: imageBase64
+                }
+            });
+        }
+
+        const payload = {
+            contents: [{ parts }],
             generationConfig: {
                 temperature: 0.2,
                 maxOutputTokens: 4096,
                 responseMimeType: "application/json"
             }
         };
+
 
         // 5. API Call
         console.log(`Sending request to ${MODEL_NAME}...`);
