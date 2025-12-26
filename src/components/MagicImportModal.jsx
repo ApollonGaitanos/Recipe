@@ -50,6 +50,17 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     setScanProgress(10); // Start
                     // Resize and convert to Base64
                     const base64 = await resizeImage(selectedImage);
+
+                    // DEBUG: Log payload size
+                    const sizeInBytes = (base64.length * 3) / 4;
+                    const sizeInMB = sizeInBytes / (1024 * 1024);
+                    console.log(`📸 Image Payload: ~${sizeInMB.toFixed(2)}MB`);
+
+                    if (sizeInMB > 5.5) {
+                        alert("Image is still too large even after resizing. Please try a smaller photo.");
+                        throw new Error("Payload too large");
+                    }
+
                     setScanProgress(40); // Uploading
                     const result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg' }, true);
                     onImport(result);
