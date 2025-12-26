@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Sparkles, Link, Image as ImageIcon, Camera } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { parseRecipe } from '../utils/recipeParser';
+import { supabase } from '../supabaseClient';
 import { recognizeText } from '../utils/ocr';
 
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
@@ -10,6 +10,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [textValue, setTextValue] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
+    const [error, setError] = useState('');
     const fileInputRef = useRef(null);
 
     if (!isOpen) return null;
@@ -19,12 +20,43 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         if (!inputToUse.trim()) return;
 
         setIsParsing(true);
+        setError('');
+
         try {
-            const result = await parseRecipe(inputToUse);
-            onImport(result);
+            // Determine if input is URL or text
+            const isUrl = urlValue.trim().length > 0;
+
+            // Call Supabase Edge Function for AI extraction
+            const { data, error } = await supabase.functions.invoke('extract-recipe', {
+                body: {
+                    source: inputToUse,
+                    type: isUrl ? 'url' : 'text'
+                }
+            });
+
+            if (error) throw error;
+
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to extract recipe');
+            }
+
+            // Transform AI response to match our form structure
+            const recipeData = {
+                title: data.data.title || '',
+                ingredients: data.data.ingredients || '',
+                instructions: data.data.instructions || '',
+                prepTime: data.data.prepTime || 0,
+                cookTime: data.data.cookTime || 0,
+                servings: data.data.servings || 1,
+                tags: data.data.tags || [],
+                is_public: false
+            };
+
+            onImport(recipeData);
             resetAndClose();
         } catch (error) {
-            console.error(error);
+            console.error('AI extraction error:', error);
+            setError(error.message || 'Failed to extract recipe. Please try again.');
             setIsParsing(false);
         }
     };
@@ -172,6 +204,21 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         </div>
                     )}
 
+
+                    {/* Error Message */}
+                    {error && (
+                        <div style={{
+                            marginTop: '15px',
+                            padding: '12px',
+                            background: '#fee2e2',
+                            color: '#dc2626',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            border: '1px solid #fecaca'
+                        }}>
+                            {error}
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', gap: '10px' }}>
                         <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Sparkles, Lock, Globe } from 'lucide-react';
+import { Save, X, Sparkles, Lock, Globe, Scale } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
+import PortionScalingModal from './PortionScalingModal';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
@@ -12,6 +13,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const { t } = useLanguage();
     const [showMagicImport, setShowMagicImport] = useState(false);
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
+    const [showPortionScaling, setShowPortionScaling] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -84,6 +86,14 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
     };
 
+    const handlePortionScaling = (scaledIngredients, newServings) => {
+        setFormData(prev => ({
+            ...prev,
+            ingredients: scaledIngredients,
+            servings: newServings
+        }));
+    };
+
     return (
         <div className="recipe-form-container">
             <MagicImportModal
@@ -97,6 +107,14 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onClose={() => setShowVisibilityModal(false)}
                 onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
                 isMakingPublic={true}
+            />
+
+            <PortionScalingModal
+                isOpen={showPortionScaling}
+                onClose={() => setShowPortionScaling(false)}
+                currentServings={Number(formData.servings) || 1}
+                currentIngredients={formData.ingredients}
+                onScaleComplete={handlePortionScaling}
             />
 
             <form onSubmit={handleSubmit} className="recipe-form">
@@ -205,14 +223,37 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     </div>
                     <div className="form-group">
                         <label>{t('servingsLabel')}</label>
-                        <input
-                            type="number"
-                            name="servings"
-                            value={formData.servings}
-                            onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
-                            placeholder="4"
-                            disabled={isSaving}
-                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="number"
+                                name="servings"
+                                value={formData.servings}
+                                onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
+                                placeholder="4"
+                                disabled={isSaving}
+                                style={{ flex: 1 }}
+                            />
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => setShowPortionScaling(true)}
+                                disabled={isSaving || !formData.ingredients || !formData.servings}
+                                title="AI-powered portion scaling"
+                                style={{
+                                    padding: '0 16px',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: '#dbeafe',
+                                    color: '#2563eb',
+                                    border: '1px solid #93c5fd'
+                                }}
+                            >
+                                <Scale size={16} />
+                                <span className="hide-mobile">Adjust</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
