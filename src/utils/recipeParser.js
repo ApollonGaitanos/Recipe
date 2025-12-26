@@ -31,11 +31,21 @@ export const parseRecipe = async (input, useAI = false) => {
                 return aiResult;
             }
         } catch (aiError) {
-            console.warn('AI extraction failed, falling back to regex:', aiError);
+            console.warn('AI extraction failed:', aiError);
+            // If it was an image, we have no fallback. Throw the error.
+            if (isImage) {
+                throw new Error(`AI Image processing failed: ${aiError.message}`);
+            }
+            // For text, we can fall through to regex
         }
     }
 
     // Default: Parse as text with regex
+    // If we have no text (e.g. image failed but somehow got here), throw
+    if (!trimmedInput) {
+        throw new Error('No text available to parse.');
+    }
+
     try {
         return parseRecipeFromText(trimmedInput);
     } catch (error) {
