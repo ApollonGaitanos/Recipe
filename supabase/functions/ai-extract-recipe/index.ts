@@ -63,7 +63,7 @@ ${text}`
             }],
             generationConfig: {
                 temperature: 0.2,
-                maxOutputTokens: 1000,
+                maxOutputTokens: 4096,
                 responseMimeType: "application/json"
             }
         };
@@ -92,24 +92,26 @@ ${text}`
         const candidate = data.candidates?.[0];
         if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
             console.error('Invalid Gemini Response:', JSON.stringify(data));
-            throw new Error('Gemini returned an empty or invalid response.');
+            throw new Error(`Gemini returned an empty or invalid response. Raw data: ${JSON.stringify(data)}`);
         }
 
         let aiText = candidate.content.parts[0].text.trim();
 
-        // Clean markdown code blocks if present
-        if (aiText.startsWith('```json')) {
-            aiText = aiText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        } else if (aiText.startsWith('```')) {
-            aiText = aiText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        // Extract JSON using regex from first { to last }
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            console.error('No JSON found in response:', aiText);
+            throw new Error(`AI response did not contain valid JSON structure. Raw output: ${aiText.substring(0, 500)}...`);
         }
+
+        const jsonString = jsonMatch[0];
 
         let recipeData;
         try {
-            recipeData = JSON.parse(aiText);
+            recipeData = JSON.parse(jsonString);
         } catch (e) {
-            console.error('JSON Parse Error. Raw text:', aiText);
-            throw new Error('Failed to parse AI response as JSON.');
+            console.error('JSON Parse Error. Raw text:', jsonString);
+            throw new Error(`Failed to parse AI response as JSON. Raw output: ${jsonString.substring(0, 500)}...`);
         }
 
         // validate minimal structure
