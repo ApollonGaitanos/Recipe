@@ -288,7 +288,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </div>
 
                     {/* AI Toggle */}
-                    {(!urlValue.trim() || selectedImage) && (
+                    {true && (
                         <div style={{ marginTop: '20px', padding: '12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem' }}>
                                 <input
