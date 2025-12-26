@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Sparkles } from 'lucide-react';
+import { Save, X, Sparkles, Lock, Globe } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
+import VisibilityModal from './VisibilityModal';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
@@ -10,6 +11,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const { recipes } = useRecipes(); // Only read recipes for initial state if editing
     const { t } = useLanguage();
     const [showMagicImport, setShowMagicImport] = useState(false);
+    const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -19,7 +21,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         servings: '',
         ingredients: '',
         instructions: '',
-        tags: '' // stored as string for input
+        tags: '', // stored as string for input
+        is_public: false // Default to private
     });
 
     useEffect(() => {
@@ -28,7 +31,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             if (recipe) {
                 setFormData({
                     ...recipe,
-                    tags: recipe.tags ? recipe.tags.join(', ') : ''
+                    tags: recipe.tags ? recipe.tags.join(', ') : '',
+                    is_public: recipe.is_public || false
                 });
             }
         }
@@ -43,7 +47,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
             prepTime: Number(formData.prepTime) || 0,
             cookTime: Number(formData.cookTime) || 0,
-            servings: Number(formData.servings) || 1
+            servings: Number(formData.servings) || 1,
+            is_public: formData.is_public
         };
 
         try {
@@ -69,12 +74,29 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }));
     };
 
+    const handleVisibilityChange = (isPublic) => {
+        if (isPublic) {
+            // Switching to Public -> Require Confirmation
+            setShowVisibilityModal(true);
+        } else {
+            // Switching to Private -> Instant
+            setFormData(prev => ({ ...prev, is_public: false }));
+        }
+    };
+
     return (
         <div className="recipe-form-container">
             <MagicImportModal
                 isOpen={showMagicImport}
                 onClose={() => setShowMagicImport(false)}
                 onImport={handleMagicImport}
+            />
+
+            <VisibilityModal
+                isOpen={showVisibilityModal}
+                onClose={() => setShowVisibilityModal(false)}
+                onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
+                isMakingPublic={true}
             />
 
             <form onSubmit={handleSubmit} className="recipe-form">
@@ -100,6 +122,46 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         </button>
                         <button type="submit" className="btn-primary" disabled={isSaving}>
                             <Save size={20} /> {t('saveRecipe')}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Visibility Toggle */}
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            type="button"
+                            onClick={() => handleVisibilityChange(false)}
+                            className={!formData.is_public ? 'btn-primary' : 'btn-secondary'}
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                background: !formData.is_public ? '#d97706' : '#fff',
+                                borderColor: !formData.is_public ? '#d97706' : 'var(--border-color)',
+                                color: !formData.is_public ? '#fff' : 'inherit'
+                            }}
+                        >
+                            <Lock size={18} /> {t('visibility.privateBadge')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleVisibilityChange(true)}
+                            className={formData.is_public ? 'btn-primary' : 'btn-secondary'}
+                            style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                background: formData.is_public ? '#2563eb' : '#fff',
+                                borderColor: formData.is_public ? '#2563eb' : 'var(--border-color)',
+                                color: formData.is_public ? '#fff' : 'inherit'
+                            }}
+                        >
+                            <Globe size={18} /> {t('visibility.publicBadge')}
                         </button>
                     </div>
                 </div>
