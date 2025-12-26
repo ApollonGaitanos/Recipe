@@ -4,10 +4,13 @@ import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
 
+// Note: RecipeForm now purely handles form state and validation.
+// Persistence is delegated to the onSave prop.
 export default function RecipeForm({ recipeId, onSave, onCancel }) {
-    const { addRecipe, updateRecipe, recipes } = useRecipes();
+    const { recipes } = useRecipes(); // Only read recipes for initial state if editing
     const { t } = useLanguage();
     const [showMagicImport, setShowMagicImport] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -31,8 +34,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
     }, [recipeId, recipes]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSaving(true);
+
         const recipeData = {
             ...formData,
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
@@ -41,12 +46,15 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             servings: Number(formData.servings) || 1
         };
 
-        if (recipeId) {
-            updateRecipe(recipeId, recipeData);
-        } else {
-            addRecipe(recipeData);
+        try {
+            // Await the onSave callback (which calls App.jsx -> Context)
+            await onSave(recipeData);
+        } catch (error) {
+            console.error("Failed to save recipe:", error);
+            // Optionally set error state here
+        } finally {
+            setIsSaving(false);
         }
-        onSave();
     };
 
     const handleMagicImport = (data) => {
@@ -82,15 +90,16 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             onClick={() => setShowMagicImport(true)}
                             style={{ color: '#c026d3', borderColor: '#f0abfc', background: '#fdf4ff', marginRight: '8px' }}
                             title={t('magicImport.title')}
+                            disabled={isSaving}
                         >
                             <Sparkles size={18} /> <span className="hide-mobile">{t('magicImport.button')}</span>
                         </button>
 
-                        <button type="button" className="btn-secondary" onClick={onCancel}>
+                        <button type="button" className="btn-secondary" onClick={onCancel} disabled={isSaving}>
                             <X size={20} /> {t('cancel')}
                         </button>
-                        <button type="submit" className="btn-primary">
-                            <Save size={20} /> {t('saveRecipe')}
+                        <button type="submit" className="btn-primary" disabled={isSaving}>
+                            <Save size={20} /> {isSaving ? t('auth.processing') : t('saveRecipe')}
                         </button>
                     </div>
                 </div>
@@ -105,6 +114,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         placeholder={t('placeholders.title')}
                         required
                         autoFocus
+                        disabled={isSaving}
                     />
                 </div>
 
@@ -117,6 +127,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             value={formData.prepTime}
                             onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
                             placeholder="15"
+                            disabled={isSaving}
                         />
                     </div>
                     <div className="form-group">
@@ -127,6 +138,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             value={formData.cookTime}
                             onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
                             placeholder="45"
+                            disabled={isSaving}
                         />
                     </div>
                     <div className="form-group">
@@ -137,6 +149,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             value={formData.servings}
                             onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
                             placeholder="4"
+                            disabled={isSaving}
                         />
                     </div>
                 </div>
@@ -149,6 +162,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         onChange={(e) => setFormData(prev => ({ ...prev, ingredients: e.target.value }))}
                         rows={8}
                         placeholder={t('placeholders.ingredients')}
+                        disabled={isSaving}
                     />
                 </div>
 
@@ -160,6 +174,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
                         rows={8}
                         placeholder={t('placeholders.instructions')}
+                        disabled={isSaving}
                     />
                 </div>
 
@@ -171,6 +186,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         value={formData.tags}
                         onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                         placeholder={t('placeholders.tags')}
+                        disabled={isSaving}
                     />
                 </div>
             </form>
