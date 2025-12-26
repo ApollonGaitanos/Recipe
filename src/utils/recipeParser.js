@@ -1,18 +1,29 @@
 export const parseRecipe = async (input) => {
+    // Validate input
+    if (!input || typeof input !== 'string' || !input.trim()) {
+        throw new Error('Please provide some recipe text to parse');
+    }
+
+    const trimmedInput = input.trim();
+
     // Check if input is a URL
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
-    if (urlRegex.test(input.trim())) {
+    if (urlRegex.test(trimmedInput)) {
         try {
-            return await fetchRecipeFromUrl(input.trim());
+            return await fetchRecipeFromUrl(trimmedInput);
         } catch (error) {
-            console.error("URL Fetch failed, falling back to basic text parsing if possible", error);
-            // Fallback: if fetch fails, maybe they pasted a URL but didn't mean to fetch? 
-            // Or maybe it's just raw text that looks like a url? Unexpected but safe to fall back.
+            console.error("URL Fetch failed:", error);
+            throw new Error(`Could not fetch recipe from URL: ${error.message}`);
         }
     }
 
     // Default: Parse as text
-    return parseRecipeFromText(input);
+    try {
+        return parseRecipeFromText(trimmedInput);
+    } catch (error) {
+        console.error("Text parsing failed:", error);
+        throw new Error(`Could not parse recipe text: ${error.message}`);
+    }
 };
 
 // --- URL Fetching & JSON-LD Extraction ---
