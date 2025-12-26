@@ -88,16 +88,16 @@ serve(async (req) => {
 
 RULES:
 1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
-2. **FORMATTING REPAIR**: You MUST fix broken layout.
-    - If instructions are a single block of text, split them into numbered steps.
-    - If ingredients are a comma-separated list, split them into newlines.
+2. **FORMATTING REPAIR**:
+    - **Instructions**: Split into separate steps using newlines (\\n). **DO NOT NUMBER THEM.** The app adds numbers automatically.
+    - **Ingredients**: Split into a clean list using newlines (\\n). **DO NOT USE BULLETS OR NUMBERS.**
     - Fix capitalization and spacing.
 
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title from Source",
   "ingredients": "Ingredient 1\\nIngredient 2",
-  "instructions": "1. Step one.\\n2. Step two.",
+  "instructions": "Step one.\\nStep two.\\nStep three.",
   "prepTime": 0,
   "cookTime": 0,
   "servings": 0,
