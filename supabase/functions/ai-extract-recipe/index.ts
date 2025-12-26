@@ -28,9 +28,9 @@ serve(async (req) => {
             throw new Error('Gemini API key not configured')
         }
 
-        // Using gemini-flash-latest as it is the confirmed available model alias
-        // Using v1beta endpoint with x-goog-api-key header
-        const MODEL_NAME = 'gemini-flash-latest';
+        // Using gemini-1.5-flash as it is the stable model with high free tier limits (15 RPM / 1500 RPD)
+        // 'gemini-flash-latest' was resolving to a restricted preview model (e.g. 2.5-flash) with low quotas.
+        const MODEL_NAME = 'gemini-1.5-flash';
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
         // 4. API Request Construction
