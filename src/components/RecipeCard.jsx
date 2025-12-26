@@ -2,13 +2,21 @@ import React from 'react';
 import { Clock, Users, Globe, Lock, ChefHat } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useRecipes } from '../context/RecipeContext';
 
 export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
     const { t } = useLanguage();
     const { user } = useAuth();
+    const { toggleLike, checkIsLiked } = useRecipes();
 
     // Check ownership: Is the current user the creator?
     const isOwner = user && user.id === recipe.user_id;
+    const isLiked = checkIsLiked(recipe.id);
+
+    const handleLikeClick = (e) => {
+        e.stopPropagation(); // Prevent card click (navigation)
+        toggleLike(recipe.id);
+    };
 
     return (
         <div className="recipe-card" onClick={(e) => onClick(recipe.id)}>
@@ -53,9 +61,14 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
                 {/* Footer: Likes & Author */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', fontSize: '0.8rem', color: '#666' }}>
 
-                    {/* Like Icon (No Counter) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <ChefHat size={16} color="var(--color-primary)" />
+                    {/* Interactive Like Icon */}
+                    <div
+                        onClick={handleLikeClick}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '4px', borderRadius: '50%', transition: 'background 0.2s' }}
+                        title={isLiked ? "Unlike" : "Like"}
+                        className="like-btn-hover"
+                    >
+                        <ChefHat size={16} color={isLiked ? 'var(--color-primary)' : '#666'} fill={isLiked ? 'var(--color-primary)' : 'none'} />
                     </div>
 
                     {/* Author Name */}
