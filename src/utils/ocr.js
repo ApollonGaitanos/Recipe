@@ -1,26 +1,24 @@
-import Tesseract from 'tesseract.js';
+import { createWorker } from 'tesseract.js';
 
 /**
  * Recognizes text from an image file using Tesseract.js
  * Supports both English and Greek.
  * 
  * @param {File} imageFile The image file to process
- * @param {Function} onProgress Optional callback for progress updates (0-1)
+ * @param {Function} onProgress Optional callback for progress updates
  * @returns {Promise<string>} The extracted text
  */
 export const recognizeText = async (imageFile, onProgress = () => { }) => {
     try {
-        const worker = await Tesseract.createWorker({
+        // Tesseract v6/v7: createWorker(langs, oem, options)
+        // OEM 1 = LSTM (Neural Nets), which is the default and good for accuracy.
+        const worker = await createWorker('eng+ell', 1, {
             logger: m => {
-                // Pass both status and progress
                 onProgress({ status: m.status, progress: m.progress || 0 });
             }
         });
 
-        // Load languages: English and Greek
-        await worker.loadLanguage('eng+ell');
-        await worker.initialize('eng+ell');
-
+        // Worker is already initialized with 'eng+ell' by createWorker
         const { data: { text } } = await worker.recognize(imageFile);
 
         await worker.terminate();
