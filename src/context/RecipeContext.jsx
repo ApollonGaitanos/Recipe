@@ -11,7 +11,8 @@ export function useRecipes() {
 
 export default function RecipeContext({ children }) {
     const { user } = useAuth();
-    const [recipes, setRecipes] = useState([]);
+    const [recipes, setRecipes] = useState([]); // My Recipes
+    const [publicRecipes, setPublicRecipes] = useState([]); // Public Feed
     const [loading, setLoading] = useState(true);
 
     // Helpers to convert between App (camelCase) and DB (snake_case)
@@ -24,6 +25,8 @@ export default function RecipeContext({ children }) {
         cookTime: dbRecipe.cook_time,
         servings: dbRecipe.servings,
         tags: dbRecipe.tags || [],
+        is_public: dbRecipe.is_public, // Add is_public
+        user_id: dbRecipe.user_id, // Add user_id for ownership check
         createdAt: dbRecipe.created_at
     });
 
@@ -35,44 +38,52 @@ export default function RecipeContext({ children }) {
         prep_time: appRecipe.prepTime,
         cook_time: appRecipe.cookTime,
         servings: appRecipe.servings,
-        tags: appRecipe.tags
+        tags: appRecipe.tags,
+        is_public: appRecipe.is_public || false
     });
 
-    // Fetch recipes effect
-    useEffect(() => {
-        const fetchRecipes = async () => {
-            setLoading(true);
-            if (user) {
-                // Cloud Mode
-                const { data, error } = await supabase
-                    .from('recipes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+    // Fetch My Recipes
+    const fetchRecipes = async () => {
+        if (user) {
+            const { data, error } = await supabase
+                .from('recipes')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
 
-                if (!error && data) {
-                    setRecipes(data.map(toAppRecipe));
-                }
-            } else {
-                // Local Mode
-                const saved = localStorage.getItem('recipes');
-                setRecipes(saved ? JSON.parse(saved) : []);
+            if (!error && data) {
+                setRecipes(data.map(toAppRecipe));
             }
+        } else {
+            setRecipes([]);
+        }
+    };
+
+    // Fetch Public Recipes
+    const fetchPublicRecipes = async () => {
+        const { data, error } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('is_public', true)
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            setPublicRecipes(data.map(toAppRecipe));
+        }
+    };
+
+    // Initial Fetch
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            await Promise.all([fetchPublicRecipes(), fetchRecipes()]);
             setLoading(false);
         };
-
-        fetchRecipes();
+        load();
     }, [user]);
-
-    // Save to LocalStorage whenever recipes change (only for guest mode)
-    useEffect(() => {
-        if (!user && !loading) {
-            localStorage.setItem('recipes', JSON.stringify(recipes));
-        }
-    }, [recipes, user, loading]);
 
     const addRecipe = async (recipe) => {
         if (user) {
-            // Cloud Add
             const newDbRecipe = toDbRecipe(recipe, user.id);
             const { data, error } = await supabase
                 .from('recipes')
@@ -82,21 +93,11 @@ export default function RecipeContext({ children }) {
             if (!error && data) {
                 setRecipes(prev => [toAppRecipe(data[0]), ...prev]);
             }
-        } else {
-            // Local Add
-            const newRecipe = {
-                id: uuidv4(),
-                createdAt: new Date().toISOString(),
-                ...recipe
-            };
-            setRecipes(prev => [newRecipe, ...prev]);
         }
     };
 
     const updateRecipe = async (id, updatedData) => {
         if (user) {
-            // Cloud Update
-            // We map the partial updates to db format
             const dbUpdates = {};
             if (updatedData.title) dbUpdates.title = updatedData.title;
             if (updatedData.ingredients) dbUpdates.ingredients = updatedData.ingredients;
@@ -105,6 +106,8 @@ export default function RecipeContext({ children }) {
             if (updatedData.cookTime) dbUpdates.cook_time = updatedData.cookTime;
             if (updatedData.servings) dbUpdates.servings = updatedData.servings;
             if (updatedData.tags) dbUpdates.tags = updatedData.tags;
+            // Explicitly handle is_public updates if passed
+            if (updatedData.is_public !== undefined) dbUpdates.is_public = updatedData.is_public;
 
             const { error } = await supabase
                 .from('recipes')
@@ -112,17 +115,15 @@ export default function RecipeContext({ children }) {
                 .eq('id', id);
 
             if (!error) {
-                setRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updatedData } : r));
+                // Refresh to ensure consistency
+                await fetchRecipes();
+                await fetchPublicRecipes();
             }
-        } else {
-            // Local Update
-            setRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updatedData } : r));
         }
     };
 
     const deleteRecipe = async (id) => {
         if (user) {
-            // Cloud Delete
             const { error } = await supabase
                 .from('recipes')
                 .delete()
@@ -130,15 +131,26 @@ export default function RecipeContext({ children }) {
 
             if (!error) {
                 setRecipes(prev => prev.filter(r => r.id !== id));
+                setPublicRecipes(prev => prev.filter(r => r.id !== id));
             }
-        } else {
-            // Local Delete
-            setRecipes(prev => prev.filter(r => r.id !== id));
         }
     };
 
+    const toggleVisibility = async (id, isPublic) => {
+        if (!user) return;
+        await updateRecipe(id, { is_public: !isPublic });
+    };
+
     return (
-        <RecipeContextData.Provider value={{ recipes, addRecipe, updateRecipe, deleteRecipe, loading }}>
+        <RecipeContextData.Provider value={{
+            recipes,
+            publicRecipes, // Export publicRecipes
+            addRecipe,
+            updateRecipe,
+            deleteRecipe,
+            toggleVisibility, // Export toggleVisibility
+            loading
+        }}>
             {children}
         </RecipeContextData.Provider>
     );
