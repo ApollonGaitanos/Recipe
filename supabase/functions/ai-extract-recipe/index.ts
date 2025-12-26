@@ -56,6 +56,7 @@ IMPORTANT FORMATTING RULES:
 4. **Times**: In minutes (0 if missing).
 5. **Servings**: Number (0 if missing).
 6. **Tags**: Relevant categories.
+7. **LANGUAGE**: Detect the language of the input text (e.g., Greek, English) and generate the **Title**, **Ingredients**, and **Instructions** IN THAT SAME LANGUAGE. Do not translate unless explicitly asked.
 
 Recipe to format:
 ${text}`
