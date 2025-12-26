@@ -1,7 +1,8 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 serve(async (req) => {
-    // Handle CORS
+    // 1. CORS Handling
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             headers: {
@@ -13,104 +14,112 @@ serve(async (req) => {
     }
 
     try {
+        // 2. Input Parsing
         const { text } = await req.json()
 
-        // Validate input
         if (!text || typeof text !== 'string' || text.trim().length < 10) {
             throw new Error('Please provide recipe text (at least 10 characters)')
         }
 
-        // Get Gemini API key from environment
+        // 3. API Configuration
         const apiKey = Deno.env.get('GEMINI_API_KEY')
         if (!apiKey) {
             throw new Error('Gemini API key not configured')
         }
 
-        // Call Gemini API
-        const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
+        // Using gemini-flash-latest as it is the confirmed available model alias
+        // Using v1beta endpoint with x-goog-api-key header
+        const MODEL_NAME = 'gemini-flash-latest';
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+
+        // 4. API Request Construction
+        const payload = {
+            contents: [{
+                parts: [{
+                    text: `You are a professional recipe formatter. Extract and CLEAN UP this recipe text into a polished, professional format.
 
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Professional Recipe Title",
-  "ingredients": "2 cups all-purpose flour\\n1 cup granulated sugar\\n1/2 cup cocoa powder",
-  "instructions": "Preheat oven to 350°F (175°C).\\nMix all dry ingredients in a large bowl.\\nBake for 30-35 minutes.",
+  "ingredients": "2 cups all-purpose flour\\n1 cup granulated sugar",
+  "instructions": "Preheat oven to 350°F (175°C).\\nMix ingredients.",
   "prepTime": 15,
   "cookTime": 30,
   "servings": 8,
-  "tags": "dessert, chocolate, cake"
+  "tags": "dessert, cake"
 }
 
 IMPORTANT FORMATTING RULES:
-1. **Title**: Make it proper and appetizing (capitalize properly)
-2. **Ingredients**: 
-   - One ingredient per line (use \\n)
-   - Use standard measurements (cups, tbsp, tsp, grams)
-   - Remove casual language ("like", "some", "maybe")
-   - Format: "2 cups flour" not "you need like 2 cups of flour"
-3. **Instructions**:
-   - One clear step per line (use \\n)
-   - Start each step with a verb (Preheat, Mix, Pour, Bake)
-   - Remove casual language ("real good", "just", "kinda")
-   - Be specific with temperatures and times
-4. **Times**: Extract in minutes (0 if not mentioned)
-5. **Servings**: Extract as number (0 if not mentioned)
-6. **Tags**: Add relevant categories (cuisine, meal type, main ingredient)
+1. **Title**: Make it proper and appetizing.
+2. **Ingredients**: One per line, standard measurements, remove casual language.
+3. **Instructions**: One clear step per line, start with verbs, remove casual language.
+4. **Times**: In minutes (0 if missing).
+5. **Servings**: Number (0 if missing).
+6. **Tags**: Relevant categories.
 
-Recipe text to format:
+Recipe to format:
 ${text}`
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.2,
-                        maxOutputTokens: 1000,
-                    }
-                })
+                }]
+            }],
+            generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 1000,
+                responseMimeType: "application/json"
             }
-        )
+        };
 
-        if (!geminiResponse.ok) {
-            const error = await geminiResponse.text()
-            console.error('Gemini API error:', error)
-            throw new Error(`Gemini API failed: ${geminiResponse.statusText}`)
+        // 5. API Call
+        console.log(`Sending request to ${MODEL_NAME}...`);
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(payload)
+        });
+
+        // 6. Error Handling
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Gemini API Error:', response.status, errorText);
+            throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
         }
 
-        const geminiData = await geminiResponse.json()
-        const aiResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
+        const data = await response.json();
 
-        if (!aiResponse) {
-            throw new Error('No response from Gemini AI')
+        // 7. Response Parsing
+        const candidate = data.candidates?.[0];
+        if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
+            console.error('Invalid Gemini Response:', JSON.stringify(data));
+            throw new Error('Gemini returned an empty or invalid response.');
         }
 
-        // Parse AI response
-        let recipeData
+        let aiText = candidate.content.parts[0].text.trim();
+
+        // Clean markdown code blocks if present
+        if (aiText.startsWith('```json')) {
+            aiText = aiText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (aiText.startsWith('```')) {
+            aiText = aiText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+
+        let recipeData;
         try {
-            // Remove markdown code blocks if present
-            const cleanJson = aiResponse.replace(/```json\n?|\n?```/g, '').trim()
-            recipeData = JSON.parse(cleanJson)
-        } catch (parseError) {
-            console.error('Failed to parse Gemini response:', aiResponse)
-            throw new Error('AI returned invalid JSON')
+            recipeData = JSON.parse(aiText);
+        } catch (e) {
+            console.error('JSON Parse Error. Raw text:', aiText);
+            throw new Error('Failed to parse AI response as JSON.');
         }
 
-        // Validate required fields
+        // validate minimal structure
         if (!recipeData.title) {
-            throw new Error('AI could not extract a recipe title')
+            throw new Error('AI response missing title');
         }
 
-        // Return the extracted recipe
+        // 8. Success Response
         return new Response(JSON.stringify({
             ...recipeData,
-            // Ensure proper types
             prepTime: parseInt(recipeData.prepTime) || 0,
             cookTime: parseInt(recipeData.cookTime) || 0,
             servings: parseInt(recipeData.servings) || 0,
@@ -119,18 +128,18 @@ ${text}`
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             }
-        })
+        });
 
     } catch (error) {
-        console.error('AI Extract Recipe Error:', error)
+        console.error('Edge Function Error:', error.message);
         return new Response(JSON.stringify({
-            error: error.message || 'Failed to extract recipe with AI'
+            error: error.message || 'Internal Server Error'
         }), {
             status: 400,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             }
-        })
+        });
     }
-})
+});
