@@ -13,6 +13,7 @@ export default function RecipeContext({ children }) {
     const { user } = useAuth();
     const [recipes, setRecipes] = useState([]); // My Recipes
     const [publicRecipes, setPublicRecipes] = useState([]); // Public Feed
+    const [userLikes, setUserLikes] = useState(new Set()); // Set of liked recipe IDs
     const [loading, setLoading] = useState(true);
 
     // Helpers to convert between App (camelCase) and DB (snake_case)
@@ -27,8 +28,8 @@ export default function RecipeContext({ children }) {
         tags: dbRecipe.tags || [],
         is_public: dbRecipe.is_public,
         user_id: dbRecipe.user_id,
-        author_username: dbRecipe.author_username, // New
-        likes_count: dbRecipe.likes_count || 0,   // New
+        author_username: dbRecipe.author_username,
+        likes_count: dbRecipe.likes_count || 0,
         createdAt: dbRecipe.created_at
     });
 
@@ -42,8 +43,24 @@ export default function RecipeContext({ children }) {
         servings: appRecipe.servings,
         tags: appRecipe.tags,
         is_public: appRecipe.is_public || false,
-        author_username: username // New
+        author_username: username
     });
+
+    // Fetch User Likes
+    const fetchUserLikes = async () => {
+        if (!user) {
+            setUserLikes(new Set());
+            return;
+        }
+        const { data, error } = await supabase
+            .from('likes')
+            .select('recipe_id')
+            .eq('user_id', user.id);
+
+        if (!error && data) {
+            setUserLikes(new Set(data.map(l => l.recipe_id)));
+        }
+    };
 
     // Fetch My Recipes
     const fetchRecipes = async () => {
@@ -79,7 +96,7 @@ export default function RecipeContext({ children }) {
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            await Promise.all([fetchPublicRecipes(), fetchRecipes()]);
+            await Promise.all([fetchPublicRecipes(), fetchRecipes(), fetchUserLikes()]);
             setLoading(false);
         };
         load();
@@ -150,48 +167,50 @@ export default function RecipeContext({ children }) {
         await updateRecipe(id, { is_public: !isPublic });
     };
 
-    // New: Handle Likes
+    // Toggle Like with Sync
     const toggleLike = async (recipeId) => {
         if (!user) return; // Must be logged in
 
-        try {
-            // 1. Check if liked
-            const { data: existingLike, error: checkError } = await supabase
-                .from('likes')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('recipe_id', recipeId)
-                .single();
+        // Optimistic Update
+        const isLiked = userLikes.has(recipeId);
+        setUserLikes(prev => {
+            const next = new Set(prev);
+            if (isLiked) next.delete(recipeId);
+            else next.add(recipeId);
+            return next;
+        });
 
-            if (existingLike) {
+        try {
+            if (isLiked) {
                 // UNLIKE
                 await supabase.from('likes').delete().eq('user_id', user.id).eq('recipe_id', recipeId);
-                // Trigger handles count update, but let's refresh local state optimistically or re-fetch
             } else {
                 // LIKE
                 await supabase.from('likes').insert([{ user_id: user.id, recipe_id: recipeId }]);
             }
 
-            // Re-fetch public recipes to get updated counts
-            // (A bit aggressive but ensures accuracy without complex local state mgmt for now)
+            // Sync counts
             await fetchPublicRecipes();
-            await fetchRecipes(); // Also my recipes just in case
+            await fetchRecipes();
 
         } catch (err) {
             console.error("Like toggle failed", err);
+            // Revert on error
+            setUserLikes(prev => {
+                const next = new Set(prev);
+                if (isLiked) next.add(recipeId);
+                else next.delete(recipeId);
+                return next;
+            });
         }
     };
 
-    // Check if current user likes a recipe
+    // Synchronous Check (Fast)
+    const checkIsLiked = (recipeId) => userLikes.has(recipeId);
+
+    // Asynchronous Check (Legacy/Backup)
     const hasUserLiked = async (recipeId) => {
-        if (!user) return false;
-        const { data } = await supabase
-            .from('likes')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('recipe_id', recipeId)
-            .maybeSingle(); // Safe for no rows
-        return !!data;
+        return userLikes.has(recipeId);
     };
 
     return (
@@ -203,8 +222,8 @@ export default function RecipeContext({ children }) {
             deleteRecipe,
             toggleVisibility,
             toggleLike,
-            checkIsLiked, // New synchronous check
-            hasUserLiked, // Keep for backward compat if needed
+            checkIsLiked,
+            hasUserLiked,
             loading
         }}>
             {children}
