@@ -101,79 +101,107 @@ export default function RecipeContext({ children }) {
         };
         load();
 
-        // Helper to fetch valid full recipe data on event
-        const handleRealtimeEvent = async (id, eventType) => {
-            if (eventType === 'DELETE') {
-                // Instant local removal
-                setPublicRecipes(prev => prev.filter(r => r.id !== id));
-                setRecipes(prev => prev.filter(r => r.id !== id));
-                return;
-            }
-
-            // For INSERT/UPDATE, fetch fresh valid data
-            const { data, error } = await supabase
-                .from('recipes')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            // CRITICAL FIX: If fetch fails (e.g. RLS hides it because it's now private), treat as DELETION.
-            if (error || !data) {
-                setPublicRecipes(prev => prev.filter(r => r.id !== id));
-                // Also ensure it's removed from 'recipes' if I can't see it (though usually owner can see private)
-                // This safety check ensures "ghost" recipes don't stick around.
-                setRecipes(prev => prev.filter(r => r.id !== id));
-                return;
-            }
-
-            // If we found data, proceed to Update/Add
-            if (data) {
-                const appRecipe = toAppRecipe(data);
-
-                // Update Public Feed
-                setPublicRecipes(prev => {
-                    const exists = prev.find(r => r.id === appRecipe.id);
-                    if (appRecipe.is_public) {
-                        // Update existing or Add new
-                        return exists
-                            ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
-                            : [appRecipe, ...prev];
-                    } else {
-                        // Remove if it became private (Double safety, though fetch usually fails if private)
-                        return prev.filter(r => r.id !== appRecipe.id);
-                    }
-                });
-
-                // Update My Recipes
-                if (user && appRecipe.user_id === user.id) {
-                    setRecipes(prev => {
-                        const exists = prev.find(r => r.id === appRecipe.id);
-                        return exists
-                            ? prev.map(r => r.id === appRecipe.id ? appRecipe : r)
-                            : [appRecipe, ...prev];
-                    });
-                }
-            }
-        };
-
-        const channel = supabase
-            .channel('public:recipes')
+        // SUBSCRIPTION 1: Content Updates (Likes, Edits on VISIBLE recipes)
+        // This handles "Like Count" increments live.
+        // We use a separate channel to avoid conflicts.
+        const contentChannel = supabase
+            .channel('public:recipes:content')
             .on(
                 'postgres_changes',
-                { event: '*', schema: 'public', table: 'recipes' },
+                { event: 'UPDATE', schema: 'public', table: 'recipes' },
                 (payload) => {
-                    // Trigger fetch-based update
-                    // Use new.id or old.id depending on event
-                    const targetId = payload.new?.id || payload.old?.id;
-                    if (targetId) {
-                        handleRealtimeEvent(targetId, payload.eventType);
+                    // We trust this payload for basic fields like likes_count if we already have the recipe
+                    // and if RLS allowed us to receive it.
+                    const newRecord = payload.new;
+                    const targetId = newRecord.id;
+
+                    // Update in place if exists
+                    // (toAppRecipe handles nulls safely now)
+                    setPublicRecipes(prev => prev.map(r => r.id === targetId ? { ...r, ...toAppRecipe(newRecord) } : r));
+                    setRecipes(prev => prev.map(r => r.id === targetId ? { ...r, ...toAppRecipe(newRecord) } : r));
+                }
+            )
+            .subscribe();
+
+        // SUBSCRIPTION 2: Visibility Signals (Add/Remove from Feed)
+        // This guarantees we know when something goes Private, even if RLS hides the main record event.
+        // Requires 'recipe_signals' table to exist.
+        const signalChannel = supabase
+            .channel('public:recipe_signals')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'recipe_signals' },
+                async (payload) => {
+                    const { eventType, new: newSig, old: oldSig } = payload;
+
+                    if (eventType === 'DELETE') {
+                        // Signal deleted -> Remove Recipe from Feed
+                        const targetId = oldSig.recipe_id;
+                        setPublicRecipes(prev => prev.filter(r => r.id !== targetId));
+                        // Don't remove from My Recipes (deletion handled by recipes channel or explicit manual refresh if critical)
+                        return;
+                    }
+
+                    const targetId = newSig.recipe_id;
+                    const isPublic = newSig.is_public;
+
+                    if (!isPublic) {
+                        // Became Private -> Remove from Public Feed
+                        setPublicRecipes(prev => prev.filter(r => r.id !== targetId));
+                    } else {
+                        // Became Public (or is Public) -> Fetch & Ensure it's in Feed
+                        // We fetch because the signal table doesn't have the recipe content.
+                        const { data, error } = await supabase
+                            .from('recipes')
+                            .select('*')
+                            .eq('id', targetId)
+                            .single();
+
+                        // If we can fetch it (RLS allows), add/update it
+                        if (!error && data) {
+                            const appRecipe = toAppRecipe(data);
+                            setPublicRecipes(prev => {
+                                const exists = prev.find(r => r.id === targetId);
+                                return exists
+                                    ? prev.map(r => r.id === targetId ? appRecipe : r)
+                                    : [appRecipe, ...prev];
+                            });
+
+                            // Update My Recipes too if I own it
+                            if (user && appRecipe.user_id === user.id) {
+                                setRecipes(prev => {
+                                    const exists = prev.find(r => r.id === targetId);
+                                    return exists
+                                        ? prev.map(r => r.id === targetId ? appRecipe : r)
+                                        : [appRecipe, ...prev];
+                                });
+                            }
+                        }
                     }
                 }
             )
             .subscribe();
 
+        // SUBSCRIPTION 3: Deletions (Real Deletions from Recipes table)
+        // We still need this because deleting a recipe deletes the signal cascade, 
+        // but listening to 'recipes' DELETE is direct and standard.
+        const deleteChannel = supabase
+            .channel('public:recipes:delete')
+            .on(
+                'postgres_changes',
+                { event: 'DELETE', schema: 'public', table: 'recipes' },
+                (payload) => {
+                    const oldRecord = payload.old;
+                    setPublicRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
+                    setRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
+                }
+            )
+            .subscribe();
+
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(contentChannel);
+            supabase.removeChannel(signalChannel);
+            supabase.removeChannel(deleteChannel);
         };
     }, [user]);
 
@@ -181,10 +209,7 @@ export default function RecipeContext({ children }) {
         if (user) {
             const username = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             const newDbRecipe = toDbRecipe(recipe, user.id, username);
-            const { data, error } = await supabase
-                .from('recipes')
-                .insert([newDbRecipe])
-                .select();
+            await supabase.from('recipes').insert([newDbRecipe]).select();
         }
     };
 
@@ -203,19 +228,13 @@ export default function RecipeContext({ children }) {
             const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             dbUpdates.author_username = currentUsername;
 
-            const { error } = await supabase
-                .from('recipes')
-                .update(dbUpdates)
-                .eq('id', id);
+            await supabase.from('recipes').update(dbUpdates).eq('id', id);
         }
     };
 
     const deleteRecipe = async (id) => {
         if (user) {
-            const { error } = await supabase
-                .from('recipes')
-                .delete()
-                .eq('id', id);
+            await supabase.from('recipes').delete().eq('id', id);
         }
     };
 
