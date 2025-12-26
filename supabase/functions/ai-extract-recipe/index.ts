@@ -28,9 +28,9 @@ serve(async (req) => {
             throw new Error('Gemini API key not configured')
         }
 
-        // Using gemini-2.0-flash-exp (Experimental) as it typically has generous free quotas for testing.
-        // Standard '2.0-flash' has 0 free quota. '1.5-flash' is retired.
-        const MODEL_NAME = 'gemini-2.0-flash-exp';
+        // Using gemini-2.5-flash-lite as the definitive free-tier model (1,000 req/day).
+        // 'flash' models have restricted quotas (20/day). '2.0-flash' is paid.
+        const MODEL_NAME = 'gemini-2.5-flash-lite';
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
         // 4. API Request Construction
