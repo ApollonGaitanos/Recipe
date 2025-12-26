@@ -804,26 +804,53 @@ body.dark-mode .modal-close:hover {
    MOBILE REDESIGN & NAVIGATION (ITERATION 2)
    ========================================= */
 
-/* Top Bar Container */
-.top-bar {
+/* =========================================
+   UI SPLIT: DESKTOP & MOBILE HEADERS
+   ========================================= */
+
+/* DESKTOP HEADER (Default) */
+.desktop-header {
   display: flex;
-  justify-content: flex-end;
-  /* Push items to right */
+  justify-content: space-between;
   align-items: center;
-  padding-top: 8px;
-  /* Reduced from 12px for compact look */
-  min-height: 48px;
+  padding: 24px 0;
+  width: 100%;
 }
 
-/* Desktop Actions (Default Visible) */
+.mobile-header {
+  display: none;
+  /* Hidden by default on desktop */
+}
+
+/* Desktop Actions container adjustments */
 .desktop-actions {
   display: flex;
-  gap: 20px;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-left: 20px;
-  /* Spacing from Logo */
+}
+
+/* Navigation Tabs Container */
+.nav-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  background: transparent;
+  color: inherit;
+  font-weight: 500;
+}
+
+.nav-item.active-nav {
+  background: var(--bg-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 /* Mobile Header Controls (Default Hidden) */
@@ -831,7 +858,7 @@ body.dark-mode .modal-close:hover {
   display: none;
 }
 
-/* Segmented Control Container (Replacer for Nav Tabs) */
+/* Segmented Control Container (Mobile Default: Pill) */
 .nav-segmented-control {
   display: flex;
   background: var(--bg-secondary);
@@ -867,6 +894,47 @@ body.dark-mode .modal-close:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   /* Slight lift */
   font-weight: 600;
+}
+
+/* DESKTOP OVERRIDE: RESTORE ORIGINAL UI (Orange Buttons) */
+@media (min-width: 769px) {
+  .nav-segmented-control {
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 12px;
+    /* Original gap */
+    border-radius: 0;
+    display: inline-flex;
+    /* content width */
+  }
+
+  .segment-item {
+    border-radius: var(--radius-md) !important;
+    /* Original radius */
+    border: 1px solid var(--color-border);
+    /* Original border */
+    background: var(--color-surface);
+    /* Original bg */
+    color: var(--color-text-primary);
+    /* Original text */
+    flex: initial;
+    /* Auto width */
+    padding: 10px 20px;
+    /* Bigger desktop padding */
+  }
+
+  .segment-item:hover {
+    background: var(--bg-secondary);
+  }
+
+  .segment-item.active {
+    background: var(--color-primary) !important;
+    /* Orange */
+    color: white !important;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+  }
 }
 
 /* Mobile/Desktop Text Visibility defaults */
@@ -1013,14 +1081,17 @@ body.dark-mode .modal-close:hover {
 
 @media (max-width: 768px) {
 
-  /* Hide Desktop Actions */
-  .desktop-actions {
+  /* UI SPLIT: Toggle Visibility */
+  .desktop-header {
     display: none;
   }
 
-  /* Show Mobile Controls */
-  .mobile-header-controls {
-    display: block;
+  .mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    margin-bottom: 12px;
   }
 
   /* Compact Navigation Text */
@@ -1048,15 +1119,16 @@ body.dark-mode .modal-close:hover {
 
   /* Main Header Alignment */
   .main-header {
-    margin-top: 12px !important;
+    margin-top: 0 !important;
+    /* Remove gap between top bar and nav */
   }
 
   /* Ensure buttons are standard mobile size */
   .btn-primary,
   .btn-secondary,
   .search-input {
-    height: 44px;
-    /* Reduced from 48px to 44px for sleeker look */
+    height: 48px;
+    /* Touch target size */
     font-size: 16px;
     /* Prevents iOS zoom */
     border-radius: 999px;

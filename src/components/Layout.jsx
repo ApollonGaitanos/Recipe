@@ -84,30 +84,30 @@ export default function Layout({
                 </div>
             )}
 
-            {/* Top Bar: Logo, Desktop Actions, Mobile Menu */}
-            <div className="top-bar">
-                {/* Logo & Title (Now in Top Bar) */}
-                <div
-                    onClick={() => onNavigate('home')}
-                    className="app-branding"
-                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', marginRight: 'auto' }}
-                >
-                    <div style={{
-                        background: 'var(--color-primary)',
-                        color: 'white',
-                        padding: '8px',
-                        borderRadius: '12px',
-                        display: 'flex'
-                    }}>
-                        <ChefHat size={24} />
+            {/* =======================
+                DESKTOP HEADER
+               ======================= */}
+            <div className="desktop-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div
+                        onClick={() => onNavigate('home')}
+                        className="app-branding"
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                    >
+                        <div style={{
+                            background: 'var(--color-primary)',
+                            color: 'white',
+                            padding: '10px',
+                            borderRadius: '12px',
+                            display: 'flex'
+                        }}>
+                            <ChefHat size={28} />
+                        </div>
+                        <h1 className="title" style={{ marginBottom: 0, fontSize: '1.5rem' }}>{t('appTitle')}</h1>
                     </div>
-                    {/* Hide Title on very small screens if needed, but usually fits now */}
-                    <h1 className="title" style={{ marginBottom: 0, fontSize: '1.2rem' }}>{t('appTitle')}</h1>
-                </div>
 
-                {/* Desktop Actions */}
-                <div className="desktop-actions">
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    {/* Left-Side Controls (Language/Theme) */}
+                    <div style={{ display: 'flex', gap: '12px', marginLeft: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '20px' }}>
                         <button className="btn-secondary" onClick={toggleLanguage} title="Switch Language">
                             <Languages size={18} /> {language.toUpperCase()}
                         </button>
@@ -115,7 +115,9 @@ export default function Layout({
                             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                         </button>
                     </div>
+                </div>
 
+                <div className="desktop-actions">
                     <div>
                         {user ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -136,13 +138,32 @@ export default function Layout({
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* Mobile Hamburger */}
-                <div className="mobile-header-controls">
-                    <button className="btn-icon" onClick={() => setIsMobileMenuOpen(true)}>
-                        <Menu size={24} />
-                    </button>
+            {/* =======================
+                MOBILE HEADER (Minimalist)
+               ======================= */}
+            <div className="mobile-header">
+                <div
+                    onClick={() => onNavigate('home')}
+                    className="app-branding"
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
+                    <div style={{
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        padding: '6px',
+                        borderRadius: '8px',
+                        display: 'flex'
+                    }}>
+                        <ChefHat size={20} />
+                    </div>
+                    <h1 className="title" style={{ marginBottom: 0, fontSize: '1.2rem' }}>{t('appTitle')}</h1>
                 </div>
+
+                <button className="btn-icon" onClick={() => setIsMobileMenuOpen(true)}>
+                    <Menu size={24} />
+                </button>
             </div>
 
             {/* Segmented Navigation Control (Formerly Main Header) */}

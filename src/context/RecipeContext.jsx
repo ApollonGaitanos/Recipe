@@ -209,7 +209,23 @@ export default function RecipeContext({ children }) {
         if (user) {
             const username = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             const newDbRecipe = toDbRecipe(recipe, user.id, username);
-            await supabase.from('recipes').insert([newDbRecipe]).select();
+            const { data, error } = await supabase.from('recipes').insert([newDbRecipe]).select().single();
+
+            if (error) {
+                console.error("Error adding recipe:", error);
+                throw error;
+            }
+
+            // OPTIMISTIC / MANUAL UPDATE
+            // We do this to ensure immediate UI feedback without waiting for Realtime subscription
+            if (data) {
+                const newAppRecipe = toAppRecipe(data);
+                setRecipes(prev => [newAppRecipe, ...prev]);
+                if (newAppRecipe.is_public) {
+                    setPublicRecipes(prev => [newAppRecipe, ...prev]);
+                }
+            }
+            return data;
         }
     };
 
