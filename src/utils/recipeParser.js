@@ -29,7 +29,24 @@ export const parseRecipe = async (input) => {
 // --- URL Fetching & JSON-LD Extraction ---
 
 const fetchRecipeFromUrl = async (url) => {
-    // Use AllOrigins proxy to bypass CORS
+    // Try Edge Function first (more reliable)
+    try {
+        const { supabase } = await import('../supabaseClient');
+        const { data, error } = await supabase.functions.invoke('scrape-recipe', {
+            body: { url }
+        });
+
+        if (!error && data && !data.error) {
+            console.log('✅ Recipe scraped via Edge Function');
+            return data;
+        }
+
+        console.warn('Edge Function failed, falling back to client-side:', error || data.error);
+    } catch (edgeFunctionError) {
+        console.warn('Edge Function not available, using client-side parser:', edgeFunctionError);
+    }
+
+    // Fallback: Client-side parsing (original method)
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl);
     const data = await response.json();
@@ -63,7 +80,6 @@ const fetchRecipeFromUrl = async (url) => {
     }
 
     // 2. Fallback: Parse visible text from the HTML body
-    // We clean up script/style tags first to avoid junk
     doc.querySelectorAll('script, style, nav, footer, header').forEach(el => el.remove());
     return parseRecipeFromText(doc.body.innerText);
 };
