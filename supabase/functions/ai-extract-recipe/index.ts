@@ -20,25 +20,24 @@ serve(async (req) => {
             throw new Error('Please provide recipe text (at least 10 characters)')
         }
 
-        // Get OpenAI API key from environment
-        const apiKey = Deno.env.get('OPENAI_API_KEY')
+        // Get Gemini API key from environment
+        const apiKey = Deno.env.get('GEMINI_API_KEY')
         if (!apiKey) {
-            throw new Error('OpenAI API key not configured')
+            throw new Error('Gemini API key not configured')
         }
 
-        // Call OpenAI API
-        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'gpt-4-turbo-preview',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `You are a recipe extraction assistant. Extract recipe data from any format (messy notes, OCR text, screenshots, etc.) and return ONLY valid JSON with this exact structure:
+        // Call Gemini API
+        const geminiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `Extract recipe data from this text and return ONLY valid JSON with this exact structure:
 {
   "title": "Recipe Title",
   "ingredients": "ingredient 1\\ningredient 2\\ningredient 3",
@@ -55,29 +54,31 @@ Rules:
 - prepTime/cookTime: numbers in minutes (0 if not mentioned)
 - servings: number (0 if not mentioned)
 - tags: comma-separated categories
-- Return ONLY the JSON, no markdown, no explanation`
-                    },
-                    {
-                        role: 'user',
-                        content: text
-                    }
-                ],
-                temperature: 0.3,
-                max_tokens: 1000,
-            })
-        })
+- Return ONLY the JSON, no markdown, no explanation
 
-        if (!openaiResponse.ok) {
-            const error = await openaiResponse.text()
-            console.error('OpenAI API error:', error)
-            throw new Error(`OpenAI API failed: ${openaiResponse.statusText}`)
+Recipe text:
+${text}`
+                        }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.2,
+                        maxOutputTokens: 1000,
+                    }
+                })
+            }
+        )
+
+        if (!geminiResponse.ok) {
+            const error = await geminiResponse.text()
+            console.error('Gemini API error:', error)
+            throw new Error(`Gemini API failed: ${geminiResponse.statusText}`)
         }
 
-        const openaiData = await openaiResponse.json()
-        const aiResponse = openaiData.choices[0]?.message?.content
+        const geminiData = await geminiResponse.json()
+        const aiResponse = geminiData.candidates?.[0]?.content?.parts?.[0]?.text
 
         if (!aiResponse) {
-            throw new Error('No response from AI')
+            throw new Error('No response from Gemini AI')
         }
 
         // Parse AI response
@@ -87,7 +88,7 @@ Rules:
             const cleanJson = aiResponse.replace(/```json\n?|\n?```/g, '').trim()
             recipeData = JSON.parse(cleanJson)
         } catch (parseError) {
-            console.error('Failed to parse AI response:', aiResponse)
+            console.error('Failed to parse Gemini response:', aiResponse)
             throw new Error('AI returned invalid JSON')
         }
 
