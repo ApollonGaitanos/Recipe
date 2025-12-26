@@ -63,15 +63,49 @@ const extractWithAI = async (input) => {
         ? { text: input }
         : { text: 'Extract recipe from this image', ...input };
 
-    const { data, error } = await supabase.functions.invoke('ai-extract-recipe', {
-        body
-    });
+    // Use direct fetch to get better error details
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
 
-    if (error || (data && data.error)) {
-        throw new Error(error?.message || data?.error || 'AI extraction failed');
+    // Get function URL - handles local vs production
+    const functionUrl = import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-extract-recipe`
+        : 'http://localhost:54321/functions/v1/ai-extract-recipe';
+
+    console.log('Sending generic fetch to:', functionUrl);
+
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    // Add auth header if we have a token (optional for this function but good practice)
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return data;
+    try {
+        const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Edge Function Error (${response.status}):`, errorText);
+            throw new Error(`Server Error ${response.status}: ${errorText || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        return data;
+
+    } catch (networkError) {
+        console.error("Network/Fetch Error:", networkError);
+        throw new Error(`Network Error: ${networkError.message}`);
+    }
 };
 
 // --- URL Fetching & JSON-LD Extraction ---
