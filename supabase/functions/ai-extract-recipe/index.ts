@@ -89,15 +89,15 @@ serve(async (req) => {
 RULES:
 1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
 2. **FORMATTING REPAIR**:
-    - **Instructions**: Split into separate steps using newlines (\\n). **DO NOT NUMBER THEM.** The app adds numbers automatically.
-    - **Ingredients**: Split into a clean list using newlines (\\n). **DO NOT USE BULLETS OR NUMBERS.**
+    - **Instructions**: Return as an **ARRAY** of strings. One string per step. **DO NOT NUMBER THEM.**
+    - **Ingredients**: Return as an **ARRAY** of strings. One string per ingredient. **DO NOT USE BULLETS.**
     - Fix capitalization and spacing.
 
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title from Source",
-  "ingredients": "Ingredient 1\\nIngredient 2",
-  "instructions": "Step one.\\nStep two.\\nStep three.",
+  "ingredients": ["Ingredient 1", "Ingredient 2"],
+  "instructions": ["Step one.", "Step two.", "Step three."],
   "prepTime": 0,
   "cookTime": 0,
   "servings": 0,
@@ -201,12 +201,21 @@ Recipe to extract:`;
             throw new Error('AI response missing title');
         }
 
+        // HELPER: Join arrays to strings for Frontend
+        const formatParam = (param) => {
+            if (Array.isArray(param)) return param.join('\n');
+            return param || '';
+        };
+
         // 8. Success Response
         return new Response(JSON.stringify({
-            ...recipeData,
+            title: recipeData.title,
+            ingredients: formatParam(recipeData.ingredients),
+            instructions: formatParam(recipeData.instructions),
             prepTime: parseInt(recipeData.prepTime) || 0,
             cookTime: parseInt(recipeData.cookTime) || 0,
             servings: parseInt(recipeData.servings) || 0,
+            tags: recipeData.tags || ''
         }), {
             headers: {
                 'Content-Type': 'application/json',
