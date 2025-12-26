@@ -100,8 +100,18 @@ function AppContent() {
         <RecipeDetail
           id={selectedRecipe.id}
           onBack={() => setSelectedRecipe(null)}
-          onEdit={() => { setSelectedRecipe(null); handleEdit(selectedRecipe.id); }}
+          onEdit={() => { handleEdit(selectedRecipe.id); }}
         />
+
+        {/* Form Overlay for Edit within Detail View */}
+        {isFormOpen && (
+          <RecipeForm
+            isOpen={true}
+            recipeId={editingRecipeId}
+            onSave={handleFormSubmit}
+            onCancel={() => { setIsFormOpen(false); setEditingRecipeId(null); }}
+          />
+        )}
       </Layout>
     );
   }
