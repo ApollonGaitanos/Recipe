@@ -24,13 +24,21 @@ function AppContent() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
+  // Helper for accent-insensitive search (Greek support)
+  const normalizeText = (text) => {
+    return text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
+  };
+
   // Filter Logic
   const displayRecipes = currentView === 'home' ? publicRecipes : recipes;
 
+  // Normalize query once
+  const normalizedQuery = normalizeText(searchQuery);
+
   const filteredRecipes = displayRecipes.filter(r =>
-    r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.ingredients.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.tags && r.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+    normalizeText(r.title).includes(normalizedQuery) ||
+    normalizeText(r.ingredients).includes(normalizedQuery) ||
+    (r.tags && r.tags.some(tag => normalizeText(tag).includes(normalizedQuery)))
   );
 
   const handleEdit = (id) => {
@@ -134,15 +142,7 @@ function AppContent() {
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              onClick={(id) => setSelectedRecipe(recipe)} // Pass ID listener, but setSelectedRecipe uses object. Wait, onClick in Card calls onClick(recipe.id).
-              // Let's fix this. Card calls onClick(id). We need to verify if setSelectedRecipe expects object.
-              // In filteredRecipes.map(recipe ...), selectedRecipe is used to render Detail with ID.
-              // RecipeDetail expects 'id'.
-              // So setSelectedRecipe expects an object? In previous code: setSelectedRecipe(recipe).
-              // Let's look at previous App.jsx: onClick={(id) => setSelectedRecipe(recipe)}. Yes.
-              // Wait, previous code was: onClick={(id) => setSelectedRecipe(recipe)} inside the map.
-              // The recipe variable is from map scope. So it sets the whole object.
-              // Detail uses selectedRecipe.id. It works.
+              onClick={(id) => setSelectedRecipe(recipe)}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
               onToggleVisibility={toggleVisibility}
