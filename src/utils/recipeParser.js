@@ -1,4 +1,4 @@
-export const parseRecipe = async (input) => {
+export const parseRecipe = async (input, useAI = false) => {
     // Validate input
     if (!input || typeof input !== 'string' || !input.trim()) {
         throw new Error('Please provide some recipe text to parse');
@@ -17,13 +17,40 @@ export const parseRecipe = async (input) => {
         }
     }
 
-    // Default: Parse as text
+    // For text input: Try AI first if enabled
+    if (useAI) {
+        try {
+            const aiResult = await extractWithAI(trimmedInput);
+            if (aiResult) {
+                console.log('✅ Recipe extracted with AI');
+                return aiResult;
+            }
+        } catch (aiError) {
+            console.warn('AI extraction failed, falling back to regex:', aiError);
+        }
+    }
+
+    // Default: Parse as text with regex
     try {
         return parseRecipeFromText(trimmedInput);
     } catch (error) {
         console.error("Text parsing failed:", error);
         throw new Error(`Could not parse recipe text: ${error.message}`);
     }
+};
+
+// AI Extraction function
+const extractWithAI = async (text) => {
+    const { supabase } = await import('../supabaseClient');
+    const { data, error } = await supabase.functions.invoke('ai-extract-recipe', {
+        body: { text }
+    });
+
+    if (error || (data && data.error)) {
+        throw new Error(error?.message || data?.error || 'AI extraction failed');
+    }
+
+    return data;
 };
 
 // --- URL Fetching & JSON-LD Extraction ---

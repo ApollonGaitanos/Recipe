@@ -8,6 +8,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t } = useLanguage();
     const [urlValue, setUrlValue] = useState('');
     const [textValue, setTextValue] = useState('');
+    const [useAI, setUseAI] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
     const fileInputRef = useRef(null);
@@ -20,7 +21,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         setIsParsing(true);
         try {
-            const result = await parseRecipe(inputToUse);
+            const result = await parseRecipe(inputToUse, useAI);
             onImport(result);
             resetAndClose();
         } catch (error) {
@@ -46,8 +47,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 setScanProgress(Math.round(progress * 100));
             });
 
-            // 2. Parse the extracted text
-            const result = await parseRecipe(text);
+            // 2. Parse the extracted text (with AI if enabled)
+            const result = await parseRecipe(text, useAI);
             onImport(result);
             resetAndClose();
         } catch (error) {
@@ -159,6 +160,29 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             {t('magicImport.imageButton')}
                         </button>
                     </div>
+
+                    {/* AI Toggle (for text and image only, not URL) */}
+                    {!urlValue.trim() && (
+                        <div style={{ marginTop: '20px', padding: '12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={useAI}
+                                    onChange={(e) => setUseAI(e.target.checked)}
+                                    disabled={isParsing}
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                                <div>
+                                    <div style={{ fontWeight: 600, color: '#92400e' }}>
+                                        ✨ Use AI for better parsing
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: '#78350f', marginTop: '2px' }}>
+                                        Works with messy text, handwriting, any format (~$0.01/use)
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    )}
 
                     {/* Progress Bar for OCR */}
                     {isParsing && scanProgress > 0 && (
