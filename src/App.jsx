@@ -15,24 +15,49 @@ function AppContent() {
   const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
 
-  // View State: 'home' (Public Feed) or 'myRecipes' (Private)
-  const [currentView, setCurrentView] = useState('home');
+  // --- STATE MANAGEMENT ---
 
+  // 1. Navigation State (Strict Separation: LIST | DETAIL | FORM)
+  const [view, setView] = useState({ mode: 'LIST', data: null }); // data: { id }
+
+  // 2. List Filter State
+  const [listType, setListType] = useState('public'); // 'public' | 'private'
   const [searchQuery, setSearchQuery] = useState('');
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingRecipeId, setEditingRecipeId] = useState(null);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+  // 3. Action State
   const [deleteId, setDeleteId] = useState(null);
 
-  // Helper for accent-insensitive search (Greek support)
-  const normalizeText = (text) => {
-    return text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
+  // --- VIEW HELPERS ---
+
+  const goToList = (type) => {
+    setView({ mode: 'LIST', data: null });
+    if (type) setListType(type);
+    setSearchQuery('');
   };
 
-  // Filter Logic
-  const displayRecipes = currentView === 'home' ? publicRecipes : recipes;
+  const goToDetail = (recipe) => {
+    setView({ mode: 'DETAIL', data: { id: recipe.id } });
+  };
 
-  // Normalize query once
+  const goToForm = (id = null) => {
+    setView({ mode: 'FORM', data: { id } });
+  };
+
+  // Calculate display recipes based on listType
+  const displayRecipes = listType === 'public' ? publicRecipes : recipes;
+
+  // --- EFFECTS ---
+
+  // Auth Redirect: If logged out while on private list, go to public
+  useEffect(() => {
+    if (!authLoading && !user && listType === 'private') {
+      setListType('public');
+    }
+  }, [user, authLoading, listType]);
+
+  // --- SEARCH LOGIC ---
+
+  const normalizeText = (text) => text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
   const normalizedQuery = normalizeText(searchQuery);
 
   const filteredRecipes = displayRecipes.filter(r =>
@@ -41,131 +66,117 @@ function AppContent() {
     (r.tags && r.tags.some(tag => normalizeText(tag).includes(normalizedQuery)))
   );
 
-  const handleEdit = (id) => {
-    setEditingRecipeId(id);
-    setIsFormOpen(true);
-  };
+  // --- HANDLERS ---
 
-  const handleDeleteClick = (id) => {
-    setDeleteId(id);
+  const handleFormSubmit = async (data) => {
+    const editingId = view.data?.id;
+    if (editingId) {
+      await updateRecipe(editingId, data);
+      // Return to Detail view of the edited recipe
+      // BUT user might have wanted to go back to list.. let's default to detail to check changes
+      goToDetail({ id: editingId });
+    } else {
+      await addRecipe(data);
+      // Go to private list to see new recipe
+      goToList('private');
+    }
   };
 
   const confirmDelete = async () => {
     if (deleteId) {
       await deleteRecipe(deleteId);
       setDeleteId(null);
-      if (selectedRecipe && selectedRecipe.id === deleteId) {
-        setSelectedRecipe(null);
+      // If we deleted the current detail recipe, go back to list
+      if (view.mode === 'DETAIL' && view.data?.id === deleteId) {
+        goToList();
       }
-    }
-  };
-
-  // Navigate to 'home' if logged out while on 'myRecipes'
-  useEffect(() => {
-    if (!authLoading && !user && currentView === 'myRecipes') {
-      setCurrentView('home');
-    }
-  }, [user, authLoading, currentView]);
-
-
-  // Clear selection when switching views
-  const handleNavigate = (view) => {
-    setCurrentView(view);
-    setSelectedRecipe(null);
-    setIsFormOpen(false);
-    setEditingRecipeId(null);
-    setSearchQuery('');
-  };
-
-  const handleFormSubmit = async (data) => {
-    if (editingRecipeId) {
-      await updateRecipe(editingRecipeId, data);
-    } else {
-      await addRecipe(data);
-    }
-    setIsFormOpen(false);
-    setEditingRecipeId(null);
-    if (!editingRecipeId && user) {
-      setCurrentView('myRecipes'); // Go to my recipes to see new one
-      setSelectedRecipe(null); // Ensure we go to list
     }
   };
 
   if (authLoading || loading) return <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>{t('auth.processing')}</div>;
 
-  // Detail View Mode - Hides everything else to feel like a separate page
-  if (selectedRecipe) {
-    return (
-      <Layout currentView={currentView} onNavigate={handleNavigate}>
-        <RecipeDetail
-          id={selectedRecipe.id}
-          onBack={() => setSelectedRecipe(null)}
-          onEdit={() => { handleEdit(selectedRecipe.id); }}
-        />
+  // --- RENDER ---
 
-        {/* Form Overlay for Edit within Detail View */}
-        {isFormOpen && (
-          <RecipeForm
-            isOpen={true}
-            recipeId={editingRecipeId}
-            onSave={handleFormSubmit}
-            onCancel={() => { setIsFormOpen(false); setEditingRecipeId(null); }}
-          />
-        )}
-      </Layout>
-    );
-  }
+  // Common Layout Props
+  const layoutProps = {
+    currentView: listType === 'public' ? 'home' : 'myRecipes',
+    onNavigate: (key) => key === 'home' ? goToList('public') : goToList('private')
+  };
 
   return (
-    <Layout currentView={currentView} onNavigate={handleNavigate}>
+    <Layout {...layoutProps}>
 
-      {/* Action Bar */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
-          <Search size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
-          <input
-            type="text"
-            placeholder={t('searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', paddingLeft: '40px' }}
-          />
-        </div>
+      {/* VIEW 1: LIST */}
+      {view.mode === 'LIST' && (
+        <>
+          {/* Action Bar */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
+              <Search size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
+              <input
+                type="text"
+                placeholder={t('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ width: '100%', paddingLeft: '40px' }}
+              />
+            </div>
 
-        {/* Add button available if logged in */}
-        {user && (
-          <button className="btn-primary" onClick={() => { setEditingRecipeId(null); setIsFormOpen(true); }}>
-            <Plus size={20} /> {t('addRecipe')}
-          </button>
-        )}
-      </div>
+            {user && (
+              <button className="btn-primary" onClick={() => goToForm(null)}>
+                <Plus size={20} /> {t('addRecipe')}
+              </button>
+            )}
+          </div>
 
-      {/* List Heading */}
-      <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '15px', color: 'var(--color-text-primary)' }}>
-        {currentView === 'home' ? t('visibility.publicFeed') : t('visibility.myRecipes')}
-      </h2>
+          {/* Heading */}
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '15px', color: 'var(--color-text-primary)' }}>
+            {listType === 'public' ? t('visibility.publicFeed') : t('visibility.myRecipes')}
+          </h2>
 
-      {/* Grid */}
-      {filteredRecipes.length > 0 ? (
-        <div className="recipe-grid">
-          {filteredRecipes.map(recipe => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onClick={(id) => setSelectedRecipe(recipe)}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onToggleVisibility={toggleVisibility}
-            />
-          ))}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-          <p>{t('noRecipes')}</p>
-        </div>
+          {/* Grid */}
+          {filteredRecipes.length > 0 ? (
+            <div className="recipe-grid">
+              {filteredRecipes.map(recipe => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onClick={() => goToDetail(recipe)}
+                  onEdit={goToForm}
+                  onDelete={(id) => setDeleteId(id)}
+                  onToggleVisibility={toggleVisibility}
+                />
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+              <p>{t('noRecipes')}</p>
+            </div>
+          )}
+        </>
       )}
 
+      {/* VIEW 2: DETAIL */}
+      {view.mode === 'DETAIL' && view.data && (
+        <RecipeDetail
+          id={view.data.id}
+          onBack={() => goToList()} // Back goes to list
+          onEdit={() => goToForm(view.data.id)}
+        />
+      )}
 
+      {/* VIEW 3: FORM */}
+      {view.mode === 'FORM' && (
+        <RecipeForm
+          isOpen={true}
+          recipeId={view.data?.id}
+          onSave={handleFormSubmit}
+          // Cancel goes back to Detail if editing, or List if adding
+          onCancel={() => view.data?.id ? goToDetail({ id: view.data.id }) : goToList()}
+        />
+      )}
+
+      {/* Global Modals */}
       <ConfirmationModal
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
@@ -178,7 +189,7 @@ function AppContent() {
   );
 }
 
-// Wrapper to provide contexts
+// Wrapper
 function App() {
   return (
     <AuthProvider>
