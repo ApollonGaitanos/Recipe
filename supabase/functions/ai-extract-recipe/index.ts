@@ -28,9 +28,9 @@ serve(async (req) => {
             throw new Error('Gemini API key not configured')
         }
 
-        // Using gemini-2.0-flash as the current stable release (2025).
-        // gemini-1.5-flash is retired. gemini-flash-latest points to 2.5-flash (restricted).
-        const MODEL_NAME = 'gemini-2.0-flash';
+        // Using gemini-2.0-flash-exp (Experimental) as it typically has generous free quotas for testing.
+        // Standard '2.0-flash' has 0 free quota. '1.5-flash' is retired.
+        const MODEL_NAME = 'gemini-2.0-flash-exp';
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
         // 4. API Request Construction
