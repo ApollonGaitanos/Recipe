@@ -1,118 +1,12 @@
-export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMode = 'extract') => {
-    // Validate input
-    if (!input) {
-        throw new Error('Please provide some recipe text or image to parse');
-    }
-    const isImage = typeof input === 'object' && input.imageBase64;
-    // For Create Mode, simple text is valid even if short "Chicken and rice"
-    const isCreateMode = taskMode === 'create';
-    const isAIAction = taskMode === 'improve' || taskMode === 'translate';
+// --- Helper Functions (Hoisted) ---
 
-    if (!isImage && !isCreateMode && !isAIAction && (typeof input !== 'string' || !input.trim())) {
-        throw new Error('Invalid input provided');
-    }
-
-    const trimmedInput = isImage ? null : (typeof input === 'string' ? input.trim() : '');
-
-    // Check if input is a URL (Only if NOT in create mode)
-    const urlRegex = /^(http|https):\/\/[^ "]+$/;
-    if (!isCreateMode && urlRegex.test(trimmedInput)) {
-
-        // Mode 1: ON (Force AI)
-        if (aiMode === 'on' || aiMode === true) { // Handle legacy boolean true just in case
-            console.log("AI Mode (ON): Engaging Direct AI Extraction...");
-            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
-        }
-
-        // Mode 2: OFF (Legacy Only)
-        if (aiMode === 'off' || aiMode === false) {
-            console.log("Classic Mode (OFF): Engaging Legacy Scraper...");
-            return await fetchRecipeFromUrl(trimmedInput);
-        }
-
-        // Mode 3: HYBRID (Default/Fall-through)
-        // aiMode === 'hybrid'
-        console.log("Hybrid Mode: Legacy First, AI Fallback...");
-
-        // 1. Try Legacy
-        let legacyResult = null;
-        try {
-            legacyResult = await fetchRecipeFromUrl(trimmedInput);
-        } catch (err) {
-            console.warn("Legacy scraper failed:", err);
-        }
-
-        // 2. Evaluate Legacy
-        const isLegacyGood = legacyResult &&
-            typeof legacyResult.ingredients === 'string' && legacyResult.ingredients.length > 20 &&
-            typeof legacyResult.instructions === 'string' && legacyResult.instructions.length > 20;
-
-        if (isLegacyGood) {
-            console.log("✅ Using Legacy Scraper result (High Confidence)");
-            return legacyResult;
-        }
-
-        // 3. Fallback to AI
-        console.log("Legacy result poor/missing. Engaging AI backup...");
-        try {
-            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
-        } catch (aiError) {
-            console.error("AI Fallback failed:", aiError);
-            if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
-            throw aiError;
-        }
-    }
-
-    // For text/image input: Try AI first if enabled (Always true for Create/Improve)
-    const useAI = aiMode !== 'off'; // Simplified logic for text input
-
-    if (useAI || isImage || isCreateMode || taskMode === 'improve' || taskMode === 'translate') {
-        try {
-            // Construct payload
-            let payload = {};
-            if (isImage) {
-                payload = { ...input, targetLanguage: language, mode: taskMode };
-            } else if (typeof input === 'string') {
-                payload = { text: input, targetLanguage: language, mode: taskMode };
-            } else {
-                payload = { ...input, targetLanguage: language, mode: taskMode };
-            }
-
-            const aiResult = await extractWithAI(payload);
-            if (aiResult) {
-                console.log(`✅ Recipe processed with AI (Mode: ${taskMode})`);
-                return aiResult;
-            }
-        } catch (aiError) {
-            console.warn(`AI processing (${taskMode}) failed:`, aiError);
-            if (isImage || isCreateMode) { // Create/Image have no regex fallback
-                throw new Error(`AI processing failed: ${aiError.message}`);
-            }
-        }
-    }
-
-    // Default: Parse as text with regex
-    if (!trimmedInput) {
-        throw new Error('No text available to parse.');
-    }
-
-    try {
-        return parseRecipeFromText(trimmedInput);
-    } catch (error) {
-        console.error("Text parsing failed:", error);
-        throw new Error(`Could not parse recipe text: ${error.message}`);
-    }
-};
-
-
-// AI Extraction function
-const extractWithAI = async (input) => {
+async function extractWithAI(input) {
     const { supabase } = await import('../supabaseClient');
 
     // Construct body based on input type
     const body = typeof input === 'string'
         ? { text: input }
-        : { ...input }; // Spread input directly
+        : { ...input };
 
     // Ensure text is set for image-only input if missing
     if (!body.text && !body.url && body.imageBase64) {
@@ -128,16 +22,8 @@ const extractWithAI = async (input) => {
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-extract-recipe`
         : 'http://localhost:54321/functions/v1/ai-extract-recipe';
 
-    console.log(`Sending AI request (${body.mode || 'extract'}) to:`, functionUrl);
-
-    const headers = {
-        'Content-Type': 'application/json',
-    };
-
-    // Add auth header if we have a token (optional for this function but good practice)
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     try {
         const response = await fetch(functionUrl, {
@@ -153,20 +39,16 @@ const extractWithAI = async (input) => {
         }
 
         const data = await response.json();
-        if (data.error) {
-            throw new Error(data.error);
-        }
+        if (data.error) throw new Error(data.error);
         return data;
 
     } catch (networkError) {
         console.error("Network/Fetch Error:", networkError);
         throw new Error(`Network Error: ${networkError.message}`);
     }
-};
+}
 
-// --- URL Fetching & JSON-LD Extraction ---
-
-const fetchRecipeFromUrl = async (url) => {
+async function fetchRecipeFromUrl(url) {
     // Try Edge Function first (more reliable)
     try {
         const { supabase } = await import('../supabaseClient');
@@ -175,16 +57,13 @@ const fetchRecipeFromUrl = async (url) => {
         });
 
         if (!error && data && !data.error) {
-            console.log('✅ Recipe scraped via Edge Function');
             return data;
         }
-
-        console.warn('Edge Function failed, falling back to client-side:', error || data.error);
     } catch (edgeFunctionError) {
-        console.warn('Edge Function not available, using client-side parser:', edgeFunctionError);
+        // Silent fall-through to client-side
     }
 
-    // Fallback: Client-side parsing (original method)
+    // Fallback: Client-side parsing via Proxy
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     const response = await fetch(proxyUrl);
     const data = await response.json();
@@ -200,7 +79,6 @@ const fetchRecipeFromUrl = async (url) => {
     for (let script of scripts) {
         try {
             const json = JSON.parse(script.innerText);
-            // JSON-LD can be an array or a graph or a single object
             const findRecipe = (obj) => {
                 if (Array.isArray(obj)) return obj.find(findRecipe);
                 if (obj['@graph']) return obj['@graph'].find(findRecipe);
@@ -209,9 +87,7 @@ const fetchRecipeFromUrl = async (url) => {
             };
 
             const recipeData = findRecipe(json);
-            if (recipeData) {
-                return parseJsonLd(recipeData);
-            }
+            if (recipeData) return parseJsonLd(recipeData);
         } catch (e) {
             console.error("Error parsing JSON-LD", e);
         }
@@ -220,18 +96,16 @@ const fetchRecipeFromUrl = async (url) => {
     // 2. Fallback: Parse visible text from the HTML body
     doc.querySelectorAll('script, style, nav, footer, header').forEach(el => el.remove());
     return parseRecipeFromText(doc.body.innerText);
-};
+}
 
-// Helper to clean text (decode HTML entities & separate lines)
-const cleanText = (str) => {
-    if (!str) return '';
-    const txt = document.createElement('textarea');
-    txt.innerHTML = str;
-    return txt.value.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').trim();
-};
+function parseJsonLd(data) {
+    const cleanText = (str) => {
+        if (!str) return '';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').trim();
+    };
 
-const parseJsonLd = (data) => {
-    // ... existing parseDuration logic ... 
     const parseDuration = (isoStr) => {
         if (!isoStr) return '';
         const regex = /PT(?:(\d+)H)?(?:(\d+)M)?/i;
@@ -266,20 +140,12 @@ const parseJsonLd = (data) => {
         ingredients: cleanList(data.recipeIngredient),
         instructions: extractInstructions(data.recipeInstructions)
     };
-};
+}
 
-
-// --- Text Parsing (Original + Enhanced) ---
-
-const parseRecipeFromText = (text) => {
+function parseRecipeFromText(text) {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
     const result = {
-        title: '',
-        prepTime: '',
-        cookTime: '',
-        servings: '',
-        ingredients: '',
-        instructions: ''
+        title: '', prepTime: '', cookTime: '', servings: '', ingredients: '', instructions: ''
     };
 
     if (lines.length === 0) return result;
@@ -311,40 +177,27 @@ const parseRecipeFromText = (text) => {
         break;
     }
 
-    // --- 3. Extract Time & Servings (Enhanced) ---
-    // Composite time extraction: "1 hr 10 mins" or "1 ώρα 10 λεπτά"
-
+    // --- 3. Extract Time & Servings ---
     const extractCompositeTime = (text, labelRegex) => {
-        // Look for the label first, e.g. "Prep Time: ..."
         const labelMatch = text.match(labelRegex);
         if (!labelMatch) return null;
-
-        // Take the chunk after the label
-        const chunk = text.slice(labelMatch.index + labelMatch[0].length, labelMatch.index + labelMatch[0].length + 20); // 20 chars should cover the time
-
-        // Match hours and minutes
+        const chunk = text.slice(labelMatch.index + labelMatch[0].length, labelMatch.index + labelMatch[0].length + 20);
         const hrMatch = chunk.match(/(\d+)\s*(?:h|hr|hour|hours|ώρα|ώρες|wres)/i);
         const minMatch = chunk.match(/(\d+)\s*(?:m|min|minute|minutes|λεπτά|λ)/i);
 
         let total = 0;
         if (hrMatch) total += parseInt(hrMatch[1]) * 60;
         if (minMatch) total += parseInt(minMatch[1]);
-
         return total > 0 ? total : null;
     };
 
     const fullText = text;
-
-    // Prep
     const prepLabel = /(?:prep|preparation|προετοιμασία)(?:[\s:]*time)?[:\s]+/i;
-    result.prepTime = extractCompositeTime(fullText, prepLabel) || ''; // Fallback to basic math if needed but logic handles composite
+    result.prepTime = extractCompositeTime(fullText, prepLabel) || '';
 
-    // Cook
-    // Handles "psinoume for X time" or "Cooking time X"
     const cookLabel = /(?:cook|cooking|μαγείρεμα|ψησιμο|ψηνουμε)(?:[\s:]*time|(?:\s+για))?[:\s]+/i;
     result.cookTime = extractCompositeTime(fullText, cookLabel) || '';
 
-    // Servings
     const servRegex = /(\d+)\s*(?:servings|people|portions|μερίδες|άτομα)/i;
     const servMatch = fullText.match(servRegex);
     if (servMatch) result.servings = servMatch[1];
@@ -360,31 +213,131 @@ const parseRecipeFromText = (text) => {
     // --- 5. Extract Instructions ---
     if (instStartIndex !== -1) {
         let endIndex = lines.length;
-        if (ingStartIndex > instStartIndex) endIndex = ingStartIndex; // if reversed
+        if (ingStartIndex > instStartIndex) endIndex = ingStartIndex;
         const rawInst = lines.slice(instStartIndex + 1, endIndex);
         result.instructions = rawInst.join('\n');
     }
 
-    // --- 6. Fallback: If no sections detected, intelligently split ---
+    // --- 6. Fallback ---
     if (!result.ingredients && !result.instructions && lines.length > 2) {
-        // Skip the title line
         const startIdx = result.title ? 1 : 0;
         const contentLines = lines.slice(startIdx);
-
-        // Simple heuristic: Split at roughly the middle
-        // Ingredients tend to be in the first half, instructions in the second
         const midpoint = Math.floor(contentLines.length / 2);
-
         result.ingredients = contentLines.slice(0, midpoint).join('\n');
         result.instructions = contentLines.slice(midpoint).join('\n');
     }
 
     return result;
-};
+}
 
-// Helper
 function hasTimeMetadata(line) {
     const keywords = ['prep', 'cook', 'time', 'total', 'servings', 'yield', 'προετοιμασία', 'μαγείρεμα', 'χρόνος', 'μερίδες', 'ψήνουμε'];
     const lower = line.toLowerCase();
     return keywords.some(k => lower.includes(k) && /\d/.test(lower));
 }
+
+// --- Main Export ---
+
+export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMode = 'extract') => {
+    // Validate input
+    if (!input) throw new Error('Please provide some recipe text or image to parse');
+
+    const isImage = typeof input === 'object' && input.imageBase64;
+    const isCreateMode = taskMode === 'create';
+    const isAIAction = taskMode === 'improve' || taskMode === 'translate';
+
+    if (!isImage && !isCreateMode && !isAIAction && (typeof input !== 'string' || !input.trim())) {
+        throw new Error('Invalid input provided');
+    }
+
+    const trimmedInput = isImage ? null : (typeof input === 'string' ? input.trim() : '');
+
+    // Check if input is a URL (Only if NOT in create mode)
+    const urlRegex = /^(http|https):\/\/[^ "]+$/;
+    if (!isCreateMode && urlRegex.test(trimmedInput)) {
+
+        // Mode 1: ON (Force AI)
+        if (aiMode === 'on' || aiMode === true) {
+            console.log("AI Mode (ON): Engaging Direct AI Extraction...");
+            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
+        }
+
+        // Mode 2: OFF (Legacy Only)
+        if (aiMode === 'off' || aiMode === false) {
+            console.log("Classic Mode (OFF): Engaging Legacy Scraper...");
+            return await fetchRecipeFromUrl(trimmedInput);
+        }
+
+        // Mode 3: HYBRID (Default/Fall-through)
+        // aiMode === 'hybrid'
+        console.log("Hybrid Mode: Legacy First, AI Fallback...");
+
+        // 1. Try Legacy
+        let legacyResult = null;
+        try {
+            legacyResult = await fetchRecipeFromUrl(trimmedInput);
+        } catch (err) {
+            console.warn("Legacy scraper failed:", err);
+        }
+
+        // 2. Evaluate Legacy
+        const isLegacyGood = legacyResult &&
+            typeof legacyResult.ingredients === 'string' && legacyResult.ingredients.length > 20 &&
+            typeof legacyResult.instructions === 'string' && legacyResult.instructions.length > 20;
+
+        if (isLegacyGood) {
+            console.log("✅ Using Legacy Scraper result (High Confidence)");
+            return legacyResult;
+        }
+
+        // 3. Fallback to AI
+        console.log("Legacy poor, trying AI...");
+        try {
+            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
+        } catch (aiError) {
+            console.error("AI Fallback failed:", aiError);
+            if (legacyResult) return legacyResult;
+            throw aiError;
+        }
+    }
+
+    // For text/image input: Try AI first if enabled (Always true for Create/Improve)
+    const useAI = aiMode !== 'off';
+
+    if (useAI || isImage || isCreateMode || taskMode === 'improve' || taskMode === 'translate') {
+        try {
+            // Construct payload
+            let payload = {};
+            if (isImage) {
+                payload = { ...input, targetLanguage: language, mode: taskMode };
+            } else if (typeof input === 'string') {
+                payload = { text: input, targetLanguage: language, mode: taskMode };
+            } else {
+                payload = { ...input, targetLanguage: language, mode: taskMode };
+            }
+
+            const aiResult = await extractWithAI(payload);
+            if (aiResult) {
+                console.log(`✅ Recipe processed with AI (Mode: ${taskMode})`);
+                return aiResult;
+            }
+        } catch (aiError) {
+            console.warn(`AI processing (${taskMode}) failed:`, aiError);
+            if (isImage || isCreateMode) {
+                throw new Error(`AI processing failed: ${aiError.message}`);
+            }
+        }
+    }
+
+    // Default: Parse as text with regex
+    if (!trimmedInput) {
+        throw new Error('No text available to parse.');
+    }
+
+    try {
+        return parseRecipeFromText(trimmedInput);
+    } catch (error) {
+        console.error("Text parsing failed:", error);
+        throw new Error(`Could not parse recipe text: ${error.message}`);
+    }
+};
