@@ -1,32 +1,30 @@
-export const parseRecipe = async (input, useAI = false, language = 'en') => {
-    // Validate input
+export const parseRecipe = async (input, useAI = false, language = 'en', mode = 'extract') => {
     // Validate input
     if (!input) {
         throw new Error('Please provide some recipe text or image to parse');
     }
     const isImage = typeof input === 'object' && input.imageBase64;
-    if (!isImage && (typeof input !== 'string' || !input.trim())) {
+    // For Create Mode, simple text is valid even if short "Chicken and rice"
+    const isCreateMode = mode === 'create';
+
+    if (!isImage && !isCreateMode && (typeof input !== 'string' || !input.trim())) {
         throw new Error('Invalid input provided');
     }
 
-    const trimmedInput = isImage ? null : input.trim();
+    const trimmedInput = isImage ? null : (typeof input === 'string' ? input.trim() : '');
 
-    // Check if input is a URL
+    // Check if input is a URL (Only if NOT in create mode)
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
-    if (urlRegex.test(trimmedInput)) {
+    if (!isCreateMode && urlRegex.test(trimmedInput)) {
         if (useAI) {
             try {
-                const aiResult = await extractWithAI({ url: trimmedInput, targetLanguage: language });
+                const aiResult = await extractWithAI({ url: trimmedInput, targetLanguage: language, mode });
                 if (aiResult) {
                     console.log('✅ URL Extracted with AI');
                     return aiResult;
                 }
             } catch (error) {
                 console.warn('AI URL extraction failed, falling back to legacy:', error);
-                // Fallback to legacy is handled below if this fails? 
-                // Actually, if AI fails, we might want to try legacy OR just throw. 
-                // Let's try legacy as fallback for robustness, or throw if user specifically asked for AI.
-                // For now, let's allow fallback but log warning.
             }
         }
 
@@ -38,26 +36,33 @@ export const parseRecipe = async (input, useAI = false, language = 'en') => {
         }
     }
 
-    // For text input: Try AI first if enabled
-    if (useAI || isImage) {
+    // For text/image input: Try AI first if enabled (Always true for Create/Improve)
+    if (useAI || isImage || isCreateMode || mode === 'improve' || mode === 'translate') {
         try {
-            const aiResult = await extractWithAI(isImage ? { ...input, targetLanguage: language } : (typeof input === 'string' ? { text: input, targetLanguage: language } : { ...input, targetLanguage: language }));
+            // Construct payload
+            let payload = {};
+            if (isImage) {
+                payload = { ...input, targetLanguage: language, mode };
+            } else if (typeof input === 'string') {
+                payload = { text: input, targetLanguage: language, mode };
+            } else {
+                payload = { ...input, targetLanguage: language, mode };
+            }
+
+            const aiResult = await extractWithAI(payload);
             if (aiResult) {
-                console.log('✅ Recipe extracted with AI');
+                console.log(`✅ Recipe processed with AI (Mode: ${mode})`);
                 return aiResult;
             }
         } catch (aiError) {
-            console.warn('AI extraction failed:', aiError);
-            // If it was an image, we have no fallback. Throw the error.
-            if (isImage) {
-                throw new Error(`AI Image processing failed: ${aiError.message}`);
+            console.warn(`AI processing (${mode}) failed:`, aiError);
+            if (isImage || isCreateMode) { // Create/Image have no regex fallback
+                throw new Error(`AI processing failed: ${aiError.message}`);
             }
-            // For text, we can fall through to regex
         }
     }
 
     // Default: Parse as text with regex
-    // If we have no text (e.g. image failed but somehow got here), throw
     if (!trimmedInput) {
         throw new Error('No text available to parse.');
     }
@@ -77,7 +82,7 @@ const extractWithAI = async (input) => {
     // Construct body based on input type
     const body = typeof input === 'string'
         ? { text: input }
-        : { ...input }; // Spread input directly (allows targetLanguage, imageBase64, url, text)
+        : { ...input }; // Spread input directly
 
     // Ensure text is set for image-only input if missing
     if (!body.text && !body.url && body.imageBase64) {
@@ -93,7 +98,7 @@ const extractWithAI = async (input) => {
         ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-extract-recipe`
         : 'http://localhost:54321/functions/v1/ai-extract-recipe';
 
-    console.log('Sending generic fetch to:', functionUrl);
+    console.log(`Sending AI request (${body.mode || 'extract'}) to:`, functionUrl);
 
     const headers = {
         'Content-Type': 'application/json',

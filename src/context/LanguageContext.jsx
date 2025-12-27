@@ -81,7 +81,11 @@ const translations = {
             statusDownload: "Downloading Language Data...",
             statusInit: "Initializing Engine...",
             useAI: "AI",
-            aiCost: "cost per use: 0.01€"
+            aiCost: "cost per use: 0.01€",
+            modeImport: "Import",
+            modeCreate: "Create Chef",
+            placeholderCreate: "Describe what you want to cook (e.g. 'Spicy Chicken Pasta' or 'I have eggs and milk')...",
+            btnCreate: "Generate Recipe"
         },
         visibility: {
             makePublic: "Make Public",
@@ -168,7 +172,11 @@ const translations = {
             statusDownload: "Λήψη Δεδομένων Γλώσσας...",
             statusInit: "Αρχικοποίηση...",
             useAI: "AI",
-            aiCost: "κόστος χρήσης: 0.01€"
+            aiCost: "κόστος χρήσης: 0.01€",
+            modeImport: "Εισαγωγή",
+            modeCreate: "Σεφ (Δημιουργία)",
+            placeholderCreate: "Περιγράψτε τι θέλετε να μαγειρέψετε (π.χ. 'Κοτόπουλο με πατάτες' ή 'Έχω αυγά και γάλα')...",
+            btnCreate: "Δημιουργία Συνταγής"
         },
         visibility: {
             makePublic: "Δημοσιοποίηση",

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { X, Sparkles, Image as ImageIcon, Camera, Link, FileText } from 'lucide-react';
+import { X, Sparkles, Image as ImageIcon, Camera, ChefHat, Link } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 import { recognizeText } from '../utils/ocr';
@@ -11,6 +11,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [useAI, setUseAI] = useState(true);
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
+    const [mode, setMode] = useState('import'); // 'import' or 'create'
 
     // Image State
     const [selectedImage, setSelectedImage] = useState(null);
@@ -81,18 +82,22 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         try {
             let result;
 
-            if (selectedImage) {
-                if (useAI) {
+            // Determine effective mode and AI usage
+            const activeMode = mode === 'create' ? 'create' : 'extract';
+            const aiEnabled = mode === 'create' ? true : useAI;
+
+            if (selectedImage && activeMode === 'extract') {
+                if (aiEnabled) {
                     setScanProgress(20);
                     const base64 = await resizeImage(selectedImage);
-                    result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue }, true, language);
+                    result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, true, language);
                 } else {
                     const text = await recognizeText(selectedImage, p => setScanProgress(Math.round(p * 100)));
                     const combinedText = (inputValue ? inputValue + '\n\n' : '') + text;
                     result = await parseRecipe(combinedText, false);
                 }
             } else {
-                result = await parseRecipe(inputValue, useAI, language);
+                result = await parseRecipe(inputValue, aiEnabled, language, activeMode);
             }
 
             onImport(result);
@@ -112,6 +117,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         setInputValue('');
         setPreviewUrl(null);
         setSelectedImage(null);
+        setMode('import');
         onClose();
     };
 
@@ -125,34 +131,56 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 <div className="modal-header">
                     <div className="header-left">
                         <div className="modal-icon-container-small">
-                            <Sparkles size={20} strokeWidth={2} />
+                            {mode === 'create' ? <ChefHat size={20} strokeWidth={2} /> : <Sparkles size={20} strokeWidth={2} />}
                         </div>
                         <h3 className="modal-title-small">
                             {t('magicImport.title')}
                         </h3>
                     </div>
 
-                    {/* AI Toggle - Top Right */}
-                    <div className="ai-toggle-wrapper">
-                        <label className="toggle-label">
-                            <div className="toggle-text">
-                                <span className="toggle-title">{t('magicImport.useAI') || "AI"}</span>
-                                <span className="toggle-cost">{t('magicImport.aiCost') || "0.01€/use"}</span>
+                    {/* AI Toggle - Only show in Import Mode (Create is always AI) */}
+                    <div className="header-right">
+                        {mode === 'import' && (
+                            <div className="ai-toggle-wrapper">
+                                <label className="toggle-label">
+                                    <div className="toggle-text">
+                                        <span className="toggle-title">{t('magicImport.useAI') || "AI"}</span>
+                                        <span className="toggle-cost">{t('magicImport.aiCost') || "0.01€/use"}</span>
+                                    </div>
+                                    <div className={`toggle-switch ${useAI ? 'on' : 'off'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={useAI}
+                                            onChange={(e) => setUseAI(e.target.checked)}
+                                            disabled={isParsing}
+                                        />
+                                        <span className="slider"></span>
+                                    </div>
+                                </label>
                             </div>
-                            <div className={`toggle-switch ${useAI ? 'on' : 'off'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={useAI}
-                                    onChange={(e) => setUseAI(e.target.checked)}
-                                    disabled={isParsing}
-                                />
-                                <span className="slider"></span>
-                            </div>
-                        </label>
+                        )}
                         <button className="modal-close-btn" onClick={onClose}>
                             <X size={20} />
                         </button>
                     </div>
+                </div>
+
+                {/* Mode Tabs */}
+                <div className="mode-tabs">
+                    <button
+                        className={`mode-tab ${mode === 'import' ? 'active' : ''}`}
+                        onClick={() => setMode('import')}
+                    >
+                        <Link size={16} />
+                        {t('magicImport.modeImport')}
+                    </button>
+                    <button
+                        className={`mode-tab ${mode === 'create' ? 'active' : ''}`}
+                        onClick={() => setMode('create')}
+                    >
+                        <ChefHat size={16} />
+                        {t('magicImport.modeCreate')}
+                    </button>
                 </div>
 
                 {/* Content Body - Responsive Grid */}
@@ -160,45 +188,52 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
                     {/* Left/Top: Text Input */}
                     <div className="input-section">
-                        <p className="section-desc">{t('magicImport.description')}</p>
+                        <p className="section-desc">
+                            {mode === 'create'
+                                ? t('magicImport.placeholderCreate')
+                                : t('magicImport.description')
+                            }
+                        </p>
                         <textarea
-                            className="magic-textarea"
-                            placeholder={t('magicImport.textPlaceholder')}
+                            className={`magic-textarea ${mode === 'create' ? 'creative' : ''}`}
+                            placeholder={mode === 'create' ? t('magicImport.placeholderCreate') : t('magicImport.textPlaceholder')}
                             value={inputValue}
                             onChange={e => setInputValue(e.target.value)}
                             disabled={isParsing}
                         />
 
-                        {/* Image Button / Preview integrated in flow */}
-                        <div className="image-section">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                onChange={handleFileSelect}
-                                style={{ display: 'none' }}
-                                disabled={isParsing}
-                            />
-
-                            {!previewUrl ? (
-                                <button
-                                    type="button"
-                                    className={`image-select-btn ${selectedImage ? 'active' : ''}`}
-                                    onClick={() => fileInputRef.current.click()}
+                        {/* Image Button / Preview - ONLY IN IMPORT MODE */}
+                        {mode === 'import' && (
+                            <div className="image-section">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                    style={{ display: 'none' }}
                                     disabled={isParsing}
-                                >
-                                    <ImageIcon size={18} />
-                                    <span>{t('magicImport.imageButton') || "Add Image"}</span>
-                                </button>
-                            ) : (
-                                <div className="image-preview-wrapper">
-                                    <img src={previewUrl} alt="Preview" />
-                                    <button onClick={handleRemoveImage} className="remove-image-btn">
-                                        <X size={14} />
+                                />
+
+                                {!previewUrl ? (
+                                    <button
+                                        type="button"
+                                        className={`image-select-btn ${selectedImage ? 'active' : ''}`}
+                                        onClick={() => fileInputRef.current.click()}
+                                        disabled={isParsing}
+                                    >
+                                        <ImageIcon size={18} />
+                                        <span>{t('magicImport.imageButton') || "Add Image"}</span>
                                     </button>
-                                </div>
-                            )}
-                        </div>
+                                ) : (
+                                    <div className="image-preview-wrapper">
+                                        <img src={previewUrl} alt="Preview" />
+                                        <button onClick={handleRemoveImage} className="remove-image-btn">
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Progress Bar (Full Width if Active) */}
@@ -230,8 +265,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             <span>Processing...</span>
                         ) : (
                             <>
-                                <Sparkles size={18} />
-                                {t('magicImport.button')}
+                                {mode === 'create' ? <ChefHat size={18} /> : <Sparkles size={18} />}
+                                {mode === 'create' ? t('magicImport.btnCreate') : t('magicImport.button')}
                             </>
                         )}
                     </button>
@@ -269,6 +304,12 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     align-items: center;
                     background: var(--color-surface);
                 }
+                
+                .header-right {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                }
 
                 .header-left {
                     display: flex;
@@ -296,6 +337,38 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     font-weight: 700;
                     color: var(--color-text);
                     margin: 0;
+                }
+                
+                /* Tabs */
+                .mode-tabs {
+                    display: flex;
+                    padding: 0 24px;
+                    border-bottom: 1px solid var(--color-border);
+                    background: var(--color-bg); 
+                }
+                
+                .mode-tab {
+                    flex: 1;
+                    padding: 12px;
+                    font-weight: 600;
+                    color: var(--color-text-light);
+                    border-bottom: 2px solid transparent;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: all 0.2s;
+                }
+                
+                .mode-tab:hover {
+                    background: var(--color-surface);
+                    color: var(--color-text);
+                }
+                
+                .mode-tab.active {
+                    color: var(--color-primary);
+                    border-bottom-color: var(--color-primary);
+                    background: var(--color-surface);
                 }
 
                 /* AI Toggle */
@@ -420,6 +493,11 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     font-size: 1rem;
                     resize: vertical;
                     transition: border-color 0.2s;
+                }
+                
+                .magic-textarea.creative {
+                    min-height: 150px;
+                    font-size: 1.1rem; /* Larger font for ideas */
                 }
                 
                 .magic-textarea:focus {
