@@ -99,8 +99,16 @@ Return ONLY valid JSON with this exact structure:
   "prepTime": 0,
   "cookTime": 0,
   "servings": 0,
-  "tags": "tag1, tag2"
-}`;
+  "tags": ["tag1", "tag2"]
+}
+
+RULES:
+- "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
+- "ingredients": Array of strings. Each string is ONE ingredient line.
+- "instructions": Array of strings. Each string is ONE step. NO numbering.
+- SPLIT instructions into distinct steps.
+- DO NOT return "tags" as a single comma-separated string. IT MUST BE AN ARRAY.
+- Returns only valid JSON.`;
 
         switch (selectedMode) {
             case 'create':

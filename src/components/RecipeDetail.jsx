@@ -94,12 +94,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 // Standardization Helper: Ensure we save Strings to DB (legacy compatibility)
                 const standardizedResult = {
                     ...result,
-                    ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : result.ingredients,
-                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : result.instructions,
-                    // Ensure tags is an Array
-                    tags: typeof result.tags === 'string'
-                        ? result.tags.split(',').map(t => t.trim()).filter(Boolean)
-                        : (Array.isArray(result.tags) ? result.tags : [])
+                    ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : (typeof result.ingredients === 'string' ? result.ingredients : ''),
+                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : (typeof result.instructions === 'string' ? result.instructions : ''),
+                    tags: Array.isArray(result.tags)
+                        ? result.tags
+                        : (typeof result.tags === 'string' ? result.tags.split(',').map(s => s.trim()).filter(Boolean) : [])
                 };
 
                 console.log("Applying Update:", standardizedResult);
