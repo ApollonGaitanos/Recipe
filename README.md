@@ -1,16 +1,42 @@
-# React + Vite
+# 🍳 Recipe App: Your Smart Personal Cookbook
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Cook smarter, not harder.**
 
-Currently, two official plugins are available:
+Recipe App is a modern, privacy-focused application designed to help you organize, improved, and master your favorite meals. It combines a beautiful, distraction-free interface with powerful AI tools that do the heavy lifting for you.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Key Features
 
-## React Compiler
+### 🪄 Magic Import (AI-Powered)
+Stop typing out recipes manually.
+*   **From Text**: Paste a messy list of ingredients and steps; we'll format it instantly.
+*   **From URL**: Paste a link to a food blog. We'll strip the ads and life stories, giving you just the recipe.
+*   **From Image**: Snap a photo of a handwritten card or cookbook page. Our AI reads it for you.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🤖 AI Chef Assistant
+*   **Improve**: Have a bland recipe? Ask the AI to "Michelin-ify" it with better techniques or missing ingredients.
+*   **Translate**: Found a great recipe in another language? Translate it instantly while keeping the cooking context perfect.
 
-## Expanding the ESLint configuration
+### 📱 Beautiful & Accessible
+*   **Distraction-Free**: Clean typography and layout focused on cooking.
+*   **Mobile First**: Works perfectly on your phone in the kitchen.
+*   **Offline Capable**: Your recipes are saved locally. Cook even when the internet is down.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+1.  **Clone the repository**
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Start the kitchen**:
+    ```bash
+    npm run dev
+    ```
+
+## 🛠️ Built With
+*   **Frontend**: React, Vite
+*   **Intelligence**: Google Gemini AI
+*   **Storage**: Supabase & Local Persistence
+
+---
+*Created for food lovers who want to spend more time cooking and less time scrolling.*
