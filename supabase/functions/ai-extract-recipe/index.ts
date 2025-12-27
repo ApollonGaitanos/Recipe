@@ -29,194 +29,85 @@ serve(async (req) => {
             throw new Error('Gemini API key not configured')
         }
 
-        // Switching back to gemini-1.5-flash which has the highest free tier limits (15 RPM, 1500 RPD).
-        // gemini-2.5-flash-lite was found to have a limit of 20 requests/day.
-        const MODEL_NAME = 'gemini-1.5-flash';
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+        // 6. API Call with Fallback Logic
+        // We will try these models in order. 
+        // Strategy: High Limit -> specific versions -> experimental -> legacy
+        const MODELS_TO_TRY = [
+            'gemini-3-flash-preview',     // Newest Flash (Fast & Capable)
+            'gemini-3-pro-preview',       // Newest Pro (High Reasoning)
+            'gemini-1.5-flash',           // Standard Alias (High Quota usually)
+            'gemini-1.5-flash-latest',    // Explicit latest
+            'gemini-1.5-flash-001',       // Specific stable version
+            'gemini-1.5-flash-002',       // Specific updated version
+            'gemini-1.5-flash-8b',        // Lightweight 8b variant
+            'gemini-2.0-flash-exp',       // Experimental 2.0 (often free)
+            'gemini-1.0-pro'              // Legacy fallback
+        ];
 
-        // 4. Input Processing
-        let processingText = text || '';
+        let lastError = null;
+        let successfulModel = null;
+        let responseData = null;
 
-        // If URL provided, fetch and scrape text
-        // Only fetch URL if we are in 'extract' mode or if specific URL is given for other modes (rare)
-        if (url) {
-            console.log(`Fetching URL: ${url}`);
+        for (const model of MODELS_TO_TRY) {
             try {
-                // Use a realistic browser User-Agent to avoid simple 403 blocks
-                const urlResp = await fetch(url, {
+                console.log(`Attempting model: ${model}...`);
+                const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+                const response = await fetch(CURRENT_API_URL, {
+                    method: 'POST',
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5'
-                    }
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
+                    body: JSON.stringify(payload)
                 });
 
-                if (!urlResp.ok) throw new Error(`Failed to fetch URL (${urlResp.status} ${urlResp.statusText})`);
+                if (!response.ok) {
+                    const status = response.status;
+                    const errorText = await response.text();
 
-                const html = await urlResp.text();
+                    // If Quota (429) or Not Found (404), continue to next model
+                    if (status === 429 || status === 404) {
+                        console.warn(`Model ${model} failed (${status}). Trying next... Error: ${errorText.substring(0, 200)}`);
+                        lastError = new Error(`Model ${model} failed (${status}): ${errorText}`);
+                        continue;
+                    }
 
-                // Simple HTML-to-Text cleanup
-                // 1. Remove scripts and styles
-                let cleanHtml = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-                    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
-
-                // 2. Remove tags (keep newlines)
-                cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                // Remove all other tags
-                processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-                // ANTI-HALLUCINATION CHECK
-                // If content is too short, it's likely a captcha, login page, or error.
-                // Gemini will hallucinate cookies if given empty text.
-                if (processingText.length < 500) {
-                    console.error("URL Content too short:", processingText);
-                    throw new Error("Could not read recipe content (Page blocked or empty). Try pasting the recipe text instead.");
+                    // Other errors (500, 400 bad request) might be fatal, but let's try others just in case it's model specific
+                    console.warn(`Model ${model} encountered error ${status}. Retrying...`);
+                    lastError = new Error(`Model ${model} failed (${status}): ${errorText}`);
+                    continue;
                 }
 
-                // Truncate if too long
-                if (processingText.length > 30000) {
-                    processingText = processingText.substring(0, 30000);
+                const data = await response.json();
+
+                // Validate content existence before declaring success
+                if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    console.warn(`Model ${model} returned empty content. Trying next...`);
+                    lastError = new Error(`Model ${model} returned invalid structure.`);
+                    continue;
                 }
 
-                console.log(`Extracted ${processingText.length} chars from URL.`);
+                responseData = data;
+                successfulModel = model;
+                console.log(`Success! Using model: ${model}`);
+                break; // Exit loop on success
 
-            } catch (fetchErr) {
-                throw new Error(`URL Processing Failed: ${fetchErr.message}`);
+            } catch (err) {
+                console.error(`Unexpected error with ${model}:`, err.message);
+                lastError = err;
+                // Continue to next model
             }
         }
 
-        // 5. Construct Prompt based on MODE (default: extract)
-        const selectedMode = mode || 'extract';
-        let systemPrompt = "";
-        let temperature = 0.1;
-
-        const jsonStructure = `
-Return ONLY valid JSON with this exact structure:
-{
-  "title": "Exact Title",
-  "ingredients": ["Ingredient 1", "Ingredient 2"],
-  "instructions": ["Step one.", "Step two.", "Step three."],
-  "prepTime": 0,
-  "cookTime": 0,
-  "servings": 0,
-  "tags": ["tag1", "tag2"]
-}
-
-RULES:
-- "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
-- "ingredients": Array of strings. Each string is ONE ingredient line.
-- "instructions": Array of strings. Each string is ONE step. NO numbering.
-- SPLIT instructions into distinct steps.
-- DO NOT return "tags" as a single comma-separated string. IT MUST BE AN ARRAY.
-- Returns only valid JSON.`;
-
-        switch (selectedMode) {
-            case 'create':
-                temperature = 0.7; // Creative
-                systemPrompt = `You are a CREATIVE CHEF. Create a delicious, complete recipe based on the user's request (ingredients or idea).
-RULES:
-1. Be creative but practical.
-2. Use clear, step-by-step instructions.
-3. Language: Output in **${targetLanguage === 'el' ? 'Greek' : 'English'}** (unless user requested otherwise).
-${jsonStructure}`;
-                break;
-
-            case 'improve':
-                temperature = 0.4; // Slightly Creative
-                systemPrompt = `You are a MICHELIN CONSULTANT. Analyze the provided recipe and IMPROVE it.
-RULES:
-1. Fix errors, inconsistencies, or unclear steps.
-2. Suggest better techniques or essential missing ingredients (e.g. balancing acid/salt).
-3. Do NOT change the core identity of the dish.
-4. Language: Keep the original language of the recipe.
-${jsonStructure}`;
-                break;
-
-            case 'translate':
-                temperature = 0.1; // Strict
-                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${targetLanguage === 'el' ? 'Greek' : 'English'}**.
-RULES:
-1. Translate Title, Ingredients, Instructions, and Tags.
-2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek), otherwise keep original.
-3. Keep the exact same meaning.
-${jsonStructure}`;
-                break;
-
-            case 'extract':
-            default:
-                temperature = 0.1; // Strict
-                systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source, but FORMATTED correctly.
-
-RULES:
-1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
-2. **FORMATTING REPAIR (AGGRESSIVE)**:
-    - **Instructions**: **SPLIT BLOCKS OF TEXT.** If a paragraph contains multiple steps (e.g. "Mix flour. Then add sugar."), you MUST split them into separate strings in the array.
-    - **Ingredients**: Split into a clean list of strings.
-    - **DO NOT NUMBER** the output strings.
-    - **Language Logic**:
-       - Source is Greek -> Output Greek.
-       - Source is English -> Output English.
-       - Source is Other -> Translate to **${targetLanguage || 'English'}**.
-
-${jsonStructure}
-
-IMPORTANT:
-- **NO HALLUCINATIONS**: If input has no recipe, return {"error": "No recipe content found"}.`;
-                break;
+        if (!responseData || !successfulModel) {
+            console.error('All models failed.');
+            throw lastError || new Error('All available AI models failed to respond.');
         }
 
-        const parts = [{ text: systemPrompt }];
+        const data = responseData;
 
-        // Add User Text/Context
-        if (text) {
-            const label = selectedMode === 'improve' || selectedMode === 'translate' ? "Recipe Context:" : "User Input:";
-            parts.push({ text: `\n\n${label} ${text}` });
-        }
-
-        // Add Image if provided
-        if (imageBase64) {
-            parts.push({
-                inlineData: {
-                    mimeType: imageType || "image/jpeg",
-                    data: imageBase64
-                }
-            });
-        }
-
-        // Add URL Text if provided
-        if (url && processingText) {
-            parts.push({ text: `\n\nWebsite Content: ${processingText}` });
-        }
-
-        const payload = {
-            contents: [{ parts }],
-            generationConfig: {
-                temperature: temperature,
-                maxOutputTokens: 4096,
-                responseMimeType: "application/json"
-            }
-        };
-
-
-        // 6. API Call
-        console.log(`Sending request to ${MODEL_NAME}...`);
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify(payload)
-        });
-
-        // 7. Error Handling
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error:', response.status, errorText);
-            throw new Error(`Gemini API Failed (${response.status}): ${errorText}`);
-        }
-
-        const data = await response.json();
+        // Data is already parsed in the loop
 
         // 8. Response Parsing
         const candidate = data.candidates?.[0];
