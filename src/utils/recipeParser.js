@@ -105,7 +105,7 @@ try {
     console.error("Text parsing failed:", error);
     throw new Error(`Could not parse recipe text: ${error.message}`);
 }
-};
+
 
 // AI Extraction function
 const extractWithAI = async (input) => {
