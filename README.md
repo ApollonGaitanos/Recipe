@@ -1,8 +1,9 @@
-# 🍳 Recipe App: Your Smart Personal Cookbook
+# 🍳 Οψοποιία (Opsopoiia)
 
-**Cook smarter, not harder.**
+**The Art of Intelligent Cooking.**
 
-Recipe App is a modern, privacy-focused application designed to help you organize, improved, and master your favorite meals. It combines a beautiful, distraction-free interface with powerful AI tools that do the heavy lifting for you.
+*Οψοποιία* (pronounced *Op-so-pi-ia*) is the ancient Greek word for the art of cooking.
+This application combines that timeless art with modern intelligence, giving you a privacy-focused personal cookbook that organizes, improves, and simplifies your kitchen life.
 
 ## ✨ Key Features
 
@@ -35,7 +36,7 @@ Stop typing out recipes manually.
 
 ## 🛠️ Built With
 *   **Frontend**: React, Vite
-*   **Intelligence**: Google Gemini AI
+*   **Intelligence**: Google Gemini AI (Pro & Flash Models)
 *   **Storage**: Supabase & Local Persistence
 
 ---

@@ -8,7 +8,7 @@ export function useLanguage() {
 
 const translations = {
     en: {
-        appTitle: 'My Recipes',
+        appTitle: 'Opsopoiia',
         addRecipe: 'Add Recipe',
         improve: 'Improve with AI',
         translate: 'Translate',
@@ -103,7 +103,7 @@ const translations = {
         }
     },
     el: {
-        appTitle: 'Οι Συνταγές μου',
+        appTitle: 'Οψοποιία',
         addRecipe: 'Προσθήκη',
         improve: 'Βελτίωση με AI',
         translate: 'Μετάφραση',
