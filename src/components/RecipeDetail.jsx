@@ -3,6 +3,10 @@ import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat,
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
+import VisibilityModal from './VisibilityModal';
+import { generateRecipePDF } from '../utils/pdfGenerator';
+import { parseRecipe } from '../utils/recipeParser';
 import ActionModal from './ActionModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
