@@ -290,12 +290,26 @@ IMPORTANT:
 
         const jsonString = jsonMatch[0];
 
+        // SANITIZATION:
+        // 1. Remove Markdown code blocks if regex didn't catch them
+        let cleanJson = jsonString.replace(/```json/g, '').replace(/```/g, '');
+
+        // 2. Remove Trailing Commas (Common AI mistake)
+        // Replaces ", }" with "}" and ", ]" with "]"
+        cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
+
+        // 3. Fix unescaped newlines in strings (rare but happens)
+        // This is risky with regex, sticking to comma fix for now.
+
         let recipeData;
         try {
-            recipeData = JSON.parse(jsonString);
+            recipeData = JSON.parse(cleanJson);
         } catch (e) {
-            console.error('JSON Parse Error. Raw text:', jsonString);
-            throw new Error(`Failed to parse AI response as JSON. Raw output: ${jsonString.substring(0, 500)}...`);
+            console.error('JSON Parse Error. Data:', cleanJson);
+
+            // Fallback: Try a more aggressive cleanup or use a loose parser if available
+            // For now, throw details
+            throw new Error(`Failed to parse AI response as JSON. Error: ${e.message}. Cleaned output: ${cleanJson.substring(0, 500)}...`);
         }
 
         // Check for specific error from AI
