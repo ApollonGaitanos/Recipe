@@ -72,10 +72,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         setIsProcessing(true);
         try {
             // Prepare input: Stringify the current recipe to give full context
+            // The backend requires a 'text' field for context.
             const inputPayload = {
-                ...recipe,
-                // We pass the fields explicitly to be safe, though spread works if backend handles it
-                // Backend expects 'text' usually, but 'extractWithAI' handles object spread.
+                text: JSON.stringify(recipe, null, 2),
                 mode: mode,
                 targetLanguage: language
             };
