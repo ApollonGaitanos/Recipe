@@ -29,9 +29,9 @@ serve(async (req) => {
             throw new Error('Gemini API key not configured')
         }
 
-        // Using gemini-2.5-flash-lite as the definitive free-tier model (1,000 req/day).
-        // 'flash' models have restricted quotas (20/day). '2.0-flash' is paid.
-        const MODEL_NAME = 'gemini-2.5-flash-lite';
+        // Switching back to gemini-1.5-flash which has the highest free tier limits (15 RPM, 1500 RPD).
+        // gemini-2.5-flash-lite was found to have a limit of 20 requests/day.
+        const MODEL_NAME = 'gemini-1.5-flash';
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
 
         // 4. Input Processing
