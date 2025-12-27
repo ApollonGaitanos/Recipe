@@ -8,7 +8,7 @@ import { recognizeText } from '../utils/ocr';
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
     const [inputValue, setInputValue] = useState('');
-    const [useAI, setUseAI] = useState(true); // Default to true based on user preference for AI
+    const [useAI, setUseAI] = useState(true);
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
 
@@ -22,11 +22,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
-        // Reset text input if image selected (optional, or keep both? User said "copy text from image and fill fields")
-        // The prompt says "AI's job is to just analyze... (url or text)". 
-        // If image is present, we prioritize image.
-
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
         setSelectedImage(file);
@@ -90,17 +85,13 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 if (useAI) {
                     setScanProgress(20);
                     const base64 = await resizeImage(selectedImage);
-                    // Pass language to AI to ensure correct target language
                     result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue }, true, language);
                 } else {
-                    // Legacy OCR
                     const text = await recognizeText(selectedImage, p => setScanProgress(Math.round(p * 100)));
-                    // Combine OCR text with manual text if any?
                     const combinedText = (inputValue ? inputValue + '\n\n' : '') + text;
                     result = await parseRecipe(combinedText, false);
                 }
             } else {
-                // Text or URL
                 result = await parseRecipe(inputValue, useAI, language);
             }
 
@@ -128,166 +119,104 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
     return (
         <div className="modal-overlay active" onClick={onClose}>
-            <div className="modal-content active" onClick={e => e.stopPropagation()}
-                style={{
-                    width: '90%',
-                    maxWidth: '500px',
-                    padding: '0',
-                    overflow: 'hidden',
-                    maxHeight: '90vh',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
+            <div className="modal-content-wide active" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f3f3' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="modal-icon-container" style={{ background: '#f5d0fe', color: '#c026d3', width: '36px', height: '36px', margin: 0 }}>
-                            <Sparkles size={18} />
+                <div className="modal-header">
+                    <div className="header-left">
+                        <div className="modal-icon-container-small">
+                            <Sparkles size={20} strokeWidth={2} />
                         </div>
-                        <h3 className="modal-title" style={{ margin: 0, fontSize: '1.1rem' }}>
+                        <h3 className="modal-title-small">
                             {t('magicImport.title')}
                         </h3>
                     </div>
-                    <button className="modal-close" onClick={onClose} style={{ position: 'static' }}>
-                        <X size={20} />
-                    </button>
+
+                    {/* AI Toggle - Top Right */}
+                    <div className="ai-toggle-wrapper">
+                        <label className="toggle-label">
+                            <div className="toggle-text">
+                                <span className="toggle-title">{t('magicImport.useAI') || "AI"}</span>
+                                <span className="toggle-cost">{t('magicImport.aiCost') || "0.01€/use"}</span>
+                            </div>
+                            <div className={`toggle-switch ${useAI ? 'on' : 'off'}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={useAI}
+                                    onChange={(e) => setUseAI(e.target.checked)}
+                                    disabled={isParsing}
+                                />
+                                <span className="slider"></span>
+                            </div>
+                        </label>
+                        <button className="modal-close-btn" onClick={onClose}>
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
 
-                {/* Content */}
-                <div style={{ padding: '20px', overflowY: 'auto' }}>
+                {/* Content Body - Responsive Grid */}
+                <div className="modal-body">
 
-                    <p style={{ marginTop: 0, marginBottom: '20px', color: '#666', fontSize: '0.9rem', lineHeight: '1.4' }}>
-                        {t('magicImport.description')}
-                    </p>
-
-                    {/* Unified Text Input */}
-                    <div className="form-group" style={{ marginBottom: '15px' }}>
-                        <div style={{ position: 'relative' }}>
-                            <textarea
-                                placeholder={t('magicImport.textPlaceholder') || "Paste recipe URL or text here..."}
-                                value={inputValue}
-                                onChange={e => setInputValue(e.target.value)}
-                                style={{
-                                    minHeight: '120px',
-                                    fontSize: '0.95rem',
-                                    width: '100%',
-                                    padding: '12px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e5e7eb',
-                                    resize: 'vertical'
-                                }}
-                                disabled={isParsing}
-                            />
-                            {/* Icon overlay hint? No, clean is better. */}
-                        </div>
-                    </div>
-
-                    {/* Image Selection - Discreet Button */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {/* Hidden File Input */}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFileSelect}
-                            style={{ display: 'none' }}
+                    {/* Left/Top: Text Input */}
+                    <div className="input-section">
+                        <p className="section-desc">{t('magicImport.description')}</p>
+                        <textarea
+                            className="magic-textarea"
+                            placeholder={t('magicImport.textPlaceholder')}
+                            value={inputValue}
+                            onChange={e => setInputValue(e.target.value)}
                             disabled={isParsing}
                         />
 
-                        {/* Image Button */}
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current.click()}
-                            disabled={isParsing}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: '#f9f9f9',
-                                border: '1px solid #ddd',
-                                padding: '8px 12px',
-                                borderRadius: '8px',
-                                color: '#555',
-                                fontSize: '0.85rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            <ImageIcon size={16} />
-                            <span>{t('magicImport.imageButton') || "Scan Image"}</span>
-                        </button>
-                    </div>
-
-                    {/* Image Preview */}
-                    {previewUrl && (
-                        <div style={{ marginTop: '15px', position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid #eee' }}>
-                            <img
-                                src={previewUrl}
-                                alt="Preview"
-                                style={{ width: '100%', maxHeight: '200px', objectFit: 'contain', background: '#f9f9f9', display: 'block' }}
-                            />
-                            <button
-                                onClick={handleRemoveImage}
-                                disabled={isParsing}
-                                style={{
-                                    position: 'absolute',
-                                    top: '8px',
-                                    right: '8px',
-                                    background: 'rgba(0,0,0,0.6)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '24px',
-                                    height: '24px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    )}
-
-                    {/* AI Toggle */}
-                    <div style={{ marginTop: '20px', padding: '12px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #fbbf24' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                        {/* Image Button / Preview integrated in flow */}
+                        <div className="image-section">
                             <input
-                                type="checkbox"
-                                checked={useAI}
-                                onChange={(e) => setUseAI(e.target.checked)}
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileSelect}
+                                style={{ display: 'none' }}
                                 disabled={isParsing}
-                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                             />
-                            <div>
-                                <div style={{ fontWeight: 600, color: '#92400e' }}>
-                                    ✨ {t('magicImport.useAI') || "Use AI Extraction"}
+
+                            {!previewUrl ? (
+                                <button
+                                    type="button"
+                                    className={`image-select-btn ${selectedImage ? 'active' : ''}`}
+                                    onClick={() => fileInputRef.current.click()}
+                                    disabled={isParsing}
+                                >
+                                    <ImageIcon size={18} />
+                                    <span>{t('magicImport.imageButton') || "Add Image"}</span>
+                                </button>
+                            ) : (
+                                <div className="image-preview-wrapper">
+                                    <img src={previewUrl} alt="Preview" />
+                                    <button onClick={handleRemoveImage} className="remove-image-btn">
+                                        <X size={14} />
+                                    </button>
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#78350f', marginTop: '2px' }}>
-                                    {t('magicImport.aiHint') || "Precise extraction, no alterations."}
-                                </div>
-                            </div>
-                        </label>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* Progress Bar (Full Width if Active) */}
                     {isParsing && (
-                        <div style={{ marginTop: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '5px', color: '#c026d3', fontWeight: 500 }}>
-                                <span>{isParsing ? "Analyzing..." : "Ready"}</span>
+                        <div className="progress-section">
+                            <div className="progress-status">
+                                <span>{isParsing ? t('magicImport.parsing') : "Ready"}</span>
                                 {scanProgress > 0 && <span>{scanProgress}%</span>}
                             </div>
-                            <div style={{ height: '4px', background: '#f5d0fe', borderRadius: '2px', overflow: 'hidden' }}>
-                                <div style={{ height: '100%', background: '#d946ef', width: scanProgress > 0 ? `${scanProgress}%` : '100%', transition: 'width 0.3s ease', animation: scanProgress === 0 ? 'pulse 1.5s infinite' : 'none' }} />
+                            <div className="progress-bar-bg">
+                                <div className="progress-bar-fill" style={{ width: scanProgress > 0 ? `${scanProgress}%` : '100%' }} />
                             </div>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '15px 20px', borderTop: '1px solid #f3f3f3', background: '#fff', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <div className="modal-footer">
                     <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>
                         {t('cancel')}
                     </button>
@@ -296,9 +225,10 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         className="btn-primary"
                         onClick={handleParse}
                         disabled={!hasInput || isParsing}
-                        style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)', border: 'none', minWidth: '120px' }}
                     >
-                        {isParsing ? "Processing..." : (
+                        {isParsing ? (
+                            <span>Processing...</span>
+                        ) : (
                             <>
                                 <Sparkles size={18} />
                                 {t('magicImport.button')}
@@ -306,12 +236,316 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         )}
                     </button>
                 </div>
+
             </div>
+
             <style jsx>{`
-                @keyframes pulse {
-                    0% { opacity: 0.6; }
-                    50% { opacity: 1; }
-                    100% { opacity: 0.6; }
+                /* Container Styles */
+                .modal-content-wide {
+                    background: var(--color-surface); /* Dark mode compatible */
+                    width: 90%;
+                    max-width: 800px; /* Use more real estate */
+                    border-radius: var(--radius-lg);
+                    box-shadow: var(--shadow-md);
+                    border: 1px solid var(--color-border);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    max-height: 90vh;
+                    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+
+                @keyframes modalPop {
+                    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+
+                /* Header */
+                .modal-header {
+                    padding: 16px 24px;
+                    border-bottom: 1px solid var(--color-border);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: var(--color-surface);
+                }
+
+                .header-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .modal-icon-container-small {
+                    width: 32px;
+                    height: 32px;
+                    background: #fdf2f8; 
+                    color: #db2777;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                body.dark-mode .modal-icon-container-small {
+                     background: rgba(219, 39, 119, 0.2);
+                }
+
+                .modal-title-small {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: var(--color-text);
+                    margin: 0;
+                }
+
+                /* AI Toggle */
+                .ai-toggle-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                }
+                
+                .toggle-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    background: rgba(var(--color-primary-rgb), 0.05); /* subtle bg */
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                }
+
+                .toggle-text {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    line-height: 1.1;
+                }
+
+                .toggle-title {
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    color: var(--color-primary);
+                }
+
+                .toggle-cost {
+                    font-size: 0.65rem;
+                    color: var(--color-text-light);
+                    opacity: 0.8;
+                }
+
+                .toggle-switch {
+                    position: relative;
+                    width: 36px;
+                    height: 20px;
+                }
+
+                .toggle-switch input { 
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background-color: #ccc;
+                    border-radius: 20px;
+                    transition: .4s;
+                }
+
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 16px;
+                    width: 16px;
+                    left: 2px;
+                    bottom: 2px;
+                    background-color: white;
+                    border-radius: 50%;
+                    transition: .4s;
+                }
+
+                .toggle-switch.on .slider {
+                    background-color: var(--color-primary);
+                }
+
+                .toggle-switch.on .slider:before {
+                    transform: translateX(16px);
+                }
+
+                .modal-close-btn {
+                    color: var(--color-text-light);
+                    padding: 4px;
+                    border-radius: 50%;
+                    transition: all 0.2s;
+                    display: flex;
+                }
+                
+                .modal-close-btn:hover {
+                    background: rgba(0,0,0,0.05);
+                    color: var(--color-text);
+                }
+                
+                body.dark-mode .modal-close-btn:hover {
+                    background: rgba(255,255,255,0.1);
+                }
+
+                /* Body */
+                .modal-body {
+                    padding: 24px;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    flex: 1;
+                }
+                
+                .section-desc {
+                    margin-top: 0;
+                    margin-bottom: 12px;
+                    color: var(--color-text-light);
+                    font-size: 0.95rem;
+                }
+
+                .magic-textarea {
+                    width: 100%;
+                    min-height: 200px; /* Taller by default */
+                    padding: 16px;
+                    border-radius: var(--radius-md);
+                    border: 1px solid var(--color-border);
+                    background: var(--color-bg); /* Use theme bg for input */
+                    color: var(--color-text);
+                    font-size: 1rem;
+                    resize: vertical;
+                    transition: border-color 0.2s;
+                }
+                
+                .magic-textarea:focus {
+                    border-color: var(--color-primary);
+                    outline: none;
+                }
+
+                /* Image Section */
+                .image-section {
+                    margin-top: 12px;
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .image-select-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 16px;
+                    border-radius: var(--radius-md);
+                    border: 1px solid var(--color-border);
+                    background: var(--color-bg);
+                    color: var(--color-text);
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                
+                .image-select-btn:hover {
+                    border-color: var(--color-text-light);
+                    background: var(--color-surface);
+                }
+                
+                .image-preview-wrapper {
+                    position: relative;
+                    border-radius: var(--radius-md);
+                    overflow: hidden;
+                    border: 1px solid var(--color-border);
+                    display: inline-block;
+                }
+                
+                .image-preview-wrapper img {
+                    height: 80px;
+                    width: auto;
+                    display: block;
+                    object-fit: cover;
+                }
+                
+                .remove-image-btn {
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                /* Progress */
+                .progress-section {
+                    margin-top: auto;
+                }
+                
+                .progress-status {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 0.85rem;
+                    color: var(--color-primary);
+                    font-weight: 600;
+                    margin-bottom: 6px;
+                }
+                
+                .progress-bar-bg {
+                    height: 6px;
+                    background: rgba(var(--color-primary-rgb), 0.1); /* Fallback or variable */
+                    background: #f3f3f3;
+                    border-radius: 3px;
+                    overflow: hidden;
+                }
+                
+                body.dark-mode .progress-bar-bg {
+                    background: #333;
+                }
+                
+                .progress-bar-fill {
+                    height: 100%;
+                    background: var(--color-primary);
+                    transition: width 0.3s ease;
+                }
+
+                /* Footer */
+                .modal-footer {
+                    padding: 16px 24px;
+                    border-top: 1px solid var(--color-border);
+                    background: var(--color-surface); /* Important for Dark Mode */
+                    display: flex;
+                    justify-content: flex-end; /* Right aligned actions */
+                    gap: 12px;
+                }
+                
+                /* Mobile Responsiveness */
+                @media (max-width: 600px) {
+                    .modal-content-wide {
+                        width: 100%;
+                        height: 100%;
+                        max-height: 100%;
+                        border-radius: 0;
+                    }
+                    
+                    .modal-header {
+                        padding: 12px 16px;
+                    }
+                    
+                    .modal-body {
+                        padding: 16px;
+                    }
+                    
+                    .toggle-text {
+                         /* Hide text labels on small screens if needed, or stack */
+                         /* Keep for now */
+                    }
                 }
             `}</style>
         </div>

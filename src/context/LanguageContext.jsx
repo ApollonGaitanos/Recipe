@@ -65,8 +65,8 @@ const translations = {
             error: "Error saving changes"
         },
         magicImport: {
-            title: "Magic Recipe Import",
-            description: "Import from a link or paste text manually:",
+            title: "Magic Import",
+            description: "Paste a URL or recipe text below:",
             labelUrl: "Option 1: From Website",
             labelText: "Option 2: Paste Text",
             labelImage: "Option 3: Scan Image",
@@ -79,7 +79,9 @@ const translations = {
             scanning: "Scanning Text...",
             statusCore: "Loading OCR Core...",
             statusDownload: "Downloading Language Data...",
-            statusInit: "Initializing Engine..."
+            statusInit: "Initializing Engine...",
+            useAI: "AI",
+            aiCost: "cost per use: 0.01€"
         },
         visibility: {
             makePublic: "Make Public",
@@ -150,7 +152,7 @@ const translations = {
             error: "Σφάλμα αποθήκευσης"
         },
         magicImport: {
-            title: "Μαγική Εισαγωγή",
+            title: "Αυτόματη Εισαγωγή",
             description: "Εισάγετε σύνδεσμο ή επικολλήστε κείμενο:",
             labelUrl: "Επιλογή 1: Από Ιστοσελίδα",
             labelText: "Επιλογή 2: Επικόλληση Κειμένου",
@@ -159,12 +161,14 @@ const translations = {
             urlPlaceholder: "https://www.site.gr/syntagi...",
             textPlaceholder: "Επικολλήστε τίτλο, υλικά και εκτέλεση...",
             imageButton: "Επιλογή Εικόνας ή Φωτογραφία",
-            button: "Αυτόματη Δημιουργία",
+            button: "Αυτόματη Εισαγωγή",
             parsing: "Επεξεργασία...",
             scanning: "Σάρωση Κειμένου...",
             statusCore: "Φόρτωση Μηχανής...",
             statusDownload: "Λήψη Δεδομένων Γλώσσας...",
-            statusInit: "Αρχικοποίηση..."
+            statusInit: "Αρχικοποίηση...",
+            useAI: "AI",
+            aiCost: "κόστος: 0.01€"
         },
         visibility: {
             makePublic: "Δημοσιοποίηση",
