@@ -10,6 +10,10 @@ const translations = {
     en: {
         appTitle: 'My Recipes',
         addRecipe: 'Add Recipe',
+        improve: 'Improve with AI',
+        translate: 'Translate',
+        improving: 'Improving...',
+        translating: 'Translating...',
         searchPlaceholder: 'Search recipes, ingredients...',
         noRecipes: 'No recipes found. Try adding one!',
         prepTime: 'Prep',
@@ -101,6 +105,10 @@ const translations = {
     el: {
         appTitle: 'Οι Συνταγές μου',
         addRecipe: 'Προσθήκη',
+        improve: 'Βελτίωση με AI',
+        translate: 'Μετάφραση',
+        improving: 'Βελτίωση...',
+        translating: 'Μετάφραση...',
         searchPlaceholder: 'Αναζήτηση συνταγών, υλικών...',
         noRecipes: 'Δεν βρέθηκαν συνταγές. Προσθέστε μία!',
         prepTime: 'Προετοιμασία',

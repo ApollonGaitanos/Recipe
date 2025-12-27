@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,22 +7,24 @@ import ConfirmModal from './ConfirmModal';
 import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 
+import { parseRecipe } from '../utils/recipeParser';
+
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
-    const { t } = useLanguage();
+    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
+    const { t, language } = useLanguage();
     const { user } = useAuth();
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Sync Like Status
     const isLiked = checkIsLiked(id);
 
     const contentRef = useRef(null);
 
-    // Logic to find recipe in 'my recipes' or 'public recipes'
-    // Prefer 'recipes' (My Recipes) to ensure edit context if I am the owner
+    // Logic to find recipe
     let recipe = recipes.find(r => r.id === id);
     if (!recipe) {
         recipe = publicRecipes.find(r => r.id === id);
@@ -57,7 +59,43 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const handleLike = async () => {
         if (!user) return;
         await toggleLike(recipe.id);
-        // No local state update needed, Context syncs it
+    };
+
+    const handleMagicAction = async (mode) => {
+        if (isProcessing) return;
+        const confirmMsg = mode === 'improve'
+            ? "This will rewrite your recipe with AI improvements. Continue?"
+            : "This will translate your recipe text permanently. Continue?";
+
+        if (!window.confirm(confirmMsg)) return;
+
+        setIsProcessing(true);
+        try {
+            // Prepare input: Stringify the current recipe to give full context
+            const inputPayload = {
+                ...recipe,
+                // We pass the fields explicitly to be safe, though spread works if backend handles it
+                // Backend expects 'text' usually, but 'extractWithAI' handles object spread.
+                mode: mode,
+                targetLanguage: language
+            };
+
+            const result = await parseRecipe(inputPayload, true, language, mode);
+
+            if (result) {
+                // Update the recipe in place
+                updateRecipe(recipe.id, {
+                    ...recipe,
+                    ...result
+                });
+                alert(mode === 'improve' ? "Recipe Improved! ✨" : "Recipe Translated! 🌍");
+            }
+        } catch (error) {
+            console.error(`AI ${mode} failed:`, error);
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -81,8 +119,32 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <ArrowLeft size={20} /> {t('back')}
                 </button>
                 <div className="detail-actions">
+
+                    {/* AI Actions (Improve/Translate) - Owner Only */}
+                    {isOwner && (
+                        <>
+                            <button
+                                className="btn-icon"
+                                onClick={() => handleMagicAction('improve')}
+                                title={t('improve')}
+                                disabled={isProcessing}
+                                style={{ color: '#8b5cf6' }} // Violet for Magic
+                            >
+                                <Sparkles size={20} />
+                            </button>
+                            <button
+                                className="btn-icon"
+                                onClick={() => handleMagicAction('translate')}
+                                title={t('translate')}
+                                disabled={isProcessing}
+                                style={{ color: '#0ea5e9' }} // Sky Blue for Translate
+                            >
+                                <Globe size={20} />
+                            </button>
+                        </>
+                    )}
+
                     {/* Like Button */}
-                    {/* Like Button & Count */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginRight: '6px' }}>
                         <button
                             className="btn-icon"
