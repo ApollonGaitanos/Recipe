@@ -1,12 +1,12 @@
-export const parseRecipe = async (input, useAI = false, language = 'en', mode = 'extract') => {
+export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMode = 'extract') => {
     // Validate input
     if (!input) {
         throw new Error('Please provide some recipe text or image to parse');
     }
     const isImage = typeof input === 'object' && input.imageBase64;
     // For Create Mode, simple text is valid even if short "Chicken and rice"
-    const isCreateMode = mode === 'create';
-    const isAIAction = mode === 'improve' || mode === 'translate';
+    const isCreateMode = taskMode === 'create';
+    const isAIAction = taskMode === 'improve' || taskMode === 'translate';
 
     if (!isImage && !isCreateMode && !isAIAction && (typeof input !== 'string' || !input.trim())) {
         throw new Error('Invalid input provided');
@@ -17,9 +17,24 @@ export const parseRecipe = async (input, useAI = false, language = 'en', mode = 
     // Check if input is a URL (Only if NOT in create mode)
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
     if (!isCreateMode && urlRegex.test(trimmedInput)) {
-        console.log("URL detected. Attempting Smart Hybrid Import...");
 
-        // 1. Try Legacy/Client-side Scraper FIRST (Fastest, Best for JSON-LD)
+        // Mode 1: ON (Force AI)
+        if (aiMode === 'on' || aiMode === true) { // Handle legacy boolean true just in case
+            console.log("AI Mode (ON): Engaging Direct AI Extraction...");
+            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
+        }
+
+        // Mode 2: OFF (Legacy Only)
+        if (aiMode === 'off' || aiMode === false) {
+            console.log("Classic Mode (OFF): Engaging Legacy Scraper...");
+            return await fetchRecipeFromUrl(trimmedInput);
+        }
+
+        // Mode 3: HYBRID (Default/Fall-through)
+        // aiMode === 'hybrid'
+        console.log("Hybrid Mode: Legacy First, AI Fallback...");
+
+        // 1. Try Legacy
         let legacyResult = null;
         try {
             legacyResult = await fetchRecipeFromUrl(trimmedInput);
@@ -27,7 +42,7 @@ export const parseRecipe = async (input, useAI = false, language = 'en', mode = 
             console.warn("Legacy scraper failed:", err);
         }
 
-        // 2. Evaluate Legacy Result
+        // 2. Evaluate Legacy
         const isLegacyGood = legacyResult &&
             typeof legacyResult.ingredients === 'string' && legacyResult.ingredients.length > 20 &&
             typeof legacyResult.instructions === 'string' && legacyResult.instructions.length > 20;
@@ -37,64 +52,59 @@ export const parseRecipe = async (input, useAI = false, language = 'en', mode = 
             return legacyResult;
         }
 
-        // 3. Fallback to AI (if enabled and legacy was poor/failed)
-        if (useAI) {
-            console.log("Legacy result poor/missing. Engaging AI backup...");
-            try {
-                // Determine what to send to AI
-                // If we got *some* text from legacy (e.g. raw body text) but failed to parse, we could send that?
-                // For now, let's Stick to sending the URL to the Edge Function as the AI Fallback.
-                // The Edge Function has its own fetcher.
-                return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode }); // Pass URL as text or handle internally
-            } catch (aiError) {
-                console.error("AI Fallback failed:", aiError);
-                if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
-                throw aiError;
-            }
-        }
+        // If we got *some* text from legacy (e.g. raw body text) but failed to parse, we could send that?
+        // For now, let's Stick to sending the URL to the Edge Function as the AI Fallback.
+        // The Edge Function has its own fetcher.
+        return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode }); // Pass URL as text or handle internally
+    } catch (aiError) {
+        console.error("AI Fallback failed:", aiError);
+        if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
+        throw aiError;
+    }
+}
 
-        // 4. Default to Legacy (even if poor) if AI is OFF
-        if (legacyResult) return legacyResult;
-        throw new Error("Could not extract recipe from URL.");
+// 4. Default to Legacy (even if poor) if AI is OFF
+if (legacyResult) return legacyResult;
+throw new Error("Could not extract recipe from URL.");
     }
 
-    // For text/image input: Try AI first if enabled (Always true for Create/Improve)
-    if (useAI || isImage || isCreateMode || mode === 'improve' || mode === 'translate') {
-        try {
-            // Construct payload
-            let payload = {};
-            if (isImage) {
-                payload = { ...input, targetLanguage: language, mode };
-            } else if (typeof input === 'string') {
-                payload = { text: input, targetLanguage: language, mode };
-            } else {
-                payload = { ...input, targetLanguage: language, mode };
-            }
-
-            const aiResult = await extractWithAI(payload);
-            if (aiResult) {
-                console.log(`✅ Recipe processed with AI (Mode: ${mode})`);
-                return aiResult;
-            }
-        } catch (aiError) {
-            console.warn(`AI processing (${mode}) failed:`, aiError);
-            if (isImage || isCreateMode) { // Create/Image have no regex fallback
-                throw new Error(`AI processing failed: ${aiError.message}`);
-            }
-        }
-    }
-
-    // Default: Parse as text with regex
-    if (!trimmedInput) {
-        throw new Error('No text available to parse.');
-    }
-
+// For text/image input: Try AI first if enabled (Always true for Create/Improve)
+if (useAI || isImage || isCreateMode || mode === 'improve' || mode === 'translate') {
     try {
-        return parseRecipeFromText(trimmedInput);
-    } catch (error) {
-        console.error("Text parsing failed:", error);
-        throw new Error(`Could not parse recipe text: ${error.message}`);
+        // Construct payload
+        let payload = {};
+        if (isImage) {
+            payload = { ...input, targetLanguage: language, mode };
+        } else if (typeof input === 'string') {
+            payload = { text: input, targetLanguage: language, mode };
+        } else {
+            payload = { ...input, targetLanguage: language, mode };
+        }
+
+        const aiResult = await extractWithAI(payload);
+        if (aiResult) {
+            console.log(`✅ Recipe processed with AI (Mode: ${mode})`);
+            return aiResult;
+        }
+    } catch (aiError) {
+        console.warn(`AI processing (${mode}) failed:`, aiError);
+        if (isImage || isCreateMode) { // Create/Image have no regex fallback
+            throw new Error(`AI processing failed: ${aiError.message}`);
+        }
     }
+}
+
+// Default: Parse as text with regex
+if (!trimmedInput) {
+    throw new Error('No text available to parse.');
+}
+
+try {
+    return parseRecipeFromText(trimmedInput);
+} catch (error) {
+    console.error("Text parsing failed:", error);
+    throw new Error(`Could not parse recipe text: ${error.message}`);
+}
 };
 
 // AI Extraction function

@@ -8,7 +8,7 @@ import { recognizeText } from '../utils/ocr';
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
     const [inputValue, setInputValue] = useState('');
-    const [useAI, setUseAI] = useState(true);
+    const [aiMode, setAiMode] = useState('hybrid'); // 'off', 'hybrid', 'on'
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
     const [mode, setMode] = useState('import'); // 'import' or 'create'
@@ -84,10 +84,11 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
             // Determine effective mode and AI usage
             const activeMode = mode === 'create' ? 'create' : 'extract';
-            const aiEnabled = mode === 'create' ? true : useAI;
+            // If Create, Force AI. If Import, use selected AI Mode.
+            const effectiveAiMode = mode === 'create' ? 'on' : aiMode;
 
             if (selectedImage && activeMode === 'extract') {
-                if (aiEnabled) {
+                if (effectiveAiMode !== 'off') { // Hybrid or On uses AI for images
                     setScanProgress(20);
                     const base64 = await resizeImage(selectedImage);
                     result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, true, language);
@@ -97,7 +98,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     result = await parseRecipe(combinedText, false);
                 }
             } else {
-                result = await parseRecipe(inputValue, aiEnabled, language, activeMode);
+                // Pass aiMode string to parser instead of boolean
+                result = await parseRecipe(inputValue, effectiveAiMode, language, activeMode);
             }
 
             onImport(result);
@@ -138,25 +140,39 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         </h3>
                     </div>
 
-                    {/* AI Toggle - Only show in Import Mode (Create is always AI) */}
+                    {/* AI Mode Selector */}
                     <div className="header-right">
                         {mode === 'import' && (
                             <div className="ai-toggle-wrapper">
-                                <label className="toggle-label">
-                                    <div className="toggle-text">
-                                        <span className="toggle-title">{t('magicImport.useAI') || "AI"}</span>
-                                        <span className="toggle-cost">{t('magicImport.aiCost') || "0.01€/use"}</span>
-                                    </div>
-                                    <div className={`toggle-switch ${useAI ? 'on' : 'off'}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={useAI}
-                                            onChange={(e) => setUseAI(e.target.checked)}
-                                            disabled={isParsing}
-                                        />
-                                        <span className="slider"></span>
-                                    </div>
-                                </label>
+                                <div className="toggle-text">
+                                    <span className="toggle-title">AI Mode</span>
+                                    <span className="toggle-cost">
+                                        {aiMode === 'off' ? 'Free' : (aiMode === 'hybrid' ? 'Smart' : '0.01€')}
+                                    </span>
+                                </div>
+                                <div className="mode-selector">
+                                    <button
+                                        className={`selector-btn ${aiMode === 'off' ? 'active' : ''}`}
+                                        onClick={() => setAiMode('off')}
+                                        title="Classic Scraper Only"
+                                    >
+                                        Off
+                                    </button>
+                                    <button
+                                        className={`selector-btn ${aiMode === 'hybrid' ? 'active' : ''}`}
+                                        onClick={() => setAiMode('hybrid')}
+                                        title="Scraper + AI Backup"
+                                    >
+                                        Hybrid
+                                    </button>
+                                    <button
+                                        className={`selector-btn ${aiMode === 'on' ? 'active' : ''}`}
+                                        onClick={() => setAiMode('on')}
+                                        title="Force AI"
+                                    >
+                                        On
+                                    </button>
+                                </div>
                             </div>
                         )}
                         <button className="modal-close-btn" onClick={onClose}>
@@ -407,45 +423,38 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     opacity: 0.8;
                 }
 
-                .toggle-switch {
-                    position: relative;
-                    width: 36px;
-                    height: 20px;
+                .mode-selector {
+                    display: flex;
+                    background: var(--color-bg);
+                    padding: 2px;
+                    border-radius: 8px;
+                    border: 1px solid var(--color-border);
                 }
 
-                .toggle-switch input { 
-                    opacity: 0;
-                    width: 0;
-                    height: 0;
-                }
-
-                .slider {
-                    position: absolute;
+                .selector-btn {
+                    padding: 4px 12px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: var(--color-text-light);
+                    background: transparent;
+                    border: none;
+                    border-radius: 6px;
                     cursor: pointer;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    background-color: #ccc;
-                    border-radius: 20px;
-                    transition: .4s;
+                    transition: all 0.2s;
                 }
 
-                .slider:before {
-                    position: absolute;
-                    content: "";
-                    height: 16px;
-                    width: 16px;
-                    left: 2px;
-                    bottom: 2px;
-                    background-color: white;
-                    border-radius: 50%;
-                    transition: .4s;
+                .selector-btn:hover {
+                    color: var(--color-text);
                 }
 
-                .toggle-switch.on .slider {
-                    background-color: var(--color-primary);
+                .selector-btn.active {
+                    background: var(--color-surface);
+                    color: var(--color-primary);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
                 }
-
-                .toggle-switch.on .slider:before {
-                    transform: translateX(16px);
+                
+                body.dark-mode .selector-btn.active {
+                     background: #333;
                 }
 
                 .modal-close-btn {
