@@ -6,8 +6,9 @@ export const parseRecipe = async (input, useAI = false, language = 'en', mode = 
     const isImage = typeof input === 'object' && input.imageBase64;
     // For Create Mode, simple text is valid even if short "Chicken and rice"
     const isCreateMode = mode === 'create';
+    const isAIAction = mode === 'improve' || mode === 'translate';
 
-    if (!isImage && !isCreateMode && (typeof input !== 'string' || !input.trim())) {
+    if (!isImage && !isCreateMode && !isAIAction && (typeof input !== 'string' || !input.trim())) {
         throw new Error('Invalid input provided');
     }
 
