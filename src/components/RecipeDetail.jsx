@@ -95,7 +95,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 const standardizedResult = {
                     ...result,
                     ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : result.ingredients,
-                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : result.instructions
+                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : result.instructions,
+                    // Ensure tags is an Array
+                    tags: typeof result.tags === 'string'
+                        ? result.tags.split(',').map(t => t.trim()).filter(Boolean)
+                        : (Array.isArray(result.tags) ? result.tags : [])
                 };
 
                 console.log("Applying Update:", standardizedResult);
