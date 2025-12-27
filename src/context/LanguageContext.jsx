@@ -168,7 +168,7 @@ const translations = {
             statusDownload: "Λήψη Δεδομένων Γλώσσας...",
             statusInit: "Αρχικοποίηση...",
             useAI: "AI",
-            aiCost: "κόστος: 0.01€"
+            aiCost: "κόστος χρήσης: 0.01€"
         },
         visibility: {
             makePublic: "Δημοσιοποίηση",
