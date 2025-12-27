@@ -16,7 +16,7 @@ serve(async (req) => {
     try {
 
         // 2. Input Parsing
-        const { text, imageBase64, imageType, url, targetLanguage } = await req.json()
+        const { text, imageBase64, imageType, url, targetLanguage, mode } = await req.json()
 
         // Validate presence of EITHER text OR image OR url
         if ((!text || typeof text !== 'string' || text.trim().length < 10) && !imageBase64 && !url) {
@@ -38,6 +38,7 @@ serve(async (req) => {
         let processingText = text || '';
 
         // If URL provided, fetch and scrape text
+        // Only fetch URL if we are in 'extract' mode or if specific URL is given for other modes (rare)
         if (url) {
             console.log(`Fetching URL: ${url}`);
             try {
@@ -84,7 +85,59 @@ serve(async (req) => {
             }
         }
 
-        const systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source, but FORMATTED correctly.
+        // 5. Construct Prompt based on MODE (default: extract)
+        const selectedMode = mode || 'extract';
+        let systemPrompt = "";
+        let temperature = 0.1;
+
+        const jsonStructure = `
+Return ONLY valid JSON with this exact structure:
+{
+  "title": "Exact Title",
+  "ingredients": ["Ingredient 1", "Ingredient 2"],
+  "instructions": ["Step one.", "Step two.", "Step three."],
+  "prepTime": 0,
+  "cookTime": 0,
+  "servings": 0,
+  "tags": "tag1, tag2"
+}`;
+
+        switch (selectedMode) {
+            case 'create':
+                temperature = 0.7; // Creative
+                systemPrompt = `You are a CREATIVE CHEF. Create a delicious, complete recipe based on the user's request (ingredients or idea).
+RULES:
+1. Be creative but practical.
+2. Use clear, step-by-step instructions.
+3. Language: Output in **${targetLanguage === 'el' ? 'Greek' : 'English'}** (unless user requested otherwise).
+${jsonStructure}`;
+                break;
+
+            case 'improve':
+                temperature = 0.4; // Slightly Creative
+                systemPrompt = `You are a MICHELIN CONSULTANT. Analyze the provided recipe and IMPROVE it.
+RULES:
+1. Fix errors, inconsistencies, or unclear steps.
+2. Suggest better techniques or essential missing ingredients (e.g. balancing acid/salt).
+3. Do NOT change the core identity of the dish.
+4. Language: Keep the original language of the recipe.
+${jsonStructure}`;
+                break;
+
+            case 'translate':
+                temperature = 0.1; // Strict
+                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${targetLanguage === 'el' ? 'Greek' : 'English'}**.
+RULES:
+1. Translate Title, Ingredients, Instructions, and Tags.
+2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek), otherwise keep original.
+3. Keep the exact same meaning.
+${jsonStructure}`;
+                break;
+
+            case 'extract':
+            default:
+                temperature = 0.1; // Strict
+                systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source, but FORMATTED correctly.
 
 RULES:
 1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
@@ -92,32 +145,24 @@ RULES:
     - **Instructions**: **SPLIT BLOCKS OF TEXT.** If a paragraph contains multiple steps (e.g. "Mix flour. Then add sugar."), you MUST split them into separate strings in the array.
     - **Ingredients**: Split into a clean list of strings.
     - **DO NOT NUMBER** the output strings.
+    - **Language Logic**:
+       - Source is Greek -> Output Greek.
+       - Source is English -> Output English.
+       - Source is Other -> Translate to **${targetLanguage || 'English'}**.
 
-Return ONLY valid JSON with this exact structure:
-{
-  "title": "Exact Title from Source",
-  "ingredients": ["Ingredient 1", "Ingredient 2"],
-  "instructions": ["Step one.", "Step two.", "Step three (was stuck to step two)."],
-  "prepTime": 0,
-  "cookTime": 0,
-  "servings": 0,
-  "tags": "tag1, tag2"
-}
+${jsonStructure}
 
 IMPORTANT:
-- **NO HALLUCINATIONS**: If input has no recipe, return {"error": "No recipe content found"}.
-- **LANGUAGE LOGIC**:
-   - Source is Greek -> Output Greek.
-   - Source is English -> Output English.
-   - Source is Other -> Translate to **${targetLanguage || 'English'}**.
-
-Recipe to extract:`;
+- **NO HALLUCINATIONS**: If input has no recipe, return {"error": "No recipe content found"}.`;
+                break;
+        }
 
         const parts = [{ text: systemPrompt }];
 
-        // Add User Text if provided
+        // Add User Text/Context
         if (text) {
-            parts.push({ text: `\n\n${text}` });
+            const label = selectedMode === 'improve' || selectedMode === 'translate' ? "Recipe Context:" : "User Input:";
+            parts.push({ text: `\n\n${label} ${text}` });
         }
 
         // Add Image if provided
@@ -132,20 +177,20 @@ Recipe to extract:`;
 
         // Add URL Text if provided
         if (url && processingText) {
-            parts.push({ text: `\n\n${processingText}` });
+            parts.push({ text: `\n\nWebsite Content: ${processingText}` });
         }
 
         const payload = {
             contents: [{ parts }],
             generationConfig: {
-                temperature: 0.1, // Very low temp for precision
+                temperature: temperature,
                 maxOutputTokens: 4096,
                 responseMimeType: "application/json"
             }
         };
 
 
-        // 5. API Call
+        // 6. API Call
         console.log(`Sending request to ${MODEL_NAME}...`);
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -156,7 +201,7 @@ Recipe to extract:`;
             body: JSON.stringify(payload)
         });
 
-        // 6. Error Handling
+        // 7. Error Handling
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Gemini API Error:', response.status, errorText);
@@ -165,7 +210,7 @@ Recipe to extract:`;
 
         const data = await response.json();
 
-        // 7. Response Parsing
+        // 8. Response Parsing
         const candidate = data.candidates?.[0];
         if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
             console.error('Invalid Gemini Response:', JSON.stringify(data));
@@ -207,7 +252,7 @@ Recipe to extract:`;
             return param || '';
         };
 
-        // 8. Success Response
+        // 9. Success Response
         return new Response(JSON.stringify({
             title: recipeData.title,
             ingredients: formatParam(recipeData.ingredients),
@@ -231,6 +276,7 @@ Recipe to extract:`;
             status: 400,
             headers: {
                 'Content-Type': 'application/json',
+                // CORS Headers for Error Response too
                 'Access-Control-Allow-Origin': '*'
             }
         });
