@@ -3,11 +3,7 @@ import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat,
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import ConfirmModal from './ConfirmModal';
-import VisibilityModal from './VisibilityModal';
-import { generateRecipePDF } from '../utils/pdfGenerator';
-
-import { parseRecipe } from '../utils/recipeParser';
+import ActionModal from './ActionModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
     const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
@@ -18,6 +14,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // AI Modal State
+    const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
 
     // Sync Like Status
     const isLiked = checkIsLiked(id);
@@ -61,37 +60,28 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         await toggleLike(recipe.id);
     };
 
-    const handleMagicAction = async (mode) => {
-        if (isProcessing) return;
+    // Open the modal
+    const handleMagicAction = (mode) => {
+        setActionModal({ isOpen: true, mode });
+    };
 
-        let targetLang = language;
-
-        if (mode === 'translate') {
-            const defaultTarget = language === 'en' ? 'el' : 'en';
-            const userChoice = window.prompt("Translate to which language? (en/el)", defaultTarget);
-            if (!userChoice) return;
-            targetLang = userChoice.toLowerCase();
-        } else {
-            // Improve mode confirmation
-            if (!window.confirm("This will rewrite your recipe with AI improvements. Continue?")) return;
-        }
+    // Execute the action (called by modal)
+    const executeAIAction = async (targetLang) => {
+        const mode = actionModal.mode;
 
         setIsProcessing(true);
         try {
             // Prepare input: Stringify the current recipe to give full context
-            // The backend requires a 'text' field for context.
             const inputPayload = {
                 text: JSON.stringify(recipe, null, 2),
                 mode: mode,
-                targetLanguage: targetLang
+                targetLanguage: targetLang || language
             };
 
-            const result = await parseRecipe(inputPayload, true, targetLang, mode);
-
-            console.log("AI Result Raw:", result);
+            const result = await parseRecipe(inputPayload, true, targetLang || language, mode);
 
             if (result) {
-                // Standardization Helper: Ensure we save Strings to DB (legacy compatibility)
+                // Standardization Helper
                 const standardizedResult = {
                     ...result,
                     ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : (typeof result.ingredients === 'string' ? result.ingredients : ''),
@@ -101,14 +91,16 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         : (typeof result.tags === 'string' ? result.tags.split(',').map(s => s.trim()).filter(Boolean) : [])
                 };
 
-                console.log("Applying Update:", standardizedResult);
-
                 // Update the recipe in place
                 updateRecipe(recipe.id, {
                     ...recipe,
                     ...standardizedResult
                 });
-                alert(mode === 'improve' ? "Recipe Improved! ✨" : "Recipe Translated! 🌍");
+
+                // Close modal only on success
+                setActionModal({ isOpen: false, mode: null });
+                // alert(mode === 'improve' ? "Recipe Improved! ✨" : "Recipe Translated! 🌍"); // Optional: Modal closing is enough feedback? Or show toast?
+                // The modal closes, so user sees the change.
             }
         } catch (error) {
             console.error(`AI ${mode} failed:`, error);
@@ -132,6 +124,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 onClose={() => setIsVisModalOpen(false)}
                 onConfirm={() => toggleVisibility(recipe.id, recipe.is_public)}
                 isMakingPublic={!recipe.is_public}
+            />
+
+            <ActionModal
+                isOpen={actionModal.isOpen}
+                onClose={() => !isProcessing && setActionModal({ isOpen: false, mode: null })}
+                mode={actionModal.mode}
+                onConfirm={executeAIAction}
+                isProcessing={isProcessing}
             />
 
             <div className="detail-header">
