@@ -55,7 +55,7 @@ export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMo
         // 3. Fallback to AI
         console.log("Legacy result poor/missing. Engaging AI backup...");
         try {
-            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode }, language);
+            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode });
         } catch (aiError) {
             console.error("AI Fallback failed:", aiError);
             if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
@@ -63,48 +63,46 @@ export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMo
         }
     }
 
-    // 4. Default to Legacy (even if poor) if AI is OFF
-    if (legacyResult) return legacyResult;
-    throw new Error("Could not extract recipe from URL.");
-}
+    // For text/image input: Try AI first if enabled (Always true for Create/Improve)
+    const useAI = aiMode !== 'off'; // Simplified logic for text input
 
-// For text/image input: Try AI first if enabled (Always true for Create/Improve)
-if (useAI || isImage || isCreateMode || mode === 'improve' || mode === 'translate') {
-    try {
-        // Construct payload
-        let payload = {};
-        if (isImage) {
-            payload = { ...input, targetLanguage: language, mode };
-        } else if (typeof input === 'string') {
-            payload = { text: input, targetLanguage: language, mode };
-        } else {
-            payload = { ...input, targetLanguage: language, mode };
-        }
+    if (useAI || isImage || isCreateMode || taskMode === 'improve' || taskMode === 'translate') {
+        try {
+            // Construct payload
+            let payload = {};
+            if (isImage) {
+                payload = { ...input, targetLanguage: language, mode: taskMode };
+            } else if (typeof input === 'string') {
+                payload = { text: input, targetLanguage: language, mode: taskMode };
+            } else {
+                payload = { ...input, targetLanguage: language, mode: taskMode };
+            }
 
-        const aiResult = await extractWithAI(payload);
-        if (aiResult) {
-            console.log(`✅ Recipe processed with AI (Mode: ${mode})`);
-            return aiResult;
-        }
-    } catch (aiError) {
-        console.warn(`AI processing (${mode}) failed:`, aiError);
-        if (isImage || isCreateMode) { // Create/Image have no regex fallback
-            throw new Error(`AI processing failed: ${aiError.message}`);
+            const aiResult = await extractWithAI(payload);
+            if (aiResult) {
+                console.log(`✅ Recipe processed with AI (Mode: ${taskMode})`);
+                return aiResult;
+            }
+        } catch (aiError) {
+            console.warn(`AI processing (${taskMode}) failed:`, aiError);
+            if (isImage || isCreateMode) { // Create/Image have no regex fallback
+                throw new Error(`AI processing failed: ${aiError.message}`);
+            }
         }
     }
-}
 
-// Default: Parse as text with regex
-if (!trimmedInput) {
-    throw new Error('No text available to parse.');
-}
+    // Default: Parse as text with regex
+    if (!trimmedInput) {
+        throw new Error('No text available to parse.');
+    }
 
-try {
-    return parseRecipeFromText(trimmedInput);
-} catch (error) {
-    console.error("Text parsing failed:", error);
-    throw new Error(`Could not parse recipe text: ${error.message}`);
-}
+    try {
+        return parseRecipeFromText(trimmedInput);
+    } catch (error) {
+        console.error("Text parsing failed:", error);
+        throw new Error(`Could not parse recipe text: ${error.message}`);
+    }
+};
 
 
 // AI Extraction function
