@@ -1,10 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, Users, Globe, Lock, ChefHat } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useRecipes } from '../context/RecipeContext';
 
-export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
+export default function RecipeCard({ recipe, onEdit, onDelete }) {
     const { t } = useLanguage();
     const { user } = useAuth();
     const { toggleLike, checkIsLiked } = useRecipes();
@@ -14,12 +15,17 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
     const isLiked = checkIsLiked(recipe.id);
 
     const handleLikeClick = (e) => {
-        e.stopPropagation(); // Prevent card click (navigation)
+        e.preventDefault(); // Prevent link navigation
+        e.stopPropagation();
         toggleLike(recipe.id);
     };
 
     return (
-        <div className="recipe-card" onClick={(e) => onClick(recipe.id)}>
+        <Link
+            to={`/recipe/${recipe.id}`}
+            className="recipe-card"
+            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+        >
             <div className="card-content">
                 {/* Header Row: Title + Visibility Badge */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
@@ -80,6 +86,6 @@ export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
                     )}
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }

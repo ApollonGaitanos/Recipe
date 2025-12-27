@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut, Settings, Globe, BookOpen, Menu, X } from 'lucide-react';
-import RecipeList from './RecipeList';
-import RecipeForm from './RecipeForm';
-import RecipeDetail from './RecipeDetail';
 import AuthModal from './AuthModal';
 import MigrationBanner from './MigrationBanner';
 import SettingsModal from './SettingsModal';
@@ -11,12 +9,11 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function Layout({
-    children, // Should be main content from App
+    children,
     currentView,
-    onNavigate,
-    // Add button action passed from parent
-    onAddClick
+    // onNavigate prop removed, using internal router
 }) {
+    const navigate = useNavigate();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -90,7 +87,7 @@ export default function Layout({
             <div className="desktop-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
                     <div
-                        onClick={() => onNavigate('home')}
+                        onClick={() => navigate('/')}
                         className="app-branding"
                         style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
                     >
@@ -145,7 +142,7 @@ export default function Layout({
                ======================= */}
             <div className="mobile-header">
                 <div
-                    onClick={() => onNavigate('home')}
+                    onClick={() => navigate('/')}
                     className="app-branding"
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                 >
@@ -171,7 +168,7 @@ export default function Layout({
                 <div className="nav-segmented-control">
                     <button
                         className={`segment-item ${currentView === 'home' ? 'active' : ''}`}
-                        onClick={() => onNavigate('home')}
+                        onClick={() => navigate('/')}
                     >
                         <Globe size={18} />
                         <span className="nav-text-desktop">{t('visibility.publicFeed')}</span>
@@ -181,7 +178,7 @@ export default function Layout({
                     {user && (
                         <button
                             className={`segment-item ${currentView === 'myRecipes' ? 'active' : ''}`}
-                            onClick={() => onNavigate('myRecipes')}
+                            onClick={() => navigate('/my-recipes')}
                         >
                             <BookOpen size={18} />
                             <span className="nav-text-desktop">{t('visibility.myRecipes')}</span>
