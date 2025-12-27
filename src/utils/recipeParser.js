@@ -17,24 +17,45 @@ export const parseRecipe = async (input, useAI = false, language = 'en', mode = 
     // Check if input is a URL (Only if NOT in create mode)
     const urlRegex = /^(http|https):\/\/[^ "]+$/;
     if (!isCreateMode && urlRegex.test(trimmedInput)) {
+        console.log("URL detected. Attempting Smart Hybrid Import...");
+
+        // 1. Try Legacy/Client-side Scraper FIRST (Fastest, Best for JSON-LD)
+        let legacyResult = null;
+        try {
+            legacyResult = await fetchRecipeFromUrl(trimmedInput);
+        } catch (err) {
+            console.warn("Legacy scraper failed:", err);
+        }
+
+        // 2. Evaluate Legacy Result
+        const isLegacyGood = legacyResult &&
+            typeof legacyResult.ingredients === 'string' && legacyResult.ingredients.length > 20 &&
+            typeof legacyResult.instructions === 'string' && legacyResult.instructions.length > 20;
+
+        if (isLegacyGood) {
+            console.log("✅ Using Legacy Scraper result (High Confidence)");
+            return legacyResult;
+        }
+
+        // 3. Fallback to AI (if enabled and legacy was poor/failed)
         if (useAI) {
+            console.log("Legacy result poor/missing. Engaging AI backup...");
             try {
-                const aiResult = await extractWithAI({ url: trimmedInput, targetLanguage: language, mode });
-                if (aiResult) {
-                    console.log('✅ URL Extracted with AI');
-                    return aiResult;
-                }
-            } catch (error) {
-                console.warn('AI URL extraction failed, falling back to legacy:', error);
+                // Determine what to send to AI
+                // If we got *some* text from legacy (e.g. raw body text) but failed to parse, we could send that?
+                // For now, let's Stick to sending the URL to the Edge Function as the AI Fallback.
+                // The Edge Function has its own fetcher.
+                return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode }); // Pass URL as text or handle internally
+            } catch (aiError) {
+                console.error("AI Fallback failed:", aiError);
+                if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
+                throw aiError;
             }
         }
 
-        try {
-            return await fetchRecipeFromUrl(trimmedInput);
-        } catch (error) {
-            console.error("URL Fetch failed:", error);
-            throw new Error(`Could not fetch recipe from URL: ${error.message}`);
-        }
+        // 4. Default to Legacy (even if poor) if AI is OFF
+        if (legacyResult) return legacyResult;
+        throw new Error("Could not extract recipe from URL.");
     }
 
     // For text/image input: Try AI first if enabled (Always true for Create/Improve)
