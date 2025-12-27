@@ -63,11 +63,18 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     const handleMagicAction = async (mode) => {
         if (isProcessing) return;
-        const confirmMsg = mode === 'improve'
-            ? "This will rewrite your recipe with AI improvements. Continue?"
-            : "This will translate your recipe text permanently. Continue?";
 
-        if (!window.confirm(confirmMsg)) return;
+        let targetLang = language;
+
+        if (mode === 'translate') {
+            const defaultTarget = language === 'en' ? 'el' : 'en';
+            const userChoice = window.prompt("Translate to which language? (en/el)", defaultTarget);
+            if (!userChoice) return;
+            targetLang = userChoice.toLowerCase();
+        } else {
+            // Improve mode confirmation
+            if (!window.confirm("This will rewrite your recipe with AI improvements. Continue?")) return;
+        }
 
         setIsProcessing(true);
         try {
@@ -76,10 +83,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
             const inputPayload = {
                 text: JSON.stringify(recipe, null, 2),
                 mode: mode,
-                targetLanguage: language
+                targetLanguage: targetLang
             };
 
-            const result = await parseRecipe(inputPayload, true, language, mode);
+            const result = await parseRecipe(inputPayload, true, targetLang, mode);
 
             if (result) {
                 // Update the recipe in place

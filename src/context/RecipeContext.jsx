@@ -244,6 +244,10 @@ export default function RecipeContext({ children }) {
             const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
             dbUpdates.author_username = currentUsername;
 
+            // Optimistic Update
+            setRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updatedData } : r));
+            setPublicRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updatedData } : r));
+
             await supabase.from('recipes').update(dbUpdates).eq('id', id);
         }
     };
