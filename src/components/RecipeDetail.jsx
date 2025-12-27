@@ -88,11 +88,22 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
             const result = await parseRecipe(inputPayload, true, targetLang, mode);
 
+            console.log("AI Result Raw:", result);
+
             if (result) {
+                // Standardization Helper: Ensure we save Strings to DB (legacy compatibility)
+                const standardizedResult = {
+                    ...result,
+                    ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : result.ingredients,
+                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : result.instructions
+                };
+
+                console.log("Applying Update:", standardizedResult);
+
                 // Update the recipe in place
                 updateRecipe(recipe.id, {
                     ...recipe,
-                    ...result
+                    ...standardizedResult
                 });
                 alert(mode === 'improve' ? "Recipe Improved! ✨" : "Recipe Translated! 🌍");
             }
@@ -253,7 +264,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <div className="detail-section">
                         <h3>{t('ingredientsSection')}</h3>
                         <div className="ingredients-list">
-                            {recipe.ingredients.split('\n').map((line, i) => (
+                            {(typeof recipe.ingredients === 'string' ? recipe.ingredients.split('\n') : []).map((line, i) => (
                                 line.trim() && (
                                     <div key={i} className="ingredient-item">
                                         <span className="bullet">•</span>
@@ -261,19 +272,33 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     </div>
                                 )
                             ))}
+                            {/* Fallback for Array (if data corrupted) */}
+                            {Array.isArray(recipe.ingredients) && recipe.ingredients.map((line, i) => (
+                                <div key={i} className="ingredient-item">
+                                    <span className="bullet">•</span>
+                                    <span>{line}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
                     <div className="detail-section">
                         <h3>{t('instructionsSection')}</h3>
                         <div className="instructions-list">
-                            {recipe.instructions.split('\n').map((line, i) => (
+                            {(typeof recipe.instructions === 'string' ? recipe.instructions.split('\n') : []).map((line, i) => (
                                 line.trim() && (
                                     <div key={i} className="instruction-item">
                                         <span className="step-number">{i + 1}</span>
                                         <p>{line}</p>
                                     </div>
                                 )
+                            ))}
+                            {/* Fallback for Array */}
+                            {Array.isArray(recipe.instructions) && recipe.instructions.map((line, i) => (
+                                <div key={i} className="instruction-item">
+                                    <span className="step-number">{i + 1}</span>
+                                    <p>{line}</p>
+                                </div>
                             ))}
                         </div>
                     </div>
