@@ -52,21 +52,21 @@ export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMo
             return legacyResult;
         }
 
-        // If we got *some* text from legacy (e.g. raw body text) but failed to parse, we could send that?
-        // For now, let's Stick to sending the URL to the Edge Function as the AI Fallback.
-        // The Edge Function has its own fetcher.
-        return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode }); // Pass URL as text or handle internally
-    } catch (aiError) {
-        console.error("AI Fallback failed:", aiError);
-        if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
-        throw aiError;
+        // 3. Fallback to AI
+        console.log("Legacy result poor/missing. Engaging AI backup...");
+        try {
+            return await extractWithAI({ ...input, text: trimmedInput, targetLanguage: language, mode: taskMode }, language);
+        } catch (aiError) {
+            console.error("AI Fallback failed:", aiError);
+            if (legacyResult) return legacyResult; // Return weak legacy result if AI dies completely
+            throw aiError;
+        }
     }
-}
 
-// 4. Default to Legacy (even if poor) if AI is OFF
-if (legacyResult) return legacyResult;
-throw new Error("Could not extract recipe from URL.");
-    }
+    // 4. Default to Legacy (even if poor) if AI is OFF
+    if (legacyResult) return legacyResult;
+    throw new Error("Could not extract recipe from URL.");
+}
 
 // For text/image input: Try AI first if enabled (Always true for Create/Improve)
 if (useAI || isImage || isCreateMode || mode === 'improve' || mode === 'translate') {
