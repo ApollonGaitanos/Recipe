@@ -1,85 +1,81 @@
 import React from 'react';
-import { Clock, Users, Globe, Lock, ChefHat } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+import { Clock, Lock, MoreHoriz, Bookmark, User as UserIcon, Restaurant } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRecipes } from '../context/RecipeContext';
 
-export default function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
-    const { t } = useLanguage();
+export default function RecipeCard({ recipe, onClick }) {
     const { user } = useAuth();
-    const { toggleLike, checkIsLiked } = useRecipes();
+    const { toggleLike: toggleBookmark, checkIsLiked: isBookmarked } = useRecipes();
 
-    // Check ownership: Is the current user the creator?
     const isOwner = user && user.id === recipe.user_id;
-    const isLiked = checkIsLiked(recipe.id);
+    const bookmarked = isBookmarked(recipe.id);
 
-    const handleLikeClick = (e) => {
-        e.stopPropagation(); // Prevent card click (navigation)
-        toggleLike(recipe.id);
+    const handleBookmarkClick = (e) => {
+        e.stopPropagation();
+        if (!user) return;
+        toggleBookmark(recipe.id);
     };
 
+    const totalTime = (parseInt(recipe.prepTime, 10) || 0) + (parseInt(recipe.cookTime, 10) || 0);
+    const placeholderImage = "https://placehold.co/600x400/f6f8f6/112116?text=Οψοποιία";
+    const imageUrl = recipe.image_url || placeholderImage;
+
     return (
-        <div className="recipe-card" onClick={(e) => onClick(recipe.id)}>
-            <div className="card-content">
-                {/* Header Row: Title + Visibility Badge */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <h3 className="card-title" style={{ margin: 0, flex: 1 }}>{recipe.title}</h3>
-
-                    {/* Visibility Badge - Visual only */}
-                    {recipe.is_public ? (
-                        <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                            <Globe size={10} /> {t('visibility.publicBadge')}
-                        </span>
-                    ) : (
-                        isOwner && (
-                            <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                                <Lock size={10} /> {t('visibility.privateBadge')}
-                            </span>
-                        )
-                    )}
-                </div>
-
-                <div className="card-meta">
-                    <div className="meta-item">
-                        <Clock size={16} />
-                        <span>{parseInt(recipe.prepTime) + parseInt(recipe.cookTime)}{t('minSuffix')}</span>
-                    </div>
-                    <div className="meta-item">
-                        <Users size={16} />
-                        <span>{recipe.servings}</span>
-                    </div>
-                </div>
-
-                {recipe.tags && recipe.tags.length > 0 && (
-                    <div className="card-tags">
-                        {recipe.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="tag">{tag}</span>
-                        ))}
-                    </div>
-                )}
-
-                {/* Footer: Likes & Author */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', fontSize: '0.8rem', color: '#666' }}>
-
-                    {/* Interactive Like Icon */}
-                    <div
-                        onClick={handleLikeClick}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '4px', borderRadius: '50%', transition: 'background 0.2s' }}
-                        title={isLiked ? "Unlike" : "Like"}
-                        className="like-btn-hover"
+        <article className="group relative flex flex-col bg-card-light dark:bg-card-dark rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800 hover:border-primary/20 overflow-hidden h-full">
+            <div className="relative w-full aspect-[16/10] overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                    style={{ backgroundImage: `url(${imageUrl})` }}
+                    onClick={onClick}
+                ></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+                <div className="absolute top-3 left-3 z-10">
+                    <button
+                        onClick={handleBookmarkClick}
+                        className="text-white hover:text-primary transition-colors drop-shadow-md focus:outline-none"
                     >
-                        <ChefHat size={16} color={isLiked ? 'var(--color-primary)' : '#666'} fill={isLiked ? 'var(--color-primary)' : 'none'} />
-                        <span style={{ fontSize: '0.8rem', marginLeft: '2px', color: isLiked ? 'var(--color-primary)' : '#666' }}>{recipe.likes_count || 0}</span>
-                    </div>
-
-                    {/* Author Name */}
-                    {recipe.is_public && recipe.author_username && (
-                        <div style={{ fontStyle: 'italic' }}>
-                            by {recipe.author_username}
-                        </div>
+                        <Bookmark size={28} fill={bookmarked ? 'currentColor' : 'none'} />
+                    </button>
+                </div>
+                <div className="absolute top-3 right-3 flex gap-2">
+                    {recipe.is_public ? (
+                        <span className="px-2.5 py-1 rounded-full bg-primary/90 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm">Public</span>
+                    ) : (
+                        <span className="px-2.5 py-1 rounded-full bg-gray-600/90 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm flex items-center gap-1">
+                            <Lock size={12} /> Private
+                        </span>
                     )}
                 </div>
             </div>
-        </div>
+            <div className="flex flex-col flex-grow p-4 md:p-5">
+                <div className="flex flex-col gap-2 mb-3">
+                    <h3
+                        className="text-xl font-bold leading-tight text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
+                        onClick={onClick}
+                    >
+                        {recipe.title}
+                    </h3>
+                    <div className="flex items-center text-xs text-text-sub-light dark:text-text-sub-dark gap-1.5">
+                        <UserIcon size={14} />
+                        <span className="font-medium">By {isOwner ? 'You' : recipe.author_username || 'Anonymous'}</span>
+                    </div>
+                </div>
+                <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between text-xs font-medium text-text-sub-light dark:text-text-sub-dark uppercase tracking-wide">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5" title="Total Time">
+                            <Clock size={16} />
+                            {totalTime > 0 ? `${totalTime} min` : 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-1.5" title="Servings">
+                            <Restaurant size={16} />
+                            {recipe.servings || 'N/A'} Servings
+                        </div>
+                    </div>
+                    <button className="text-text-main-light dark:text-text-main-dark hover:text-primary transition-colors">
+                        <MoreHoriz size={20} />
+                    </button>
+                </div>
+            </div>
+        </article>
     );
 }

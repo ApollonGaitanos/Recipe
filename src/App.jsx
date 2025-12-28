@@ -9,6 +9,7 @@ import RecipeCard from './components/RecipeCard';
 import RecipeForm from './components/RecipeForm';
 import RecipeDetail from './components/RecipeDetail';
 import ConfirmationModal from './components/ConfirmModal';
+import MyKitchen from './components/MyKitchen';
 
 function AppContent() {
   const { recipes, publicRecipes, addRecipe, updateRecipe, deleteRecipe, toggleVisibility, loading } = useRecipes();
@@ -134,53 +135,51 @@ function AppContent() {
 
       {/* VIEW 1: LIST */}
       {view.mode === 'LIST' && (
-        <>
-          {/* Action Bar */}
-          <div className="action-bar">
-            {/* Search */}
-            <div className="search-wrapper">
-              <Search className="search-icon" size={20} />
-              <input
-                type="text"
-                className="search-input"
-                placeholder={t('searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-
-            {user && (
-              <button className="btn-primary" onClick={() => goToForm(null)}>
-                <Plus size={20} /> {t('addRecipe')}
-              </button>
-            )}
-          </div>
-
-          {/* Heading */}
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '15px', color: 'var(--color-text-primary)' }}>
-            {listType === 'public' ? t('visibility.publicFeed') : t('visibility.myRecipes')}
-          </h2>
-
-          {/* Grid */}
-          {filteredRecipes.length > 0 ? (
-            <div className="recipe-grid">
-              {filteredRecipes.map(recipe => (
-                <RecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  onClick={() => goToDetail(recipe)}
-                  onEdit={goToForm}
-                  onDelete={(id) => setDeleteId(id)}
-                  onToggleVisibility={toggleVisibility}
+        listType === 'public' ? (
+          <>
+            {/* Action Bar */}
+            <div className="action-bar">
+              {/* Search */}
+              <div className="search-wrapper">
+                <Search className="search-icon" size={20} />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              ))}
+              </div>
             </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-              <p>{t('noRecipes')}</p>
-            </div>
-          )}
-        </>
+
+            {/* Heading */}
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '15px', color: 'var(--color-text-primary)' }}>
+              {t('visibility.publicFeed')}
+            </h2>
+
+            {/* Grid */}
+            {filteredRecipes.length > 0 ? (
+              <div className="recipe-grid">
+                {filteredRecipes.map(recipe => (
+                  <RecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    onClick={() => goToDetail(recipe)}
+                    onEdit={goToForm}
+                    onDelete={(id) => setDeleteId(id)}
+                    onToggleVisibility={toggleVisibility}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                <p>{t('noRecipes')}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          user && <MyKitchen onRecipeClick={goToDetail} onNewRecipe={() => goToForm(null)} />
+        )
       )}
 
       {/* VIEW 2: DETAIL */}
