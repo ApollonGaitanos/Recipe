@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Clock, Users, MoreHorizontal, Bookmark, Lock, Globe } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
-import { useLanguage } from '../context/LanguageContext';
+// import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
 
 export default function MyKitchen() {
-    const { recipes, deleteRecipe, toggleVisibility } = useRecipes();
-    const { t } = useLanguage();
+    const { recipes } = useRecipes();
+    // const { t } = useLanguage();
     const { user } = useAuth();
     const navigate = useNavigate();
 

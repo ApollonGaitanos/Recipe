@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
-import { useLanguage } from '../context/LanguageContext';
+// import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
 
@@ -9,7 +9,7 @@ import VisibilityModal from './VisibilityModal';
 // Persistence is delegated to the onSave prop.
 export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const { recipes } = useRecipes(); // Only read recipes for initial state if editing
-    const { t } = useLanguage();
+    // const { t } = useLanguage();
     const [showMagicImport, setShowMagicImport] = useState(false);
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -113,13 +113,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
     };
 
-    const handleVisibilityChange = (isPublic) => {
-        if (isPublic) {
-            setShowVisibilityModal(true);
-        } else {
-            setFormData(prev => ({ ...prev, is_public: false }));
-        }
-    };
+
 
     return (
         <div className="fixed inset-0 z-50 bg-[#f6f8f6] dark:bg-[#112116] overflow-y-auto animate-in slide-in-from-bottom duration-300">

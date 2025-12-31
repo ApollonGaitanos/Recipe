@@ -59,8 +59,8 @@ async function fetchRecipeFromUrl(url) {
         if (!error && data && !data.error) {
             return data;
         }
-    } catch (edgeFunctionError) {
-        // Silent fall-through to client-side
+    } catch (error) {
+        console.warn("Edge function failed, falling back to client", error);
     }
 
     // Fallback: Client-side parsing via Proxy
@@ -159,7 +159,7 @@ function parseRecipeFromText(text) {
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].toLowerCase();
-        const cleanLine = line.replace(/[:\-]/g, '').trim();
+        const cleanLine = line.replace(/[:-]/g, '').trim();
 
         if (ingStartIndex === -1 && ingKeywords.some(k => cleanLine === k || cleanLine.startsWith(k + ' '))) {
             ingStartIndex = i;
@@ -207,7 +207,7 @@ function parseRecipeFromText(text) {
     if (ingStartIndex !== -1) {
         let endIndex = instStartIndex !== -1 && instStartIndex > ingStartIndex ? instStartIndex : lines.length;
         const rawIngs = lines.slice(ingStartIndex + 1, endIndex);
-        result.ingredients = rawIngs.map(l => l.replace(/^[\u2022\-\*]\s*/, '')).join('\n');
+        result.ingredients = rawIngs.map(l => l.replace(/^[\u2022\-*]\s*/, '')).join('\n');
     }
 
     // --- 5. Extract Instructions ---

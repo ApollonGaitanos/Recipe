@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
 
@@ -208,6 +209,7 @@ export default function RecipeContext({ children }) {
             supabase.removeChannel(signalChannel);
             supabase.removeChannel(deleteChannel);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
 
     const addRecipe = async (recipe) => {

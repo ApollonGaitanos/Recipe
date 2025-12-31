@@ -10,7 +10,7 @@ import SettingsModal from './SettingsModal';
 
 export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
-    const { t, language, toggleLanguage } = useLanguage();
+    const { t, toggleLanguage } = useLanguage();
     const { theme, toggleTheme } = useTheme();
     const { user, signOut } = useAuth();
     const { searchQuery, setSearchQuery } = useRecipes();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
 import RecipeContext, { useRecipes } from './context/RecipeContext';
 import LanguageContext, { useLanguage } from './context/LanguageContext';
@@ -19,7 +19,7 @@ import Hero from './components/Hero';
 
 // 1. HOME / FEED ROUTE
 function Feed({ isPrivate = false }) {
-  const { recipes, publicRecipes, toggleVisibility, deleteRecipe, searchQuery, setSearchQuery } = useRecipes();
+  const { recipes, publicRecipes, toggleVisibility, deleteRecipe, searchQuery } = useRecipes();
   const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();

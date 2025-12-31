@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,10 +37,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     const isOwner = user && user.id === recipe.user_id;
 
-    const handleDeleteClick = (e) => {
-        e.stopPropagation();
-        setShowConfirm(true);
-    };
+
 
     const handleConfirmDelete = () => {
         deleteRecipe(id);
@@ -59,10 +56,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         }
     };
 
-    const handleLike = async () => {
-        if (!user) return;
-        await toggleLike(recipe.id);
-    };
+
 
     // Open the modal
     const handleMagicAction = (mode) => {

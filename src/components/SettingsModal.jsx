@@ -30,7 +30,7 @@ export default function SettingsModal({ isOpen, onClose }) {
             if (error) throw error;
             setMessage({ type: 'success', text: t('settings.saved') });
             setTimeout(onClose, 1000);
-        } catch (err) {
+        } catch {
             setMessage({ type: 'error', text: t('settings.error') });
         } finally {
             setLoading(false);

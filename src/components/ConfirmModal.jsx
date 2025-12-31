@@ -1,24 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { AlertTriangle, X } from 'lucide-react';
 
 export default function ConfirmModal({ isOpen, onClose, onConfirm, message }) {
     const { t } = useLanguage();
-    const [animate, setAnimate] = useState(false);
+    // Simplified animation logic to avoid sync setState warning
+    // If complex exit animation is needed, use a dedicated library or setTimeout
 
-    useEffect(() => {
-        if (isOpen) {
-            setAnimate(true);
-        } else {
-            setAnimate(false);
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
     return (
-        <div className={`modal-overlay ${animate ? 'active' : ''}`} onClick={onClose}>
-            <div className={`modal-content ${animate ? 'active' : ''}`} onClick={e => e.stopPropagation()}>
+        <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={onClose}>
+            <div className={`modal-content ${isOpen ? 'active' : ''}`} onClick={e => e.stopPropagation()}>
 
                 <button className="modal-close" onClick={onClose}>
                     <X size={20} />
