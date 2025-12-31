@@ -49,6 +49,8 @@ const translations = {
             createAccount: "Create Account",
             login: "Log In",
             signup: "Sign Up",
+            subtitle: "Sign in to save recipes and create your own cookbook.",
+            orContinue: "Or continue with",
             processing: "Processing...",
             emailPlaceholder: "Email",
             usernamePlaceholder: "Username",
@@ -59,7 +61,9 @@ const translations = {
             emailConfirmAlert: "Check your email to confirm account!",
             mustBeStronger: "Must be stronger",
             noAccount: "Don't have an account?",
-            hasAccount: "Already have an account?"
+            hasAccount: "Already have an account?",
+            editorial: "EDITORIAL",
+            freshFlavors: "Fresh flavors for every season."
         },
         settings: {
             title: "Account Settings",
@@ -89,7 +93,18 @@ const translations = {
             modeImport: "Import",
             modeCreate: "Create Chef",
             placeholderCreate: "Describe what you want to cook (e.g. 'Spicy Chicken Pasta' or 'I have eggs and milk')...",
-            btnCreate: "Generate Recipe"
+            btnCreate: "Generate Recipe",
+            aiModeTitle: "AI Mode",
+            aiModeFree: "Free",
+            aiModeSmart: "Smart",
+            tooltips: {
+                off: "Classic Scraper Only",
+                hybrid: "Scraper + AI Backup",
+                on: "Force AI"
+            },
+            ready: "Ready",
+            addImage: "Add Image",
+            preview: "Preview"
         },
         visibility: {
             makePublic: "Make Public",
@@ -100,6 +115,55 @@ const translations = {
             confirmPrivate: "Are you sure you want to make this recipe PRIVATE? Only you will be able to see it.",
             publicBadge: "Public",
             privateBadge: "Private"
+        },
+        nav: {
+            discover: "Discover",
+            myKitchen: "My Kitchen",
+            shoppingList: "Shopping List",
+            about: "About",
+            community: "Community",
+            submitRecipe: "Submit a Recipe",
+            privacy: "Privacy",
+            menu: "Menu",
+            loginSignup: "Login / Sign Up",
+            login: "Login",
+            signOut: "Sign Out",
+            settings: "Settings"
+        },
+        footer: {
+            tagline: "Cooking made simple, beautiful, and organized.",
+            copyright: "Οψοποιία Inc."
+        },
+        hero: {
+            badge: "Recipe of the Day",
+            viewRecipe: "View Recipe",
+            unknownChef: "Unknown Chef",
+            chefRole: "Head Chef",
+            timeAgo: "2 hrs ago"
+        },
+        card: {
+            ppl: "ppl",
+            chef: "Chef",
+            ago: "ago"
+        },
+        detail: {
+            by: "by",
+            like: "Like",
+            unlike: "Unlike"
+        },
+        feed: {
+            loadMore: "Load More Recipes",
+            viewAll: "View all",
+            freshTitle: "Fresh from the Kitchen"
+        },
+        filters: {
+            all: "All",
+            breakfast: "Breakfast",
+            vegan: "Vegan",
+            quickEasy: "Quick & Easy",
+            pasta: "Pasta",
+            desserts: "Desserts",
+            healthy: "Healthy"
         }
     },
     el: {
@@ -144,6 +208,8 @@ const translations = {
             createAccount: "Δημιουργία Λογαριασμού",
             login: "Σύνδεση",
             signup: "Εγγραφή",
+            subtitle: "Συνδεθείτε για να αποθηκεύσετε συνταγές και να φτιάξετε το δικό σας βιβλίο μαγειρικής.",
+            orContinue: "Ή συνεχίστε με",
             processing: "Επεξεργασία...",
             emailPlaceholder: "Email",
             usernamePlaceholder: "Όνομα Χρήστη",
@@ -184,7 +250,18 @@ const translations = {
             modeImport: "Εισαγωγή",
             modeCreate: "Σεφ (Δημιουργία)",
             placeholderCreate: "Περιγράψτε τι θέλετε να μαγειρέψετε (π.χ. 'Κοτόπουλο με πατάτες' ή 'Έχω αυγά και γάλα')...",
-            btnCreate: "Δημιουργία Συνταγής"
+            btnCreate: "Δημιουργία Συνταγής",
+            aiModeTitle: "Λειτουργία AI",
+            aiModeFree: "Δωρεάν",
+            aiModeSmart: "Έξυπνη",
+            tooltips: {
+                off: "Μόνο Κλασική Σάρωση",
+                hybrid: "Σάρωση + AI Backup",
+                on: "Αποκλειστικά AI"
+            },
+            ready: "Έτοιμο",
+            addImage: "Προσθήκη",
+            preview: "Προεπισκόπηση"
         },
         visibility: {
             makePublic: "Δημοσιοποίηση",
@@ -195,6 +272,55 @@ const translations = {
             confirmPrivate: "Θέλετε σίγουρα να κάνετε τη συνταγή ΙΔΙΩΤΙΚΗ; Θα είναι ορατή μόνο σε εσάς.",
             publicBadge: "Δημόσια",
             privateBadge: "Ιδιωτική"
+        },
+        nav: {
+            discover: "Ανακάλυψη",
+            myKitchen: "Η Κουζίνα μου",
+            shoppingList: "Λίστα Αγορών",
+            about: "Σχετικά",
+            community: "Κοινότητα",
+            submitRecipe: "Υποβολή Συνταγής",
+            privacy: "Απόρρητο",
+            menu: "Μενού",
+            loginSignup: "Σύνδεση / Εγγραφή",
+            login: "Σύνδεση",
+            signOut: "Αποσύνδεση",
+            settings: "Ρυθμίσεις"
+        },
+        footer: {
+            tagline: "Η μαγειρική έγινε απλή, όμορφη και οργανωμένη.",
+            copyright: "Οψοποιία Inc."
+        },
+        hero: {
+            badge: "Συνταγή της Ημέρας",
+            viewRecipe: "Προβολή",
+            unknownChef: "Άγνωστος Σεφ",
+            chefRole: "Σεφ",
+            timeAgo: "πριν 2 ώρες"
+        },
+        card: {
+            ppl: "άτομα",
+            chef: "Σεφ",
+            ago: "πριν"
+        },
+        detail: {
+            by: "από",
+            like: "Μου αρέσει",
+            unlike: "Δεν μου αρέσει"
+        },
+        feed: {
+            loadMore: "Περισσότερες Συνταγές",
+            viewAll: "Προβολή όλων",
+            freshTitle: "Φρέσκα από την Κουζίνα"
+        },
+        filters: {
+            all: "Όλα",
+            breakfast: "Πρωινό",
+            vegan: "Vegan",
+            quickEasy: "Γρήγορα & Εύκολα",
+            pasta: "Ζυμαρικά",
+            desserts: "Γλυκά",
+            healthy: "Υγιεινά"
         }
     }
 };

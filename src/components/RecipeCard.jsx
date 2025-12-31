@@ -1,91 +1,121 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Clock, Users, Globe, Lock, ChefHat } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Clock, User, Award, Heart, Lock, Globe } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function RecipeCard({ recipe, onEdit, onDelete }) {
+export default function RecipeCard({ recipe }) {
+    const navigate = useNavigate();
+    const { toggleLike, hasUserLiked } = useRecipes();
     const { t } = useLanguage();
-    const { user } = useAuth();
-    const { toggleLike, checkIsLiked } = useRecipes();
+    const [liked, setLiked] = React.useState(false);
 
-    // Check ownership: Is the current user the creator?
-    const isOwner = user && user.id === recipe.user_id;
-    const isLiked = checkIsLiked(recipe.id);
+    React.useEffect(() => {
+        hasUserLiked(recipe.id).then(setLiked);
+    }, [recipe.id, hasUserLiked]);
 
-    const handleLikeClick = (e) => {
-        e.preventDefault(); // Prevent link navigation
+    const handleLike = (e) => {
         e.stopPropagation();
         toggleLike(recipe.id);
+        setLiked(!liked);
+    };
+
+    // Deterministic placeholder based on ID
+    const getPlaceholderImage = (id) => {
+        const images = [
+            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=400&q=80",
+            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80"
+        ];
+        const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % images.length;
+        return images[index];
     };
 
     return (
-        <Link
-            to={`/recipe/${recipe.id}`}
-            className="recipe-card"
-            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+        <div
+            onClick={() => navigate(`/recipe/${recipe.id}`)}
+            className="group cursor-pointer flex flex-col gap-3"
         >
-            <div className="card-content">
-                {/* Header Row: Title + Visibility Badge */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <h3 className="card-title" style={{ margin: 0, flex: 1 }}>{recipe.title}</h3>
+            {/* Image Container */}
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <img
+                    src={getPlaceholderImage(recipe.id)}
+                    alt={recipe.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
 
-                    {/* Visibility Badge - Visual only */}
-                    {recipe.is_public ? (
-                        <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#dbeafe', color: '#2563eb', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                            <Globe size={10} /> {t('visibility.publicBadge')}
-                        </span>
-                    ) : (
-                        isOwner && (
-                            <span style={{ marginLeft: '12px', fontSize: '0.7rem', background: '#fef3c7', color: '#d97706', padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                                <Lock size={10} /> {t('visibility.privateBadge')}
-                            </span>
-                        )
-                    )}
-                </div>
-
-                <div className="card-meta">
-                    <div className="meta-item">
-                        <Clock size={16} />
-                        <span>{parseInt(recipe.prepTime) + parseInt(recipe.cookTime)}{t('minSuffix')}</span>
-                    </div>
-                    <div className="meta-item">
-                        <Users size={16} />
-                        <span>{recipe.servings}</span>
-                    </div>
-                </div>
-
-                {recipe.tags && recipe.tags.length > 0 && (
-                    <div className="card-tags">
-                        {recipe.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="tag">{tag}</span>
-                        ))}
-                    </div>
-                )}
-
-                {/* Footer: Likes & Author */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', fontSize: '0.8rem', color: '#666' }}>
-
-                    {/* Interactive Like Icon */}
-                    <div
-                        onClick={handleLikeClick}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '4px', borderRadius: '50%', transition: 'background 0.2s' }}
-                        title={isLiked ? "Unlike" : "Like"}
-                        className="like-btn-hover"
+                {/* Top Floating Badges */}
+                <div className="absolute top-3 left-3">
+                    <button
+                        onClick={handleLike}
+                        className="p-2 rounded-lg bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200 transition-colors backdrop-blur-sm shadow-sm group/btn"
                     >
-                        <ChefHat size={16} color={isLiked ? 'var(--color-primary)' : '#666'} fill={isLiked ? 'var(--color-primary)' : 'none'} />
-                        <span style={{ fontSize: '0.8rem', marginLeft: '2px', color: isLiked ? 'var(--color-primary)' : '#666' }}>{recipe.likes_count || 0}</span>
-                    </div>
+                        <Heart
+                            size={18}
+                            className={`transition-colors ${liked ? 'fill-red-500 text-red-500' : 'group-hover/btn:text-red-500'}`}
+                        />
+                    </button>
+                </div>
 
-                    {/* Author Name */}
-                    {recipe.is_public && recipe.author_username && (
-                        <div style={{ fontStyle: 'italic' }}>
-                            by {recipe.author_username}
-                        </div>
-                    )}
+                <div className="absolute top-3 right-3">
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public
+                        ? 'bg-black/60 text-white'
+                        : 'bg-primary/90 text-white'
+                        }`}>
+                        {recipe.is_public ? <Globe size={12} /> : <Lock size={12} />}
+                        {recipe.is_public ? t('visibility.publicBadge') : t('visibility.privateBadge')}
+                    </span>
                 </div>
             </div>
-        </Link>
+
+            {/* Content */}
+            <div className="flex flex-col gap-2">
+                {/* Tags */}
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                        {recipe.tags && recipe.tags.length > 0 ? recipe.tags[0] : 'DINNER'}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">•</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        EASY
+                    </span>
+                </div>
+
+                <h3 className="font-serif font-bold text-xl text-gray-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                    {recipe.title}
+                </h3>
+
+                {/* Metadata Row */}
+                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="flex items-center gap-1.5">
+                        <Clock size={16} />
+                        <span>{recipe.prepTime + recipe.cookTime}{t('minSuffix')}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <User size={16} />
+                        <span>{recipe.servings} {t('card.ppl')}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-red-500">
+                        <Heart size={16} className={liked ? "fill-current" : ""} />
+                        <span className="font-bold text-gray-700 dark:text-gray-300">{recipe.likes_count || 0}</span>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-600">
+                            {recipe.author_username ? recipe.author_username[0].toUpperCase() : 'U'}
+                        </div>
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {recipe.author_username || t('card.chef')}
+                        </span>
+                    </div>
+                    <span className="text-xs text-gray-400">2h {t('card.ago')}</span>
+                </div>
+            </div>
+        </div>
     );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Sparkles, Lock, Globe } from 'lucide-react';
+import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
@@ -21,29 +21,70 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         servings: '',
         ingredients: '',
         instructions: '',
-        tags: '', // stored as string for input
-        is_public: false // Default to private
+        tags: '',
+        is_public: false,
+        description: ''
     });
 
+    // Helper to parse ingredients string into array
+    const parseIngredients = (str) => {
+        if (!str) return [{ id: Date.now(), amount: '', item: '' }];
+        return str.split('\n').map((line, i) => {
+            const parts = line.trim().split(' ');
+            return {
+                id: i,
+                amount: parts[0] || '',
+                item: parts.slice(1).join(' ') || ''
+            };
+        });
+    };
+
+    // Helper to parse instructions string into array
+    const parseInstructions = (str) => {
+        if (!str) return [{ id: Date.now(), text: '' }];
+        return str.split('\n').map((line, i) => ({ id: i, text: line.trim() }));
+    };
+
+    const [ingredientsList, setIngredientsList] = useState([]);
+    const [instructionsList, setInstructionsList] = useState([]);
+
     useEffect(() => {
-        if (recipeId) {
+        if (recipeId && recipes.length > 0) {
             const recipe = recipes.find(r => r.id === recipeId);
             if (recipe) {
                 setFormData({
                     ...recipe,
                     tags: recipe.tags ? recipe.tags.join(', ') : '',
-                    is_public: recipe.is_public || false
+                    is_public: recipe.is_public || false,
+                    description: recipe.description || ''
                 });
+                setIngredientsList(parseIngredients(recipe.ingredients));
+                setInstructionsList(parseInstructions(recipe.instructions));
             }
+        } else if (!recipeId) {
+            // New Recipe Defaults
+            setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
+            setInstructionsList([{ id: Date.now(), text: '' }]);
         }
     }, [recipeId, recipes]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSaveLocal = async () => {
         setIsSaving(true);
+        // Serialize lists back to strings
+        const ingredientsStr = ingredientsList
+            .map(ing => `${ing.amount} ${ing.item}`.trim())
+            .filter(str => str.length > 0)
+            .join('\n');
+
+        const instructionsStr = instructionsList
+            .map(step => step.text.trim())
+            .filter(str => str.length > 0)
+            .join('\n');
 
         const recipeData = {
             ...formData,
+            ingredients: ingredientsStr,
+            instructions: instructionsStr,
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
             prepTime: Number(formData.prepTime) || 0,
             cookTime: Number(formData.cookTime) || 0,
@@ -52,11 +93,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         };
 
         try {
-            // Await the onSave callback (which calls App.jsx -> Context)
             await onSave(recipeData);
         } catch (error) {
-            console.error("Failed to save recipe:", error);
-            // Optionally set error state here
+            console.error("Save failed", error);
         } finally {
             setIsSaving(false);
         }
@@ -69,23 +108,274 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             prepTime: data.prepTime || prev.prepTime,
             cookTime: data.cookTime || prev.cookTime,
             servings: data.servings || prev.servings,
-            ingredients: data.ingredients || prev.ingredients,
-            instructions: data.instructions || prev.instructions
         }));
+        if (data.ingredients) setIngredientsList(parseIngredients(data.ingredients));
+        if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
     };
 
     const handleVisibilityChange = (isPublic) => {
         if (isPublic) {
-            // Switching to Public -> Require Confirmation
             setShowVisibilityModal(true);
         } else {
-            // Switching to Private -> Instant
             setFormData(prev => ({ ...prev, is_public: false }));
         }
     };
 
     return (
-        <div className="recipe-form-container">
+        <div className="fixed inset-0 z-50 bg-[#f6f8f6] dark:bg-[#112116] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+
+            {/* --- Top Navigation (Reference Match) --- */}
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onCancel}
+                        className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h2 className="text-xl font-bold leading-tight tracking-tight text-[#111813] dark:text-[#e0e6e2]">
+                        {recipeId ? 'Edit Recipe' : 'New Recipe'}
+                    </h2>
+                    <span className="hidden sm:block text-xs font-medium text-[#63886f] dark:text-[#8ca395] bg-[#dce5df]/30 dark:bg-[#2a4030]/30 px-2 py-1 rounded">
+                        Draft saved 2m ago
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowMagicImport(true)}
+                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#17cf54]/30 bg-[#17cf54]/5 px-4 text-sm font-bold text-[#17cf54] hover:bg-[#17cf54]/10 transition-colors mr-1"
+                    >
+                        <Sparkles size={20} />
+                        <span className="hidden md:inline">Magic Import</span>
+                    </button>
+
+                    <button
+                        onClick={onCancel}
+                        className="hidden sm:flex h-10 items-center justify-center rounded-lg bg-transparent px-4 text-sm font-bold text-[#63886f] dark:text-[#8ca395] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        onClick={handleSaveLocal}
+                        disabled={isSaving}
+                        className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
+                    >
+                        {isSaving ? 'Save Recipe' : 'Save Recipe'}
+                    </button>
+
+                    {/* Profile Avatar Placeholder (from reference) */}
+                    <div className="ml-4 h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center border border-[#dce5df] dark:border-[#2a4030]" style={{ backgroundImage: "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')" }}></div>
+                </div>
+            </header>
+
+            <main className="max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+                    {/* --- Sidebar (Left Column) --- */}
+                    <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
+
+                        {/* Title Input */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
+                            <input
+                                className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors"
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="e.g. Grandma's Spanakopita"
+                            />
+                        </div>
+
+                        {/* Details Card */}
+                        <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 shadow-sm">
+                            <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
+                                <Sparkles className="text-[#17cf54]" size={20} />
+                                Details
+                            </h3>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            type="number"
+                                            value={formData.prepTime}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
+                                            placeholder="15"
+                                        />
+                                        <span className="text-sm">min</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            type="number"
+                                            value={formData.cookTime}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
+                                            placeholder="45"
+                                        />
+                                        <span className="text-sm">min</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1 col-span-2">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
+                                    <input
+                                        className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                        type="number"
+                                        value={formData.servings}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
+                                        placeholder="4"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Photo Upload */}
+                        <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
+                            <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                                <Sparkles size={32} />
+                            </div>
+                            <p className="font-bold text-lg">Add Cover Photo</p>
+                            <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
+                        </div>
+
+                        {/* Description */}
+                        <div className="flex flex-col gap-3">
+                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
+                            <textarea
+                                value={formData.description || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
+                                className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
+                                rows={4}
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* --- Main Content (Right Column) --- */}
+                    <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+
+                        {/* Ingredients Section */}
+                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-2xl font-bold text-[#111813] dark:text-[#e0e6e2]">Ingredients</h3>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <div className="hidden sm:flex gap-4 px-2 pb-2 border-b border-[#dce5df] dark:border-[#2a4030] text-xs font-bold uppercase text-[#63886f] dark:text-[#8ca395] tracking-wider">
+                                    <span className="w-8"></span>
+                                    <span className="w-24">Amount</span>
+                                    <span className="flex-1">Ingredient</span>
+                                    <span className="w-8"></span>
+                                </div>
+
+                                {ingredientsList.map((ing, i) => (
+                                    <div key={ing.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
+                                        <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+                                        </div>
+                                        <input
+                                            className="w-full sm:w-24 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            placeholder="e.g. 200g"
+                                            value={ing.amount}
+                                            onChange={e => {
+                                                const newList = [...ingredientsList];
+                                                newList[i].amount = e.target.value;
+                                                setIngredientsList(newList);
+                                            }}
+                                        />
+                                        <input
+                                            className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            placeholder="e.g. Flour"
+                                            value={ing.item}
+                                            onChange={e => {
+                                                const newList = [...ingredientsList];
+                                                newList[i].item = e.target.value;
+                                                setIngredientsList(newList);
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => setIngredientsList(ingredientsList.filter(item => item.id !== ing.id))}
+                                            className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }])}
+                                className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                            >
+                                <Plus size={18} /> Add Ingredient
+                            </button>
+                        </section>
+
+                        {/* Method Section */}
+                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                            <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
+
+                            <div className="flex flex-col gap-6">
+                                {instructionsList.map((step, i) => (
+                                    <div key={step.id} className="group flex gap-4">
+                                        <div className="flex flex-col items-center gap-2 pt-2">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
+                                                {i + 1}
+                                            </div>
+                                            <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
+                                        </div>
+                                        <div className="flex-1 pb-4">
+                                            <textarea
+                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
+                                                placeholder={`Describe step ${i + 1}...`}
+                                                value={step.text}
+                                                onChange={e => {
+                                                    const newList = [...instructionsList];
+                                                    newList[i].text = e.target.value;
+                                                    setInstructionsList(newList);
+                                                }}
+                                            ></textarea>
+                                            <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => setInstructionsList(instructionsList.filter(s => s.id !== step.id))}
+                                                    className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 size={14} /> Remove Step
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => setInstructionsList([...instructionsList, { id: Date.now(), text: '' }])}
+                                className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                            >
+                                <Plus size={18} /> Add Step
+                            </button>
+                        </section>
+
+                        {/* Chef's Notes (Moved above/beside but based on reference order, it was bottom or side) */}
+                        {/* Re-checking reference: Chef's notes was yellow box at bottom of main content in reference code snippet I saw earlier? 
+                            Actually, in the code.html head dump, Chef's Notes (Story & Description) was in the sidebar! 
+                            Line 108 of head dump: <label ... for="description">Story & Description</label> inside the col-span-5 div.
+                            So I moved it to sidebar above.
+                            
+                            Yellow box in previous version was "Chef's Notes". The reference has "Story & Description" in sidebar.
+                            I will stick to the reference layout: "Story & Description" in sidebar.
+                        */}
+
+                    </div>
+                </div>
+            </main>
+
             <MagicImportModal
                 isOpen={showMagicImport}
                 onClose={() => setShowMagicImport(false)}
@@ -98,160 +388,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
                 isMakingPublic={true}
             />
-
-            <form onSubmit={handleSubmit} className="recipe-form">
-                <div className="form-header">
-                    <h2 className="title" style={{ marginBottom: 0 }}>
-                        {recipeId ? t('editRecipe') : t('newRecipe')}
-                    </h2>
-                    <div className="form-actions">
-                        {/* Magic Import Button */}
-                        <button
-                            type="button"
-                            className="btn-secondary"
-                            onClick={() => setShowMagicImport(true)}
-                            style={{ color: '#c026d3', borderColor: '#f0abfc', background: '#fdf4ff', marginRight: '8px' }}
-                            title={t('magicImport.title')}
-                            disabled={isSaving}
-                        >
-                            <Sparkles size={18} /> <span className="hide-mobile">{t('magicImport.button')}</span>
-                        </button>
-
-                        <button type="button" className="btn-secondary" onClick={onCancel} disabled={isSaving}>
-                            <X size={20} /> <span className="hide-mobile">{t('cancel')}</span>
-                        </button>
-                        <button type="submit" className="btn-primary" disabled={isSaving}>
-                            <Save size={20} /> <span className="hide-mobile">{t('saveRecipe')}</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Visibility Toggle */}
-                <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button
-                            type="button"
-                            onClick={() => handleVisibilityChange(false)}
-                            className={!formData.is_public ? 'btn-primary' : 'btn-secondary'}
-                            style={{
-                                flex: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                background: !formData.is_public ? '#d97706' : '#fff',
-                                borderColor: !formData.is_public ? '#d97706' : 'var(--border-color)',
-                                color: !formData.is_public ? '#fff' : 'inherit'
-                            }}
-                        >
-                            <Lock size={18} /> <span className="hide-mobile">{t('visibility.privateBadge')}</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleVisibilityChange(true)}
-                            className={formData.is_public ? 'btn-primary' : 'btn-secondary'}
-                            style={{
-                                flex: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                background: formData.is_public ? '#2563eb' : '#fff',
-                                borderColor: formData.is_public ? '#2563eb' : 'var(--border-color)',
-                                color: formData.is_public ? '#fff' : 'inherit'
-                            }}
-                        >
-                            <Globe size={18} /> <span className="hide-mobile">{t('visibility.publicBadge')}</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="form-group">
-                    <label>{t('recipeTitle')}</label>
-                    <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder={t('placeholders.title')}
-                        required
-                        autoFocus
-                        disabled={isSaving}
-                    />
-                </div>
-
-                <div className="form-row">
-                    <div className="form-group">
-                        <label>{t('prepTimeLabel')}</label>
-                        <input
-                            type="number"
-                            name="prepTime"
-                            value={formData.prepTime}
-                            onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
-                            placeholder="15"
-                            disabled={isSaving}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>{t('cookTimeLabel')}</label>
-                        <input
-                            type="number"
-                            name="cookTime"
-                            value={formData.cookTime}
-                            onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
-                            placeholder="45"
-                            disabled={isSaving}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>{t('servingsLabel')}</label>
-                        <input
-                            type="number"
-                            name="servings"
-                            value={formData.servings}
-                            onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
-                            placeholder="4"
-                            disabled={isSaving}
-                        />
-                    </div>
-                </div>
-
-                <div className="form-group">
-                    <label>{t('ingredientsLabel')}</label>
-                    <textarea
-                        name="ingredients"
-                        value={formData.ingredients}
-                        onChange={(e) => setFormData(prev => ({ ...prev, ingredients: e.target.value }))}
-                        rows={8}
-                        placeholder={t('placeholders.ingredients')}
-                        disabled={isSaving}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label>{t('instructionsLabel')}</label>
-                    <textarea
-                        name="instructions"
-                        value={formData.instructions}
-                        onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
-                        rows={8}
-                        placeholder={t('placeholders.instructions')}
-                        disabled={isSaving}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label>{t('tagsLabel')}</label>
-                    <input
-                        type="text"
-                        name="tags"
-                        value={formData.tags}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-                        placeholder={t('placeholders.tags')}
-                        disabled={isSaving}
-                    />
-                </div>
-            </form>
         </div>
     );
 }

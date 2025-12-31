@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles } from 'lucide-react';
+import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -114,8 +114,280 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         }
     };
 
+    // Generate deterministic placeholder image if no image_url exists
+    const getPlaceholderImage = (id) => {
+        const images = [
+            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80"
+        ];
+        const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % images.length;
+        return images[index];
+    };
+
+    const displayImage = recipe.image_url || getPlaceholderImage(recipe.id);
+    const displayDescription = recipe.description || (typeof recipe.instructions === 'string' ? recipe.instructions : recipe.instructions.join(' ')).substring(0, 160) + "...";
+
     return (
-        <div className="recipe-detail">
+        <div className="min-h-screen bg-white dark:bg-[#112116] pt-24 pb-20 fade-in text-zinc-900 dark:text-zinc-100 font-sans">
+            <div className="container mx-auto px-4 md:px-8 max-w-7xl space-y-12">
+
+                {/* Header Section */}
+                <div className="space-y-6 w-full">
+                    <div className="flex items-center gap-3 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                        <span className="uppercase tracking-wider">Editor's Pick</span>
+                        <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                        <span className="uppercase tracking-wider">Gluten Free</span>
+                    </div>
+
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl">
+                        {recipe.title}
+                    </h1>
+
+                    <div className="flex flex-wrap items-center gap-6 text-zinc-500 dark:text-zinc-400 text-sm md:text-base">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
+                                {recipe.author_username ? recipe.author_username[0].toUpperCase() : 'C'}
+                            </div>
+                            <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                                {t('detail.by')} {recipe.author_username || 'Chef'}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-amber-500">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="font-bold text-zinc-900 dark:text-zinc-200">4.9</span>
+                            <span className="text-zinc-400">(120 reviews)</span>
+                        </div>
+                        <div className="ml-auto flex items-center gap-4">
+                            <button
+                                onClick={() => isOwner && setIsVisModalOpen(true)}
+                                disabled={!isOwner}
+                                className={`flex items-center gap-2 text-sm font-medium transition-colors ${!isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer'}`}
+                            >
+                                <span className="text-zinc-500 dark:text-zinc-400">{recipe.is_public ? 'Public' : 'Private'}</span>
+                                {recipe.is_public ? <Globe className="w-4 h-4 text-[#17cf54]" /> : <Lock className="w-4 h-4 text-amber-500" />}
+                            </button>
+
+                            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 mx-1" />
+
+                            <button className="flex items-center gap-2 px-5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                <Share2 className="w-3.5 h-3.5" />
+                                <span>share</span>
+                            </button>
+                            <button onClick={handleDownload} disabled={isDownloading} className="flex items-center gap-2 px-5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                <Printer className="w-3.5 h-3.5" />
+                                <span>print</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hero Image - Placeholder Style */}
+                <div className="relative w-full aspect-[21/9] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm">
+                    <img
+                        src={displayImage}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                    />
+
+                    {/* Floating Action Button */}
+                    <button
+                        onClick={() => toggleLike(recipe.id)}
+                        className="absolute bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 shadow-lg hover:scale-105 transition-transform group"
+                    >
+                        <Heart className={`w-6 h-6 ${isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 group-hover:text-red-500"}`} />
+                    </button>
+                </div>
+
+                {/* Description Grid */}
+                {/* Description Grid */}
+                <div className="max-w-4xl mx-auto text-center py-8">
+                    <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-300 leading-relaxed font-serif">
+                        "{displayDescription}"
+                    </p>
+                </div>
+
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+
+                    {/* Left Sidebar: Ingredients */}
+                    <div className="md:col-span-4 space-y-8 md:sticky md:top-24">
+                        <div className="bg-zinc-50 dark:bg-[#0D1811] rounded-3xl p-8 border border-zinc-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold font-serif">{t('ingredientsSection')}</h3>
+                                <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                    <button className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md">-</button>
+                                    <span className="font-semibold w-6 text-center">4</span>
+                                    <button className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md">+</button>
+                                </div>
+                            </div>
+
+                            <ul className="space-y-4">
+                                {(Array.isArray(recipe.ingredients) ? recipe.ingredients : (typeof recipe.ingredients === 'string' ? recipe.ingredients.split('\n').filter(Boolean) : [])).map((ingredient, index) => (
+                                    <li key={index} className="flex items-center gap-3 group cursor-pointer">
+                                        <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-emerald-500 transition-colors" />
+                                        <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                            {ingredient}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button className="w-full mt-8 py-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-sm hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors flex items-center justify-center gap-2">
+                                <ShoppingBag className="w-4 h-4" />
+                                Add to Shopping List
+                            </button>
+                        </div>
+
+                        {/* Nutrition Card */}
+                        <div className="bg-white dark:bg-[#0D1811] rounded-3xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Nutrition per serving</h4>
+                            <div className="grid grid-cols-4 gap-2 text-center">
+                                <div>
+                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">450</div>
+                                    <div className="text-xs text-zinc-500">Cals</div>
+                                </div>
+                                <div>
+                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">32g</div>
+                                    <div className="text-xs text-zinc-500">Protein</div>
+                                </div>
+                                <div>
+                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">12g</div>
+                                    <div className="text-xs text-zinc-500">Carbs</div>
+                                </div>
+                                <div>
+                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">28g</div>
+                                    <div className="text-xs text-zinc-500">Fat</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Main Content: Instructions */}
+                    <div className="md:col-span-8 space-y-12">
+
+                        {/* Meta Stats Row */}
+                        <div className="grid grid-cols-3 gap-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                    <Clock className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Prep Time</div>
+                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 15} mins</div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                    <ChefHat className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cook Time</div>
+                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 90} mins</div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                                    <Activity className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
+                                    <div className="font-semibold text-zinc-900 dark:text-white">Medium</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-3xl font-serif font-bold text-zinc-900 dark:text-white">{t('instructionsSection')}</h2>
+                            <div className="flex gap-2">
+                                <button onClick={() => handleMagicAction('improve')} className="btn-primary-small bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-4 py-2 rounded-full text-sm">
+                                    <Sparkles className="w-4 h-4" />
+                                    Magic Enhance
+                                </button>
+                                <button onClick={() => handleMagicAction('translate')} className="btn-secondary-small bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none">
+                                    <Globe className="w-4 h-4" />
+                                    Translate
+                                </button>
+                                {isOwner && (
+                                    <button className="btn-secondary text-sm px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2" onClick={onEdit}>
+                                        <Edit2 className="w-4 h-4" />
+                                        Edit
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-10 relative border-l-2 border-zinc-100 dark:border-zinc-800 ml-3 md:ml-4 pl-8 md:pl-10 pb-10">
+                            {(Array.isArray(recipe.instructions) ? recipe.instructions : (typeof recipe.instructions === 'string' ? recipe.instructions.split('\n').filter(Boolean) : [])).map((step, index) => (
+                                <div key={index} className="relative">
+                                    <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 font-bold z-10">
+                                        {index + 1}
+                                    </div>
+                                    <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Step {index + 1}</h4>
+                                    <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                        {step}
+                                    </p>
+                                    {/* Simulated Tip for visual matching */}
+                                    {index === 0 && (
+                                        <div className="mt-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 flex gap-3">
+                                            <div className="shrink-0 text-blue-500">
+                                                <Users className="w-5 h-5" />
+                                            </div>
+                                            <p className="text-sm text-blue-700 dark:text-blue-300 italic">
+                                                Tip: The drier the skin, the crispier it will get! Don't skip the paper towels.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Tags Section */}
+                        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-8 mt-12">
+                            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Tags</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {['#Dinner', '#Roast', '#Chicken', '#Healthy', '#Mediterranean'].map(tag => (
+                                    <span key={tag} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer transition-colors">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* You Might Also Like Section */}
+                <div className="border-t border-zinc-200 dark:border-zinc-800 pt-16 mt-16">
+                    <h3 className="text-2xl font-serif font-bold text-zinc-900 dark:text-white mb-8">You might also like</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="group cursor-pointer">
+                                <div className="aspect-[4/3] bg-zinc-200 dark:bg-zinc-800 rounded-xl mb-4 overflow-hidden">
+                                    {/* Placeholder image */}
+                                    {i === 1 && <img src="https://images.unsplash.com/photo-1574484284008-be6d6d8d80c7?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Salad" />}
+                                    {i === 2 && <img src="https://images.unsplash.com/photo-1516100882582-96c3a05fe590?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Pasta" />}
+                                    {i === 3 && <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Soup" />}
+                                </div>
+                                <h4 className="font-bold text-lg text-zinc-900 dark:text-white leading-tight group-hover:text-emerald-600 transition-colors">
+                                    {i === 1 ? "Summer Grilled Chicken Salad" : i === 2 ? "Creamy Garlic Pasta" : "Rustic Vegetable Soup"}
+                                </h4>
+                                <div className="flex items-center gap-2 text-zinc-500 text-sm mt-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{i === 1 ? "25 mins" : i === 2 ? "40 mins" : "55 mins"}</span>
+                                    <span>•</span>
+                                    <span>{i === 1 ? "Easy" : i === 2 ? "Medium" : "Easy"}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Modals */}
             <ConfirmModal
                 isOpen={showConfirm}
                 onClose={() => setShowConfirm(false)}
@@ -137,180 +409,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 onConfirm={executeAIAction}
                 isProcessing={isProcessing}
             />
-
-            <div className="detail-header">
-                <button className="btn-secondary" onClick={onBack}>
-                    <ArrowLeft size={20} /> {t('back')}
-                </button>
-                <div className="detail-actions">
-
-                    {/* AI Actions (Improve/Translate) - Owner Only */}
-                    {isOwner && (
-                        <>
-                            <button
-                                className="btn-icon"
-                                onClick={() => handleMagicAction('improve')}
-                                title={t('improve')}
-                                disabled={isProcessing}
-                                style={{ color: '#8b5cf6' }} // Violet for Magic
-                            >
-                                <Sparkles size={20} />
-                            </button>
-                            <button
-                                className="btn-icon"
-                                onClick={() => handleMagicAction('translate')}
-                                title={t('translate')}
-                                disabled={isProcessing}
-                                style={{ color: '#0ea5e9' }} // Sky Blue for Translate
-                            >
-                                <Globe size={20} />
-                            </button>
-                        </>
-                    )}
-
-                    {/* Like Button */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginRight: '6px' }}>
-                        <button
-                            className="btn-icon"
-                            onClick={handleLike}
-                            title={isLiked ? "Unlike" : "Like"}
-                            style={{
-                                color: isLiked ? 'var(--color-primary)' : '#888',
-                                width: '44px',
-                                height: '44px',
-                                background: isLiked ? '#fdf2f8' : 'transparent',
-                                border: isLiked ? '1px solid #fbcfe8' : 'none'
-                            }}
-                        >
-                            <ChefHat size={28} fill={isLiked ? 'currentColor' : 'none'} strokeWidth={1.5} />
-                        </button>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666' }}>
-                            {recipe.likes_count || 0}
-                        </span>
-                    </div>
-
-                    <button
-                        className="btn-icon"
-                        onClick={handleDownload}
-                        title={t('downloadPDF')}
-                        disabled={isDownloading}
-                    >
-                        <Download size={20} />
-                    </button>
-
-                    {/* Public/Private Toggle - Only for Owner */}
-                    {isOwner && (
-                        <button
-                            className="btn-icon"
-                            onClick={() => setIsVisModalOpen(true)}
-                            title={recipe.is_public ? t('visibility.makePrivate') : t('visibility.makePublic')}
-                            style={{ color: recipe.is_public ? '#2563eb' : '#d97706' }}
-                        >
-                            {recipe.is_public ? <Globe size={20} /> : <Lock size={20} />}
-                        </button>
-                    )}
-
-                    {/* Edit/Delete - Only for Owner */}
-                    {isOwner && (
-                        <>
-                            <button className="btn-icon" onClick={onEdit} title={t('edit')}>
-                                <Edit2 size={20} />
-                            </button>
-                            <button className="btn-icon danger" onClick={handleDeleteClick} title={t('delete')}>
-                                <Trash2 size={20} />
-                            </button>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            <div className="detail-content" ref={contentRef}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
-                    <div style={{ flex: 1 }}>
-                        <h1 className="detail-title" style={{ display: 'inline', marginRight: '10px' }}>{recipe.title}</h1>
-                        {/* Author Name */}
-                        {recipe.is_public && recipe.author_username && (
-                            <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 500 }}>
-                                by {recipe.author_username}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Static Badge */}
-                    {recipe.is_public && (
-                        <span style={{ fontSize: '0.8rem', background: '#dbeafe', color: '#2563eb', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', height: 'fit-content', marginTop: '8px' }}>
-                            <Globe size={12} /> {t('visibility.publicBadge')}
-                        </span>
-                    )}
-                </div>
-
-                <div className="detail-meta">
-                    <div className="meta-badge">
-                        <Clock size={16} />
-                        <span>{t('prepTime')}: {recipe.prepTime}{t('minSuffix')}</span>
-                    </div>
-                    <div className="meta-badge">
-                        <Clock size={16} />
-                        <span>{t('cookTime')}: {recipe.cookTime}{t('minSuffix')}</span>
-                    </div>
-                    <div className="meta-badge">
-                        <Users size={16} />
-                        <span>{recipe.servings} {t('servings')}</span>
-                    </div>
-                </div>
-
-                {recipe.tags && recipe.tags.length > 0 && (
-                    <div className="detail-tags">
-                        {recipe.tags.map(tag => (
-                            <span key={tag} className="tag">{tag}</span>
-                        ))}
-                    </div>
-                )}
-
-                <div className="detail-grid">
-                    <div className="detail-section">
-                        <h3>{t('ingredientsSection')}</h3>
-                        <div className="ingredients-list">
-                            {(typeof recipe.ingredients === 'string' ? recipe.ingredients.split('\n') : []).map((line, i) => (
-                                line.trim() && (
-                                    <div key={i} className="ingredient-item">
-                                        <span className="bullet">•</span>
-                                        <span>{line}</span>
-                                    </div>
-                                )
-                            ))}
-                            {/* Fallback for Array (if data corrupted) */}
-                            {Array.isArray(recipe.ingredients) && recipe.ingredients.map((line, i) => (
-                                <div key={i} className="ingredient-item">
-                                    <span className="bullet">•</span>
-                                    <span>{line}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="detail-section">
-                        <h3>{t('instructionsSection')}</h3>
-                        <div className="instructions-list">
-                            {(typeof recipe.instructions === 'string' ? recipe.instructions.split('\n') : []).map((line, i) => (
-                                line.trim() && (
-                                    <div key={i} className="instruction-item">
-                                        <span className="step-number">{i + 1}</span>
-                                        <p>{line}</p>
-                                    </div>
-                                )
-                            ))}
-                            {/* Fallback for Array */}
-                            {Array.isArray(recipe.instructions) && recipe.instructions.map((line, i) => (
-                                <div key={i} className="instruction-item">
-                                    <span className="step-number">{i + 1}</span>
-                                    <p>{line}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

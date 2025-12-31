@@ -1,197 +1,210 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChefHat, Moon, Sun, Languages, User, LogOut, Settings, Globe, BookOpen, Menu, X } from 'lucide-react';
-import AuthModal from './AuthModal';
-import MigrationBanner from './MigrationBanner';
-import SettingsModal from './SettingsModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useRecipes } from '../context/RecipeContext';
+import { Search, Globe, Moon, Sun, User as UserIcon, LogOut, Settings, Menu, X, ChefHat } from 'lucide-react';
+import AuthModal from './AuthModal';
+import SettingsModal from './SettingsModal';
 
-export default function Layout({
-    children,
-    currentView,
-    // onNavigate prop removed, using internal router
-}) {
+export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
+    const { t, language, toggleLanguage } = useLanguage();
+    const { theme, toggleTheme } = useTheme();
+    const { user, signOut } = useAuth();
+    const { searchQuery, setSearchQuery } = useRecipes();
+
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const { t, language, toggleLanguage } = useLanguage();
-    const { theme, toggleTheme } = useTheme();
-    const { user, signOut } = useAuth();
-
     return (
-        <div className="container">
+        <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-display transition-colors duration-200">
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
             <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
 
+            {/* HEADER */}
+            <header className="sticky top-0 z-40 w-full bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 py-3 px-4 md:px-8 shadow-sm">
+                <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+
+                    {/* LEFT: Logo & Nav */}
+                    <div className="flex items-center gap-8">
+                        {/* Logo */}
+                        <div
+                            onClick={() => navigate('/')}
+                            className="flex items-center gap-2 cursor-pointer group"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                                <ChefHat size={18} strokeWidth={2.5} />
+                            </div>
+                            <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                                {t('appTitle')}
+                            </h1>
+                        </div>
+
+                        {/* Desktop Nav */}
+                        <nav className="hidden md:flex items-center gap-6">
+                            <button onClick={() => navigate('/')} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                                {t('nav.discover')}
+                            </button>
+                            <button onClick={() => navigate('/my-recipes')} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                                {t('nav.myKitchen')}
+                            </button>
+                        </nav>
+                    </div>
+
+                    {/* CENTER: Search Bar (Desktop) */}
+                    <div className="hidden md:flex flex-1 max-w-2xl mx-6">
+                        <div className="relative w-full group">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                <Search size={18} />
+                            </div>
+                            <input
+                                type="text"
+                                className="block w-full rounded-full border-none bg-gray-100 dark:bg-black/20 py-2.5 pl-10 pr-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50 transition-all hover:bg-gray-200/50 dark:hover:bg-black/30"
+                                placeholder={t('searchPlaceholder')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* RIGHT: Actions */}
+                    <div className="flex items-center gap-2">
+                        <button onClick={toggleLanguage} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Switch Language">
+                            <Globe size={20} />
+                        </button>
+                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Toggle Theme">
+                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                        </button>
+
+                        <div className="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
+
+                        {user ? (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setShowSettingsModal(true)}
+                                    className="hidden sm:flex items-center gap-2 pl-1 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-primary/20">
+                                        {user.user_metadata?.username?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                </button>
+                                <button onClick={signOut} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
+                                    <LogOut size={20} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowAuthModal(true)}
+                                className="ml-2 px-4 py-2 min-w-[110px] flex justify-center rounded-full bg-primary text-white text-sm font-bold hover:bg-green-600 transition-colors shadow-sm"
+                            >
+                                {t('nav.login')}
+                            </button>
+                        )}
+
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            className="md:hidden p-2 -mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                        >
+                            <Menu size={24} />
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            {/* Mobile Search (Below Header) */}
+            <div className="md:hidden px-4 py-3 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 sticky top-[65px] z-30">
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <Search size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full rounded-full border-none bg-gray-100 dark:bg-black/20 py-2.5 pl-10 pr-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50"
+                        placeholder={t('searchPlaceholder')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+            </div>
+
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="mobile-menu-content" onClick={e => e.stopPropagation()}>
-                        <div className="mobile-menu-header">
-                            <h3>Menu</h3>
-                            <button className="btn-icon" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div
+                        className="absolute right-0 top-0 bottom-0 w-[80%] max-w-sm bg-white dark:bg-surface-dark shadow-2xl p-6 flex flex-col gap-6 animate-in slide-in-from-right duration-200"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-serif font-bold text-gray-900 dark:text-white">{t('nav.menu')}</h2>
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10">
                                 <X size={24} />
                             </button>
                         </div>
 
-                        <div className="mobile-menu-items">
+                        <nav className="flex flex-col gap-2">
+                            <button onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
+                                <Globe size={20} className="text-gray-400" /> {t('nav.discover')}
+                            </button>
                             {user && (
-                                <div className="user-info-mobile">
-                                    <div className="user-avatar-placeholder">
-                                        {user.user_metadata?.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
-                                    </div>
-                                    <span className="user-name">{user.user_metadata?.username || user.email}</span>
-                                </div>
+                                <button onClick={() => { navigate('/my-recipes'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
+                                    <div className="text-gray-400"><ChefHat size={20} /></div> {t('nav.myKitchen')}
+                                </button>
                             )}
-
-                            <div className="menu-divider"></div>
-
-                            <button className="menu-item" onClick={toggleTheme}>
-                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                                <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-                            </button>
-
-                            <button className="menu-item" onClick={toggleLanguage}>
-                                <Languages size={20} />
-                                <span>{language.toUpperCase()}</span>
-                            </button>
-
+                            <div className="h-px bg-gray-100 dark:bg-white/10 my-2"></div>
                             {user ? (
                                 <>
-                                    <button className="menu-item" onClick={() => { setShowSettingsModal(true); setIsMobileMenuOpen(false); }}>
-                                        <Settings size={20} />
-                                        <span>{t('settings.title') || 'Settings'}</span>
+                                    <button onClick={() => { setShowSettingsModal(true); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
+                                        <Settings size={20} className="text-gray-400" /> {t('nav.settings')}
                                     </button>
-                                    <button className="menu-item text-danger" onClick={() => { signOut(); setIsMobileMenuOpen(false); }}>
-                                        <LogOut size={20} />
-                                        <span>Sign Out</span>
+                                    <button onClick={() => { signOut(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-left font-medium text-red-600">
+                                        <LogOut size={20} /> {t('nav.signOut')}
                                     </button>
                                 </>
                             ) : (
-                                <button className="btn-primary full-width" onClick={() => { setShowAuthModal(true); setIsMobileMenuOpen(false); }}>
-                                    <User size={20} /> Login / Sign Up
+                                <button onClick={() => { setShowAuthModal(true); setIsMobileMenuOpen(false); }} className="w-full py-3 rounded-xl bg-primary text-white font-bold shadow-sm">
+                                    {t('nav.loginSignup')}
                                 </button>
                             )}
-                        </div>
+                        </nav>
                     </div>
                 </div>
             )}
 
-            {/* =======================
-                DESKTOP HEADER
-               ======================= */}
-            <div className="desktop-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
-                    <div
-                        onClick={() => navigate('/')}
-                        className="app-branding"
-                        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                    >
-                        <div style={{
-                            background: 'var(--color-primary)',
-                            color: 'white',
-                            padding: '10px',
-                            borderRadius: '12px',
-                            display: 'flex'
-                        }}>
-                            <ChefHat size={28} />
-                        </div>
-                        <h1 className="title" style={{ marginBottom: 0, fontSize: '1.5rem' }}>{t('appTitle')}</h1>
-                    </div>
-
-                    {/* Left-Side Controls (Language/Theme) */}
-                    <div style={{ display: 'flex', gap: '12px', marginLeft: '12px', borderLeft: '1px solid var(--color-border)', paddingLeft: '20px' }}>
-                        <button className="btn-secondary" onClick={toggleLanguage} title="Switch Language">
-                            <Languages size={18} /> {language.toUpperCase()}
-                        </button>
-                        <button className="btn-secondary" onClick={toggleTheme} title="Switch Theme">
-                            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-                        </button>
-                    </div>
-                </div>
-
-                <div className="desktop-actions">
-                    <div>
-                        {user ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
-                                    {user.user_metadata?.username || user.email}
-                                </span>
-                                <button className="btn-secondary" onClick={() => setShowSettingsModal(true)} title="Settings">
-                                    <Settings size={18} />
-                                </button>
-                                <button className="btn-secondary" onClick={signOut} title="Sign Out">
-                                    <LogOut size={18} />
-                                </button>
-                            </div>
-                        ) : (
-                            <button className="btn-primary" onClick={() => setShowAuthModal(true)} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-                                <User size={18} /> Login / Sign Up
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* =======================
-                MOBILE HEADER (Minimalist)
-               ======================= */}
-            <div className="mobile-header">
-                <div
-                    onClick={() => navigate('/')}
-                    className="app-branding"
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
-                    <div style={{
-                        background: 'var(--color-primary)',
-                        color: 'white',
-                        padding: '6px',
-                        borderRadius: '8px',
-                        display: 'flex'
-                    }}>
-                        <ChefHat size={20} />
-                    </div>
-                    <h1 className="title" style={{ marginBottom: 0, fontSize: '1.2rem' }}>{t('appTitle')}</h1>
-                </div>
-
-                <button className="btn-icon" onClick={() => setIsMobileMenuOpen(true)}>
-                    <Menu size={24} />
-                </button>
-            </div>
-
-            {/* Segmented Navigation Control (Formerly Main Header) */}
-            <header className="main-header" style={{ marginTop: '16px' }}>
-                <div className="nav-segmented-control">
-                    <button
-                        className={`segment-item ${currentView === 'home' ? 'active' : ''}`}
-                        onClick={() => navigate('/')}
-                    >
-                        <Globe size={18} />
-                        <span className="nav-text-desktop">{t('visibility.publicFeed')}</span>
-                        <span className="nav-text-mobile">Community</span>
-                    </button>
-
-                    {user && (
-                        <button
-                            className={`segment-item ${currentView === 'myRecipes' ? 'active' : ''}`}
-                            onClick={() => navigate('/my-recipes')}
-                        >
-                            <BookOpen size={18} />
-                            <span className="nav-text-desktop">{t('visibility.myRecipes')}</span>
-                            <span className="nav-text-mobile">My Recipes</span>
-                        </button>
-                    )}
-                </div>
-            </header>
-
-            <main>
-                <MigrationBanner />
+            <main className={`w-full ${fullWidth ? '' : 'max-w-[1440px] mx-auto px-4 md:px-8 py-8'}`}>
                 {children}
             </main>
+            {/* FOOTER */}
+            <footer className="w-full bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-white/5 py-6 mt-8">
+                <div className="max-w-[1440px] mx-auto px-4 md:px-8 flex flex-col items-center text-center gap-4">
+                    {/* Brand */}
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white">
+                            <ChefHat size={14} strokeWidth={2.5} />
+                        </div>
+                        <h2 className="text-xl font-serif font-bold text-gray-900 dark:text-white">{t('appTitle')}</h2>
+                    </div>
+
+                    {/* Tagline */}
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">{t('footer.tagline')}</p>
+
+                    {/* Links */}
+                    <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                        <button className="hover:text-primary transition-colors">{t('nav.about')}</button>
+                        <button className="hover:text-primary transition-colors">{t('nav.community')}</button>
+                        <button className="hover:text-primary transition-colors">{t('nav.submitRecipe')}</button>
+                        <button className="hover:text-primary transition-colors">{t('nav.privacy')}</button>
+                    </div>
+
+                    {/* Copyright */}
+                    <div className="text-xs text-gray-400 font-medium">
+                        &copy; {new Date().getFullYear()} {t('footer.copyright')}
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }

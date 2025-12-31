@@ -14,6 +14,7 @@ export default function RecipeContext({ children }) {
     const [recipes, setRecipes] = useState([]); // My Recipes
     const [publicRecipes, setPublicRecipes] = useState([]); // Public Feed
     const [userLikes, setUserLikes] = useState(new Set()); // Set of liked recipe IDs
+    const [searchQuery, setSearchQuery] = useState(""); // Global Search
     const [loading, setLoading] = useState(true);
 
     // Helpers to convert between App (camelCase) and DB (snake_case)
@@ -30,6 +31,8 @@ export default function RecipeContext({ children }) {
         user_id: dbRecipe.user_id,
         author_username: dbRecipe.author_username || '',
         likes_count: dbRecipe.likes_count || 0,
+        image_url: dbRecipe.image_url,
+        description: dbRecipe.description || '',
         createdAt: dbRecipe.created_at
     });
 
@@ -43,6 +46,8 @@ export default function RecipeContext({ children }) {
         servings: appRecipe.servings,
         tags: appRecipe.tags,
         is_public: appRecipe.is_public || false,
+        image_url: appRecipe.image_url,
+        description: appRecipe.description,
         author_username: username
     });
 
@@ -203,7 +208,7 @@ export default function RecipeContext({ children }) {
             supabase.removeChannel(signalChannel);
             supabase.removeChannel(deleteChannel);
         };
-    }, [user]);
+    }, [user?.id]);
 
     const addRecipe = async (recipe) => {
         if (user) {
@@ -239,6 +244,8 @@ export default function RecipeContext({ children }) {
             if (updatedData.cookTime) dbUpdates.cook_time = updatedData.cookTime;
             if (updatedData.servings) dbUpdates.servings = updatedData.servings;
             if (updatedData.tags) dbUpdates.tags = updatedData.tags;
+            if (updatedData.image_url) dbUpdates.image_url = updatedData.image_url;
+            if (updatedData.description) dbUpdates.description = updatedData.description;
             if (updatedData.is_public !== undefined) dbUpdates.is_public = updatedData.is_public;
 
             const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
@@ -266,7 +273,7 @@ export default function RecipeContext({ children }) {
     const toggleLike = async (recipeId) => {
         if (!user) return;
 
-        // Optimistic Update for UserLikes Set
+        // 1. Optimistic Update for UserLikes Set
         const isLiked = userLikes.has(recipeId);
         setUserLikes(prev => {
             const next = new Set(prev);
@@ -274,6 +281,18 @@ export default function RecipeContext({ children }) {
             else next.add(recipeId);
             return next;
         });
+
+        // 2. Optimistic Update for Like Count (UI Feedback)
+        const updateCount = (r) => {
+            if (r.id !== recipeId) return r;
+            return {
+                ...r,
+                likes_count: Math.max(0, r.likes_count + (isLiked ? -1 : 1))
+            };
+        };
+
+        setRecipes(prev => prev.map(updateCount));
+        setPublicRecipes(prev => prev.map(updateCount));
 
         try {
             if (isLiked) {
@@ -283,13 +302,23 @@ export default function RecipeContext({ children }) {
             }
         } catch (err) {
             console.error("Like toggle failed", err);
-            // Revert on error
+            // Revert UserLikes
             setUserLikes(prev => {
                 const next = new Set(prev);
                 if (isLiked) next.add(recipeId);
                 else next.delete(recipeId);
                 return next;
             });
+            // Revert Counts
+            const revertCount = (r) => {
+                if (r.id !== recipeId) return r;
+                return {
+                    ...r,
+                    likes_count: Math.max(0, r.likes_count + (isLiked ? 1 : -1))
+                };
+            };
+            setRecipes(prev => prev.map(revertCount));
+            setPublicRecipes(prev => prev.map(revertCount));
         }
     };
 
@@ -310,6 +339,8 @@ export default function RecipeContext({ children }) {
             toggleLike,
             checkIsLiked,
             hasUserLiked,
+            searchQuery,
+            setSearchQuery,
             loading
         }}>
             {children}

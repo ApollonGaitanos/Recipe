@@ -1,0 +1,44 @@
+[
+    {
+        "id": "f6f0c123-09e0-4d77-b795-67bb848e0028",
+        "user_id": "58d7553d-bc3e-4058-b9de-cb5a617bf364",
+        "title": "Chicken with Potatoes in Beer and Smoked Paprika",
+        "ingredients": "600g chicken breast, cut into large bite-sized pieces\n4 medium potatoes, cubed\n2 large onions, sliced\n330ml beer (Lager or Pilsner)\n2 tablespoons paprika (smoked or sweet)\nSalt\n4 tablespoons olive oil\nFreshly ground pepper",
+        "instructions": "In a wide pot or deep frying pan, heat the olive oil over medium-high heat.\nSauté the chicken pieces until well browned on all sides and remove them to a plate.\nIn the same oil, add the onions and potatoes, sautéing for 8-10 minutes until they start to soften and take on color.\nReturn the chicken to the pan and sprinkle with paprika, salt, and pepper, stirring quickly so the paprika doesn't burn.\nDeglaze with the beer, scraping the bottom of the pan with a spatula to release all the aromas.\nLower the heat, cover, and simmer for about 30-35 minutes until the potatoes are soft and the sauce has thickened.\nIf the sauce remains thin, remove the lid and boil over high heat for another 5 minutes until it thickens and glazes.",
+        "prep_time": 15,
+        "cook_time": 45,
+        "servings": 4,
+        "tags": [
+            "chicken",
+            "potatoes",
+            "beer",
+            "main course",
+            "one pot"
+        ],
+        "created_at": "2025-12-30 17:15:58.990722+00",
+        "is_public": false,
+        "author_username": "Ghost",
+        "likes_count": 0
+    },
+    {
+        "id": "0334afb6-4885-4375-9a07-1b8baaf05a75",
+        "user_id": "0eb9b85a-1484-4b23-bedc-580f36007876",
+        "title": "Μεσογειακό Σουφλέ Ζυμαρικών με Τέσσερα Τυριά",
+        "ingredients": "500γρ. πένες ή ριγκατόνι\n200γρ. καπνιστό ζαμπόν, κομμένο σε κύβους\n100γρ. μπέικον, ψιλοκομμένο\n1 κόκκινη πιπεριά, κομμένη σε κύβους\n1 πράσινη πιπεριά, κομμένη σε κύβους\n1 κρεμμύδι, ψιλοκομμένο\n2 σκελίδες σκόρδο, λιωμένες\n400γρ. ντοματάκια κονκασέ\n200ml κρέμα γάλακτος\n1 φλιτζάνι γκούντα, τριμμένη\n1 φλιτζάνι μοτσαρέλα, τριμμένη\n1/2 φλιτζάνι παρμεζάνα, τριμμένη\n1/2 φλιτζάνι φέτα, θρυμματισμένη\n1 κουταλιά της σούπας ρίγανη\n1 κουταλάκι του γλυκού βασιλικός (ξερός)\nΕλαιόλαδο\nΑλάτι & Πιπέρι",
+        "instructions": "Βράζουμε τα ζυμαρικά σε αλατισμένο νερό, 2 λεπτά λιγότερο από τις οδηγίες του πακέτου. Τα σουρώνουμε.\nΣε ένα μεγάλο τηγάνι με ελαιόλαδο, σοτάρουμε το κρεμμύδι, το σκόρδο, τις πιπεριές, το ζαμπόν και το μπέικον μέχρι να πάρουν χρώμα.\nΠροσθέτουμε τα ντοματάκια, τη ρίγανη, τον βασιλικό, αλάτι και πιπέρι. Σιγοβράζουμε για 10 λεπτά.\nΡίχνουμε την κρέμα γάλακτος στη σάλτσα και ανακατεύουμε.\nΠροσθέτουμε τα ζυμαρικά στη σάλτσα και ανακατεύουμε καλά.\nΜεταφέρουμε το μείγμα σε ένα πυρίμαχο σκεύος.\nΠασπαλίζουμε με όλα τα τυριά (γκούντα, μοτσαρέλα, παρμεζάνα, φέτα).\nΨήνουμε σε προθερμασμένο φούρνο στους 180°C για 20-25 λεπτά μέχρι να λιώσουν τα τυριά και να ροδίσουν.\nΑφήνουμε να σταθεί για 10 λεπτά πριν σερβίρουμε.",
+        "prep_time": 20,
+        "cook_time": 25,
+        "servings": 6,
+        "tags": [
+            "ζυμαρικά",
+            "φούρνου",
+            "τυριά",
+            "μεσογειακό",
+            "κυρίως πιάτο"
+        ],
+        "created_at": "2025-12-30 22:58:39.99222+00",
+        "is_public": true,
+        "author_username": "ApollonGaitanos",
+        "likes_count": 3
+    }
+]

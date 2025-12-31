@@ -14,9 +14,9 @@ export default function ThemeContext({ children }) {
     useEffect(() => {
         localStorage.setItem('theme', theme);
         if (theme === 'dark') {
-            document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark');
         } else {
-            document.body.classList.remove('dark-mode');
+            document.documentElement.classList.remove('dark');
         }
     }, [theme]);
 

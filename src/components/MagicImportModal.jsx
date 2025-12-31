@@ -145,30 +145,30 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         {mode === 'import' && (
                             <div className="ai-toggle-wrapper">
                                 <div className="toggle-text">
-                                    <span className="toggle-title">AI Mode</span>
+                                    <span className="toggle-title">{t('magicImport.aiModeTitle')}</span>
                                     <span className="toggle-cost">
-                                        {aiMode === 'off' ? 'Free' : (aiMode === 'hybrid' ? 'Smart' : '0.01€')}
+                                        {aiMode === 'off' ? t('magicImport.aiModeFree') : (aiMode === 'hybrid' ? t('magicImport.aiModeSmart') : '0.01€')}
                                     </span>
                                 </div>
                                 <div className="mode-selector">
                                     <button
                                         className={`selector-btn ${aiMode === 'off' ? 'active' : ''}`}
                                         onClick={() => setAiMode('off')}
-                                        title="Classic Scraper Only"
+                                        title={t('magicImport.tooltips.off')}
                                     >
                                         Off
                                     </button>
                                     <button
                                         className={`selector-btn ${aiMode === 'hybrid' ? 'active' : ''}`}
                                         onClick={() => setAiMode('hybrid')}
-                                        title="Scraper + AI Backup"
+                                        title={t('magicImport.tooltips.hybrid')}
                                     >
                                         Hybrid
                                     </button>
                                     <button
                                         className={`selector-btn ${aiMode === 'on' ? 'active' : ''}`}
                                         onClick={() => setAiMode('on')}
-                                        title="Force AI"
+                                        title={t('magicImport.tooltips.on')}
                                     >
                                         On
                                     </button>
@@ -238,7 +238,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                                         disabled={isParsing}
                                     >
                                         <ImageIcon size={18} />
-                                        <span>{t('magicImport.imageButton') || "Add Image"}</span>
+                                        <span>{t('magicImport.imageButton') || t('magicImport.addImage')}</span>
                                     </button>
                                 ) : (
                                     <div className="image-preview-wrapper">
@@ -256,7 +256,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     {isParsing && (
                         <div className="progress-section">
                             <div className="progress-status">
-                                <span>{isParsing ? t('magicImport.parsing') : "Ready"}</span>
+                                <span>{isParsing ? t('magicImport.parsing') : t('magicImport.ready')}</span>
                                 {scanProgress > 0 && <span>{scanProgress}%</span>}
                             </div>
                             <div className="progress-bar-bg">
@@ -278,7 +278,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         disabled={!hasInput || isParsing}
                     >
                         {isParsing ? (
-                            <span>Processing...</span>
+                            <span>{t('magicImport.parsing')}</span>
                         ) : (
                             <>
                                 {mode === 'create' ? <ChefHat size={18} /> : <Sparkles size={18} />}
