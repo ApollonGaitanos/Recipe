@@ -11,6 +11,7 @@ import RecipeForm from './components/RecipeForm';
 import RecipeDetail from './components/RecipeDetail';
 import ConfirmationModal from './components/ConfirmModal';
 import MyKitchen from './components/MyKitchen';
+import AccountSettings from './components/AccountSettings';
 
 // --- ROUTE COMPONENTS ---
 
