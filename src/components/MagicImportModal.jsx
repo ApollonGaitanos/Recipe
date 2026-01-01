@@ -1,6 +1,5 @@
-
 import React, { useState, useRef } from 'react';
-import { X, Sparkles, Image as ImageIcon, Camera, ChefHat, Link } from 'lucide-react';
+import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 import { recognizeText } from '../utils/ocr';
@@ -11,12 +10,20 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [aiMode, setAiMode] = useState('hybrid'); // 'off', 'hybrid', 'on'
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const [mode, setMode] = useState('import'); // 'import' or 'create'
+    const [activeTab, setActiveTab] = useState('import'); // 'import' | 'chef'
 
-    // Image State
     const [selectedImage, setSelectedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const fileInputRef = useRef(null);
+
+    // Close on escape
+    React.useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose]);
 
     if (!isOpen) return null;
 
@@ -28,7 +35,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         setSelectedImage(file);
     };
 
-    const handleRemoveImage = () => {
+    const handleRemoveImage = (e) => {
+        e.stopPropagation();
         setPreviewUrl(null);
         setSelectedImage(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -81,14 +89,12 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         try {
             let result;
-
-            // Determine effective mode and AI usage
-            const activeMode = mode === 'create' ? 'create' : 'extract';
-            // If Create, Force AI. If Import, use selected AI Mode.
-            const effectiveAiMode = mode === 'create' ? 'on' : aiMode;
+            const activeMode = activeTab === 'chef' ? 'create' : 'extract';
+            // Force AI if in 'chef' (create) mode, otherwise use toggle
+            const effectiveAiMode = activeTab === 'chef' ? 'on' : aiMode;
 
             if (selectedImage && activeMode === 'extract') {
-                if (effectiveAiMode !== 'off') { // Hybrid or On uses AI for images
+                if (effectiveAiMode !== 'off') {
                     setScanProgress(20);
                     const base64 = await resizeImage(selectedImage);
                     result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, true, language);
@@ -98,543 +104,181 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     result = await parseRecipe(combinedText, false);
                 }
             } else {
-                // Pass aiMode string to parser instead of boolean
                 result = await parseRecipe(inputValue, effectiveAiMode, language, activeMode);
             }
 
             onImport(result);
-            resetAndClose();
+            onClose();
+            // Reset after close
+            setTimeout(() => {
+                setInputValue('');
+                setPreviewUrl(null);
+                setSelectedImage(null);
+            }, 300);
 
         } catch (error) {
             console.error("Magic Import Error:", error);
-            const errorMsg = error.message || JSON.stringify(error);
-            alert(`Failed to parse: ${errorMsg}`);
+            alert(`Failed: ${error.message}`);
         } finally {
             setIsParsing(false);
             setScanProgress(0);
         }
     };
 
-    const resetAndClose = () => {
-        setInputValue('');
-        setPreviewUrl(null);
-        setSelectedImage(null);
-        setMode('import');
-        onClose();
-    };
-
-    const hasInput = inputValue.trim().length > 0 || selectedImage;
-
     return (
-        <div className="modal-overlay active" onClick={onClose}>
-            <div className="modal-content-wide active" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+            {/* Modal Content */}
+            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-[#dce5df] dark:border-[#2a4030]">
 
                 {/* Header */}
-                <div className="modal-header">
-                    <div className="header-left">
-                        <div className="modal-icon-container-small">
-                            {mode === 'create' ? <ChefHat size={20} strokeWidth={2} /> : <Sparkles size={20} strokeWidth={2} />}
-                        </div>
-                        <h3 className="modal-title-small">
-                            {t('magicImport.title')}
-                        </h3>
-                    </div>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030]">
+                    <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">Add New Recipe</h3>
 
-                    {/* AI Mode Selector */}
-                    <div className="header-right">
-                        {mode === 'import' && (
-                            <div className="ai-toggle-wrapper">
-                                <div className="toggle-text">
-                                    <span className="toggle-title">{t('magicImport.aiModeTitle')}</span>
-                                    <span className="toggle-cost">
-                                        {aiMode === 'off' ? t('magicImport.aiModeFree') : (aiMode === 'hybrid' ? t('magicImport.aiModeSmart') : '0.01€')}
-                                    </span>
-                                </div>
-                                <div className="mode-selector">
-                                    <button
-                                        className={`selector-btn ${aiMode === 'off' ? 'active' : ''}`}
-                                        onClick={() => setAiMode('off')}
-                                        title={t('magicImport.tooltips.off')}
-                                    >
-                                        Off
-                                    </button>
-                                    <button
-                                        className={`selector-btn ${aiMode === 'hybrid' ? 'active' : ''}`}
-                                        onClick={() => setAiMode('hybrid')}
-                                        title={t('magicImport.tooltips.hybrid')}
-                                    >
-                                        Hybrid
-                                    </button>
-                                    <button
-                                        className={`selector-btn ${aiMode === 'on' ? 'active' : ''}`}
-                                        onClick={() => setAiMode('on')}
-                                        title={t('magicImport.tooltips.on')}
-                                    >
-                                        On
-                                    </button>
-                                </div>
+                    <div className="flex items-center gap-4">
+                        {/* AI Mode Toggle */}
+                        {activeTab === 'import' && (
+                            <div className="flex items-center p-1 bg-[#f6f8f6] dark:bg-[#112116] rounded-lg border border-[#dce5df] dark:border-[#2a4030]">
+                                <button
+                                    onClick={() => setAiMode('off')}
+                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'off' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-gray-700 dark:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                                    title="Fast / Standard"
+                                >
+                                    <Zap size={16} fill={aiMode === 'off' ? "currentColor" : "none"} />
+                                </button>
+                                <button
+                                    onClick={() => setAiMode('hybrid')}
+                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'hybrid' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-[#17cf54]' : 'text-gray-400 hover:text-gray-600'}`}
+                                    title="Smart / Hybrid"
+                                >
+                                    <Brain size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setAiMode('on')}
+                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'on' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-[#17cf54]' : 'text-gray-400 hover:text-gray-600'}`}
+                                    title="Advanced / AI Chef"
+                                >
+                                    <Sparkles size={16} />
+                                </button>
                             </div>
                         )}
-                        <button className="modal-close-btn" onClick={onClose}>
+
+                        <div className="h-6 w-[1px] bg-[#dce5df] dark:bg-[#2a4030]" />
+
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                        >
                             <X size={20} />
                         </button>
                     </div>
                 </div>
 
-                {/* Mode Tabs */}
-                <div className="mode-tabs">
+                {/* Tabs */}
+                <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030]">
                     <button
-                        className={`mode-tab ${mode === 'import' ? 'active' : ''}`}
-                        onClick={() => setMode('import')}
+                        onClick={() => setActiveTab('import')}
+                        className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors ${activeTab === 'import'
+                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                            }`}
                     >
-                        <Link size={16} />
-                        {t('magicImport.modeImport')}
+                        Magic Import
                     </button>
                     <button
-                        className={`mode-tab ${mode === 'create' ? 'active' : ''}`}
-                        onClick={() => setMode('create')}
+                        onClick={() => setActiveTab('chef')}
+                        className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors ${activeTab === 'chef'
+                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                            }`}
                     >
-                        <ChefHat size={16} />
-                        {t('magicImport.modeCreate')}
+                        AI Chef
                     </button>
                 </div>
 
-                {/* Content Body - Responsive Grid */}
-                <div className="modal-body">
+                {/* Content */}
+                <div className="p-6 flex flex-col gap-4">
 
-                    {/* Left/Top: Text Input */}
-                    <div className="input-section">
-                        <p className="section-desc">
-                            {mode === 'create'
-                                ? t('magicImport.placeholderCreate')
-                                : t('magicImport.description')
-                            }
-                        </p>
-                        <textarea
-                            className={`magic-textarea ${mode === 'create' ? 'creative' : ''}`}
-                            placeholder={mode === 'create' ? t('magicImport.placeholderCreate') : t('magicImport.textPlaceholder')}
-                            value={inputValue}
-                            onChange={e => setInputValue(e.target.value)}
-                            disabled={isParsing}
-                        />
-
-                        {/* Image Button / Preview - ONLY IN IMPORT MODE */}
-                        {mode === 'import' && (
-                            <div className="image-section">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    ref={fileInputRef}
-                                    onChange={handleFileSelect}
-                                    style={{ display: 'none' }}
-                                    disabled={isParsing}
-                                />
-
-                                {!previewUrl ? (
-                                    <button
-                                        type="button"
-                                        className={`image-select-btn ${selectedImage ? 'active' : ''}`}
-                                        onClick={() => fileInputRef.current.click()}
-                                        disabled={isParsing}
-                                    >
-                                        <ImageIcon size={18} />
-                                        <span>{t('magicImport.imageButton') || t('magicImport.addImage')}</span>
-                                    </button>
-                                ) : (
-                                    <div className="image-preview-wrapper">
-                                        <img src={previewUrl} alt="Preview" />
-                                        <button onClick={handleRemoveImage} className="remove-image-btn">
-                                            <X size={14} />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Progress Bar (Full Width if Active) */}
-                    {isParsing && (
-                        <div className="progress-section">
-                            <div className="progress-status">
-                                <span>{isParsing ? t('magicImport.parsing') : t('magicImport.ready')}</span>
-                                {scanProgress > 0 && <span>{scanProgress}%</span>}
-                            </div>
-                            <div className="progress-bar-bg">
-                                <div className="progress-bar-fill" style={{ width: scanProgress > 0 ? `${scanProgress}%` : '100%' }} />
+                    {/* Source Input */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Source</label>
+                        <div className="relative">
+                            <textarea
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder={activeTab === 'chef' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
+                                className="w-full h-40 rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#112116] p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all"
+                            />
+                            {/* Icon inside textarea */}
+                            <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
+                                <FileText size={20} />
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
 
-                {/* Footer */}
-                <div className="modal-footer">
-                    <button type="button" className="btn-secondary" onClick={onClose} disabled={isParsing}>
-                        {t('cancel')}
-                    </button>
+                    {/* Image Upload (Only for Import) */}
+                    {activeTab === 'import' && (
+                        <>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileSelect}
+                                className="hidden"
+                            />
+
+                            {!previewUrl ? (
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full py-4 border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#112116] hover:border-[#17cf54]/50 transition-all font-medium"
+                                >
+                                    <ImageIcon size={18} />
+                                    Add Image (Optional)
+                                </button>
+                            ) : (
+                                <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
+                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            onClick={handleRemoveImage}
+                                            className="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* Button */}
                     <button
-                        type="button"
-                        className="btn-primary"
                         onClick={handleParse}
-                        disabled={!hasInput || isParsing}
+                        disabled={isParsing || (!inputValue && !selectedImage)}
+                        className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-green-500/20 transition-all ${isParsing || (!inputValue && !selectedImage)
+                                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
+                                : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
+                            }`}
                     >
                         {isParsing ? (
-                            <span>{t('magicImport.parsing')}</span>
+                            <span>{activeTab === 'chef' ? 'Creating...' : 'Analyzing...'} {Math.round(scanProgress)}%</span>
                         ) : (
                             <>
-                                {mode === 'create' ? <ChefHat size={18} /> : <Sparkles size={18} />}
-                                {mode === 'create' ? t('magicImport.btnCreate') : t('magicImport.button')}
+                                {activeTab === 'chef' ? 'Create Recipe' : 'Import Recipe'}
+                                <ArrowRight size={18} />
                             </>
                         )}
                     </button>
+
+                    <p className="text-center text-xs text-gray-400">
+                        {activeTab === 'chef'
+                            ? 'AI Chef will generate a recipe based on your description.'
+                            : 'Magic Import analyzes your source to extract ingredients and steps.'}
+                    </p>
                 </div>
-
             </div>
-
-            <style jsx>{`
-                /* Container Styles */
-                .modal-content-wide {
-                    background: var(--color-surface); /* Dark mode compatible */
-                    width: 90%;
-                    max-width: 800px; /* Use more real estate */
-                    border-radius: var(--radius-lg);
-                    box-shadow: var(--shadow-md);
-                    border: 1px solid var(--color-border);
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    max-height: 90vh;
-                    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-
-                @keyframes modalPop {
-                    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
-                }
-
-                /* Header */
-                .modal-header {
-                    padding: 16px 24px;
-                    border-bottom: 1px solid var(--color-border);
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    background: var(--color-surface);
-                }
-                
-                .header-right {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                }
-
-                .header-left {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .modal-icon-container-small {
-                    width: 32px;
-                    height: 32px;
-                    background: #fdf2f8; 
-                    color: #db2777;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                
-                body.dark-mode .modal-icon-container-small {
-                     background: rgba(219, 39, 119, 0.2);
-                }
-
-                .modal-title-small {
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    color: var(--color-text);
-                    margin: 0;
-                }
-                
-                /* Tabs */
-                .mode-tabs {
-                    display: flex;
-                    padding: 0 24px;
-                    border-bottom: 1px solid var(--color-border);
-                    background: var(--color-bg); 
-                }
-                
-                .mode-tab {
-                    flex: 1;
-                    padding: 12px;
-                    font-weight: 600;
-                    color: var(--color-text-light);
-                    border-bottom: 2px solid transparent;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    transition: all 0.2s;
-                }
-                
-                .mode-tab:hover {
-                    background: var(--color-surface);
-                    color: var(--color-text);
-                }
-                
-                .mode-tab.active {
-                    color: var(--color-primary);
-                    border-bottom-color: var(--color-primary);
-                    background: var(--color-surface);
-                }
-
-                /* AI Toggle */
-                .ai-toggle-wrapper {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                }
-                
-                .toggle-label {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    cursor: pointer;
-                    background: rgba(var(--color-primary-rgb), 0.05); /* subtle bg */
-                    padding: 4px 8px;
-                    border-radius: 8px;
-                }
-
-                .toggle-text {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                    line-height: 1.1;
-                }
-
-                .toggle-title {
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    color: var(--color-primary);
-                }
-
-                .toggle-cost {
-                    font-size: 0.65rem;
-                    color: var(--color-text-light);
-                    opacity: 0.8;
-                }
-
-                .mode-selector {
-                    display: flex;
-                    background: var(--color-bg);
-                    padding: 2px;
-                    border-radius: 8px;
-                    border: 1px solid var(--color-border);
-                }
-
-                .selector-btn {
-                    padding: 4px 12px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    color: var(--color-text-light);
-                    background: transparent;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-
-                .selector-btn:hover {
-                    color: var(--color-text);
-                }
-
-                .selector-btn.active {
-                    background: var(--color-surface);
-                    color: var(--color-primary);
-                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                }
-                
-                body.dark-mode .selector-btn.active {
-                     background: #333;
-                }
-
-                .modal-close-btn {
-                    color: var(--color-text-light);
-                    padding: 4px;
-                    border-radius: 50%;
-                    transition: all 0.2s;
-                    display: flex;
-                }
-                
-                .modal-close-btn:hover {
-                    background: rgba(0,0,0,0.05);
-                    color: var(--color-text);
-                }
-                
-                body.dark-mode .modal-close-btn:hover {
-                    background: rgba(255,255,255,0.1);
-                }
-
-                /* Body */
-                .modal-body {
-                    padding: 24px;
-                    overflow-y: auto;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 20px;
-                    flex: 1;
-                }
-                
-                .section-desc {
-                    margin-top: 0;
-                    margin-bottom: 12px;
-                    color: var(--color-text-light);
-                    font-size: 0.95rem;
-                }
-
-                .magic-textarea {
-                    width: 100%;
-                    min-height: 200px; /* Taller by default */
-                    padding: 16px;
-                    border-radius: var(--radius-md);
-                    border: 1px solid var(--color-border);
-                    background: var(--color-bg); /* Use theme bg for input */
-                    color: var(--color-text);
-                    font-size: 1rem;
-                    resize: vertical;
-                    transition: border-color 0.2s;
-                }
-                
-                .magic-textarea.creative {
-                    min-height: 150px;
-                    font-size: 1.1rem; /* Larger font for ideas */
-                }
-                
-                .magic-textarea:focus {
-                    border-color: var(--color-primary);
-                    outline: none;
-                }
-
-                /* Image Section */
-                .image-section {
-                    margin-top: 12px;
-                    display: flex;
-                    align-items: center;
-                }
-                
-                .image-select-btn {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 8px 16px;
-                    border-radius: var(--radius-md);
-                    border: 1px solid var(--color-border);
-                    background: var(--color-bg);
-                    color: var(--color-text);
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                }
-                
-                .image-select-btn:hover {
-                    border-color: var(--color-text-light);
-                    background: var(--color-surface);
-                }
-                
-                .image-preview-wrapper {
-                    position: relative;
-                    border-radius: var(--radius-md);
-                    overflow: hidden;
-                    border: 1px solid var(--color-border);
-                    display: inline-block;
-                }
-                
-                .image-preview-wrapper img {
-                    height: 80px;
-                    width: auto;
-                    display: block;
-                    object-fit: cover;
-                }
-                
-                .remove-image-btn {
-                    position: absolute;
-                    top: 4px;
-                    right: 4px;
-                    background: rgba(0,0,0,0.6);
-                    color: white;
-                    border-radius: 50%;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                /* Progress */
-                .progress-section {
-                    margin-top: auto;
-                }
-                
-                .progress-status {
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 0.85rem;
-                    color: var(--color-primary);
-                    font-weight: 600;
-                    margin-bottom: 6px;
-                }
-                
-                .progress-bar-bg {
-                    height: 6px;
-                    background: rgba(var(--color-primary-rgb), 0.1); /* Fallback or variable */
-                    background: #f3f3f3;
-                    border-radius: 3px;
-                    overflow: hidden;
-                }
-                
-                body.dark-mode .progress-bar-bg {
-                    background: #333;
-                }
-                
-                .progress-bar-fill {
-                    height: 100%;
-                    background: var(--color-primary);
-                    transition: width 0.3s ease;
-                }
-
-                /* Footer */
-                .modal-footer {
-                    padding: 16px 24px;
-                    border-top: 1px solid var(--color-border);
-                    background: var(--color-surface); /* Important for Dark Mode */
-                    display: flex;
-                    justify-content: flex-end; /* Right aligned actions */
-                    gap: 12px;
-                }
-                
-                /* Mobile Responsiveness */
-                @media (max-width: 600px) {
-                    .modal-content-wide {
-                        width: 100%;
-                        height: 100%;
-                        max-height: 100%;
-                        border-radius: 0;
-                    }
-                    
-                    .modal-header {
-                        padding: 12px 16px;
-                    }
-                    
-                    .modal-body {
-                        padding: 16px;
-                    }
-                    
-                    .toggle-text {
-                         /* Hide text labels on small screens if needed, or stack */
-                         /* Keep for now */
-                    }
-                }
-            `}</style>
         </div>
     );
 }
