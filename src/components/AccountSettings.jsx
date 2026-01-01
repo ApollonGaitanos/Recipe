@@ -231,9 +231,8 @@ const AccountSettings = () => {
                     </div>
                 </div>
             </div>
-            </div>
             <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
-        </Layout >
+        </Layout>
     );
 };
 
