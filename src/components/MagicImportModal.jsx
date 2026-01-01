@@ -15,6 +15,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [scanProgress, setScanProgress] = useState(0);
     const [mode, setMode] = useState('import'); // 'import' or 'create'
 
+    const [error, setError] = useState(null);
+
     // Image State
     const [selectedImage, setSelectedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -42,6 +44,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 setMode('import');
                 setScanProgress(0);
                 setIsParsing(false);
+                setError(null);
             }, 200);
             return () => clearTimeout(timer);
         }
@@ -54,6 +57,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
         setSelectedImage(file);
+        setError(null);
     };
 
     const handleRemoveImage = (e) => {
@@ -107,6 +111,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         setIsParsing(true);
         setScanProgress(0);
+        setError(null);
 
         try {
             let result;
@@ -136,7 +141,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         } catch (error) {
             console.error("Magic Import Error:", error);
-            alert(`Failed: ${error.message}`);
+            setError(error.message || "An unexpected error occurred. Please try again.");
         } finally {
             setIsParsing(false);
             setScanProgress(0);
@@ -208,20 +213,20 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Tabs */}
                 <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030] bg-[#fcfdfc] dark:bg-[#15231a]">
                     <button
-                        onClick={() => setMode('import')}
+                        onClick={() => { setMode('import'); setError(null); }}
                         className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'import'
-                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
                         <Link size={16} />
                         Magic Import
                     </button>
                     <button
-                        onClick={() => setMode('create')}
+                        onClick={() => { setMode('create'); setError(null); }}
                         className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'create'
-                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
                         <ChefHat size={16} />
@@ -232,6 +237,17 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Content */}
                 <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20]">
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
+                            <X size={20} className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">Error processing request</h4>
+                                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Source Input */}
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -240,9 +256,12 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         <div className="relative">
                             <textarea
                                 value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
+                                onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
                                 placeholder={mode === 'create' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
-                                className="w-full h-40 rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#112116] p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all"
+                                className={`w-full h-40 rounded-xl border p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all ${error
+                                        ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
+                                        : 'border-[#dce5df] dark:border-[#2a4030]'
+                                    } bg-white dark:bg-[#112116]`}
                             />
                             <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
                                 <FileText size={20} />
@@ -290,8 +309,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         onClick={handleParse}
                         disabled={isParsing || (!inputValue && !selectedImage)}
                         className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-green-500/20 transition-all ${isParsing || (!inputValue && !selectedImage)
-                                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
-                                : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
+                            ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
+                            : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
                             }`}
                     >
                         {isParsing ? (
