@@ -43,11 +43,17 @@ serve(async (req) => {
             try {
                 // 1. Jina AI Reader
                 console.log("Attempting Jina AI Reader...");
+                const jinaApiKey = Deno.env.get('JINA_API_KEY');
+                const jinaHeaders = {
+                    'User-Agent': 'RecipeApp/1.0',
+                    'Accept': 'text/plain'
+                };
+                if (jinaApiKey) {
+                    jinaHeaders['Authorization'] = `Bearer ${jinaApiKey}`;
+                }
+
                 const jinaResp = await fetch(`https://r.jina.ai/${url}`, {
-                    headers: {
-                        'User-Agent': 'RecipeApp/1.0',
-                        'Accept': 'text/plain'
-                    }
+                    headers: jinaHeaders
                 });
 
                 if (jinaResp.ok) {
@@ -71,7 +77,9 @@ serve(async (req) => {
                     console.log("Attempting Direct Fetch...");
                     const urlResp = await fetch(url, {
                         headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5'
                         }
                     });
 
