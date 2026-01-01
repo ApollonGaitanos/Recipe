@@ -33,11 +33,13 @@ serve(async (req) => {
         let processingText = text || '';
 
         // If URL provided, fetch and scrape text
-        // Only fetch URL if we are in 'extract' mode or if specific URL is given for other modes (rare)
         if (url) {
             console.log(`Fetching URL: ${url}`);
+            let htmlContent = '';
+
             try {
-                // Use a realistic browser User-Agent to avoid simple 403 blocks
+                // 1. Try Direct Fetch first
+                console.log("Attempting Direct Fetch...");
                 const urlResp = await fetch(url, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -46,13 +48,34 @@ serve(async (req) => {
                     }
                 });
 
-                if (!urlResp.ok) throw new Error(`Failed to fetch URL (${urlResp.status} ${urlResp.statusText})`);
+                if (urlResp.ok) {
+                    htmlContent = await urlResp.text();
+                } else {
+                    throw new Error(`Direct fetch failed: ${urlResp.status}`);
+                }
 
-                const html = await urlResp.text();
+            } catch (directError) {
+                console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins Proxy...`);
 
-                // Simple HTML-to-Text cleanup
+                try {
+                    // 2. Fallback to AllOrigins Proxy
+                    const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                    if (!proxyResp.ok) throw new Error("Proxy response not OK");
+
+                    const proxyData = await proxyResp.json();
+                    if (!proxyData.contents) throw new Error("Proxy returned no content");
+
+                    htmlContent = proxyData.contents;
+
+                } catch (proxyError) {
+                    throw new Error(`URL Fetching Failed (Direct & Proxy). Error: ${proxyError.message}`);
+                }
+            }
+
+            // Process the HTML (Common processing)
+            try {
                 // 1. Remove scripts and styles
-                let cleanHtml = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
                     .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
 
                 // 2. Remove tags (keep newlines)
@@ -60,23 +83,20 @@ serve(async (req) => {
                 // Remove all other tags
                 processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-                // ANTI-HALLUCINATION CHECK
-                // If content is too short, it's likely a captcha, login page, or error.
-                // Gemini will hallucinate cookies if given empty text.
-                if (processingText.length < 500) {
-                    console.error("URL Content too short:", processingText);
-                    throw new Error("Could not read recipe content (Page blocked or empty). Try pasting the recipe text instead.");
+                // Check length
+                if (processingText.length < 200) {
+                    // Try to be lenient, but log warning
+                    console.warn("Extracted text is very short:", processingText);
                 }
 
-                // Truncate if too long
                 if (processingText.length > 30000) {
                     processingText = processingText.substring(0, 30000);
                 }
 
                 console.log(`Extracted ${processingText.length} chars from URL.`);
 
-            } catch (fetchErr) {
-                throw new Error(`URL Processing Failed: ${fetchErr.message}`);
+            } catch (parseError) {
+                throw new Error(`HTML Parsing Failed: ${parseError.message}`);
             }
         }
 
@@ -146,24 +166,25 @@ ${jsonStructure}`;
 
             case 'extract':
             default:
-                temperature = 0.1; // Strict
-                systemPrompt = `You are a PRECISE DATA EXTRACTOR. Your job is to extract recipe data exactly as it appears in the source, but FORMATTED correctly.
+                temperature = 0.2; // Moderate strictness to allow "Repair"
+                systemPrompt = `You are a SMART RECIPE FORMATTER.
+Your job is to read the input and structure it into a perfect recipe JSON.
 
 RULES:
-1. **CONTENT INTEGRITY**: DO NOT change ingredient names or quantities. DO NOT add "salt and pepper" if not listed. DO NOT invent steps.
-2. **FORMATTING REPAIR (AGGRESSIVE)**:
-    - **Instructions**: **SPLIT BLOCKS OF TEXT.** If a paragraph contains multiple steps (e.g. "Mix flour. Then add sugar."), you MUST split them into separate strings in the array.
-    - **Ingredients**: Split into a clean list of strings.
-    - **DO NOT NUMBER** the output strings.
-    - **Language Logic**:
-       - Source is Greek -> Output Greek.
-       - Source is English -> Output English.
-       - Source is Other -> Translate to **${targetLanguage || 'English'}**.
+1. **CONTENT INTEGRITY**: Your primary goal is to extract the recipe EXACTLY as provided. Do NOT change the style, tone, or core instructions.
+2. **SMART REPAIR**: 
+   - If the input text is unstructured (e.g. a blob of text), FORMAT it into clean ingredients and steps.
+   - If there are OBVIOUS missing parts (e.g. ingredients listed but not used, or a step implies "bake" but no temp is given), you MAY infer and ADD the missing logic to make the recipe functional.
+   - Do NOT rewrite or "improve" the recipe unless it is broken. Just Make it Work.
+3. **Language**:
+   - Source is Greek -> Output Greek.
+   - Source is English -> Output English.
+   - Source is Other -> Translate to **${targetLanguage || 'English'}**.
 
 ${jsonStructure}
 
 IMPORTANT:
-- **NO HALLUCINATIONS**: If input has no recipe, return {"error": "No recipe content found"}.`;
+- **NO HALLUCINATIONS**: If input has absolutely no recipe content, return {"error": "No recipe content found"}.`;
                 break;
         }
 
