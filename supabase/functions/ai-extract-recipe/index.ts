@@ -32,71 +32,89 @@ serve(async (req) => {
         // 4. Input Processing
         let processingText = text || '';
 
-        // If URL provided, fetch and scrape text
         if (url) {
             console.log(`Fetching URL: ${url}`);
-            let htmlContent = '';
+
+            // Strategy:
+            // 1. Try Jina.ai Reader (Best for LLMs, handles content extraction)
+            // 2. Try Direct Fetch (Fastest if it works)
+            // 3. Try AllOrigins (Proxy for simple CORS/403 blocks)
 
             try {
-                // 1. Try Direct Fetch first
-                console.log("Attempting Direct Fetch...");
-                const urlResp = await fetch(url, {
+                // 1. Jina AI Reader
+                console.log("Attempting Jina AI Reader...");
+                const jinaResp = await fetch(`https://r.jina.ai/${url}`, {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5'
+                        'User-Agent': 'RecipeApp/1.0',
+                        'Accept': 'text/plain'
                     }
                 });
 
-                if (urlResp.ok) {
-                    htmlContent = await urlResp.text();
+                if (jinaResp.ok) {
+                    const jinaText = await jinaResp.text();
+                    // Jina returns "Title\n\nURL\n\nContent..."
+                    if (jinaText.length > 200 && !jinaText.includes("Cloudflare") && !jinaText.includes("Verify you are human")) {
+                        processingText = jinaText;
+                        console.log(`Jina AI success: ${processingText.length} chars.`);
+                    } else {
+                        throw new Error("Jina returned captcha or empty content");
+                    }
                 } else {
-                    throw new Error(`Direct fetch failed: ${urlResp.status}`);
+                    throw new Error(`Jina failed: ${jinaResp.status}`);
                 }
 
-            } catch (directError) {
-                console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins Proxy...`);
+            } catch (jinaError) {
+                console.warn(`Jina Reader failed (${jinaError.message}). Falling back...`);
 
                 try {
-                    // 2. Fallback to AllOrigins Proxy
-                    const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-                    if (!proxyResp.ok) throw new Error("Proxy response not OK");
+                    // 2. Direct Fetch (Fallback)
+                    console.log("Attempting Direct Fetch...");
+                    const urlResp = await fetch(url, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                        }
+                    });
 
-                    const proxyData = await proxyResp.json();
-                    if (!proxyData.contents) throw new Error("Proxy returned no content");
+                    if (!urlResp.ok) throw new Error(`Direct fetch failed: ${urlResp.status}`);
 
-                    htmlContent = proxyData.contents;
+                    const htmlContent = await urlResp.text();
 
-                } catch (proxyError) {
-                    throw new Error(`URL Fetching Failed (Direct & Proxy). Error: ${proxyError.message}`);
+                    // Cleanup HTML
+                    let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                        .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
+                    cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
+                    processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+                } catch (directError) {
+                    console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins...`);
+
+                    try {
+                        // 3. AllOrigins Proxy (Last Resort)
+                        const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                        if (!proxyResp.ok) throw new Error("Proxy response not OK");
+
+                        const proxyData = await proxyResp.json();
+                        if (!proxyData.contents) throw new Error("Proxy returned no content");
+
+                        let cleanHtml = proxyData.contents.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                            .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
+                        cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
+                        processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+                    } catch (proxyError) {
+                        // If all fail, we proceed with empty text. 
+                        // The AI prompt will catch it and return "No recipe content found".
+                        console.error(`All fetch methods failed. Error: ${proxyError.message}`);
+                    }
                 }
             }
 
-            // Process the HTML (Common processing)
-            try {
-                // 1. Remove scripts and styles
-                let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-                    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
-
-                // 2. Remove tags (keep newlines)
-                cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                // Remove all other tags
-                processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-                // Check length
-                if (processingText.length < 200) {
-                    // Try to be lenient, but log warning
-                    console.warn("Extracted text is very short:", processingText);
-                }
-
+            // Global Length Check / Truncation
+            if (processingText) {
                 if (processingText.length > 30000) {
                     processingText = processingText.substring(0, 30000);
                 }
-
-                console.log(`Extracted ${processingText.length} chars from URL.`);
-
-            } catch (parseError) {
-                throw new Error(`HTML Parsing Failed: ${parseError.message}`);
+                console.log(`Final Extracted Text Length: ${processingText.length}`);
             }
         }
 
