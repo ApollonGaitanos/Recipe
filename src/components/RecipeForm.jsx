@@ -96,6 +96,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             await onSave(recipeData);
         } catch (error) {
             console.error("Save failed", error);
+            alert(`Failed to save recipe: ${error.message}`);
         } finally {
             setIsSaving(false);
         }
