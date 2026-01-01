@@ -255,7 +255,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 </div>
                                 <div>
                                     <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Prep Time</div>
-                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 15} mins</div>
+                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 0} mins</div>
                                 </div>
                             </div>
                             <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
@@ -264,7 +264,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 </div>
                                 <div>
                                     <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cook Time</div>
-                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 90} mins</div>
+                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} mins</div>
                                 </div>
                             </div>
                             <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">

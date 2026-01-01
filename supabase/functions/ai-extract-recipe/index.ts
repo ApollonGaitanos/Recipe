@@ -90,8 +90,8 @@ Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title",
   "ingredients": [
-    {"amount": "1 tbsp", "name": "Olive Oil"},
-    {"amount": "200g", "name": "Flour"}
+    {"amount": "1 κ.σ.", "name": "Ελαιόλαδο"},
+    {"amount": "200γρ", "name": "Αλεύρι"}
   ],
   "instructions": ["Step one.", "Step two.", "Step three."],
   "prepTime": 0,
@@ -102,7 +102,7 @@ Return ONLY valid JSON with this exact structure:
 
 RULES:
 - "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
-- "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name.
+- "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name. The UNIT itself must be in the target language (e.g. "tbsp" -> "κ.σ.", "g" -> "γρ").
 - "instructions": Array of strings. Each string is ONE step. NO numbering.
 - SPLIT instructions into distinct steps.
 - DO NOT return "tags" as a single comma-separated string. IT MUST BE AN ARRAY.
@@ -110,12 +110,16 @@ RULES:
 
         switch (selectedMode) {
             case 'create':
-                temperature = 0.7; // Creative
-                systemPrompt = `You are a CREATIVE CHEF. Create a delicious, complete recipe based on the user's request (ingredients or idea).
+                temperature = 0.8; // High Creativity for detailed, rich content
+                systemPrompt = `You are a WORLD-CLASS EXPERT CHEF known for authentic, highly-rated recipes.
+Your goal is to create the BEST, MOST DETAILED, and AUTHENTIC version of the requested dish.
+
 RULES:
-1. Be creative but practical.
-2. Use clear, step-by-step instructions.
-3. Language: Detect the language of the User Input. The Output MUST be in the SAME language as the User Input.
+1. **AUTHENTICITY & POPULARITY**: Choose the most well-known, traditional, and highly-rated version of the dish.
+2. **RICH DETAIL**:
+   - **Ingredients**: Be specific (e.g., "San Marzano Tomatoes" instead of "Tomatoes").
+   - **Instructions**: Write distinct, detailed steps. Explain *why* (e.g., "Sauté until golden to release aromatics"). Avoid generic brevity.
+3. **Language**: Detect the language of the User Input. The Output MUST be in the SAME language as the User Input. This includes MEASUREMENT UNITS (e.g. usage 'γρ' instead of 'g' for Greek).
 ${jsonStructure}`;
                 break;
 
@@ -135,7 +139,7 @@ ${jsonStructure}`;
                 systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${targetLanguage === 'el' ? 'Greek' : 'English'}**.
 RULES:
 1. Translate Title, Ingredients, Instructions, and Tags.
-2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek), otherwise keep original.
+2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek). TRANSLATE THE UNIT NAME ITSELF (e.g. 'cups' -> 'φλιτζάνια', 'oz' -> 'γρ').
 3. Keep the exact same meaning.
 ${jsonStructure}`;
                 break;
