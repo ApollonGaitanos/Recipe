@@ -126,8 +126,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
@@ -182,8 +182,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     <button
                         onClick={() => setActiveTab('import')}
                         className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors ${activeTab === 'import'
-                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
                         Magic Import
@@ -191,8 +191,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     <button
                         onClick={() => setActiveTab('chef')}
                         className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors ${activeTab === 'chef'
-                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
                         AI Chef
@@ -259,8 +259,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                         onClick={handleParse}
                         disabled={isParsing || (!inputValue && !selectedImage)}
                         className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-green-500/20 transition-all ${isParsing || (!inputValue && !selectedImage)
-                            ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
-                            : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
+                                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
+                                : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
                             }`}
                     >
                         {isParsing ? (
@@ -280,6 +280,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </p>
                 </div>
             </div>
-        </div>
-        , document.body);
+        </div>,
+        document.body
+    );
 }
