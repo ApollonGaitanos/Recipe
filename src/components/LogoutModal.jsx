@@ -1,15 +1,17 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogOut, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LogoutModal = ({ isOpen, onClose }) => {
     const { signOut } = useAuth();
+    const navigate = useNavigate();
 
     if (!isOpen) return null;
 
     const handleLogout = async () => {
         await signOut();
         onClose();
+        navigate('/', { replace: true });
     };
 
     return (
