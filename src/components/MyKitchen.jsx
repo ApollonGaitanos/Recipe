@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Clock, Users, MoreHorizontal, Bookmark, Lock, Globe } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
-// import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
+import RecipeCard from './RecipeCard';
+import ConfirmModal from './ConfirmModal';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function MyKitchen() {
-    const { recipes } = useRecipes();
-    // const { t } = useLanguage();
+    const { recipes, deleteRecipe, toggleVisibility } = useRecipes();
     const { user } = useAuth();
+    const { t } = useLanguage();
     const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState('my_recipes');
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteId, setDeleteId] = useState(null);
 
     // --- Derived Data ---
     const username = user?.user_metadata?.username || "Chef";
@@ -28,17 +31,11 @@ export default function MyKitchen() {
         );
     });
 
-    // Deterministic placeholder based on ID
-    const getPlaceholderImage = (id) => {
-        const images = [
-            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80"
-        ];
-        const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % images.length;
-        return images[index];
+    const confirmDelete = async () => {
+        if (deleteId) {
+            await deleteRecipe(deleteId);
+            setDeleteId(null);
+        }
     };
 
     return (
@@ -131,80 +128,24 @@ export default function MyKitchen() {
                                 className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity ml-auto"
                             >
                                 <Plus className="w-4 h-4" />
-                                New Recipe
+                                <span className="hidden sm:inline">New Recipe</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* --- Recipe Grid (Custom Styled for My Kitchen) --- */}
+                    {/* --- Recipe Grid (Replaced with RecipeCard) --- */}
                     {filteredRecipes.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {filteredRecipes.map(recipe => (
-                                <article
+                                <RecipeCard
                                     key={recipe.id}
-                                    onClick={() => navigate(`/recipe/${recipe.id}`)}
-                                    className="group relative flex flex-col bg-white dark:bg-[#192b20] rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-800 hover:border-[#17cf54]/20 overflow-hidden h-full cursor-pointer"
-                                >
-                                    {/* Image Wrapper */}
-                                    <div className="relative w-full aspect-[16/10] overflow-hidden">
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                                            style={{ backgroundImage: `url(${getPlaceholderImage(recipe.id)})` }}
-                                        />
-
-                                        {/* Gradient Overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
-
-                                        {/* Top Actions */}
-                                        <div className="absolute top-3 left-3 z-10">
-                                            <button className="text-white hover:text-[#17cf54] transition-colors drop-shadow-md focus:outline-none">
-                                                <Bookmark className="w-7 h-7" strokeWidth={1.5} />
-                                            </button>
-                                        </div>
-
-                                        <div className="absolute top-3 right-3 flex gap-2">
-                                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm flex items-center gap-1 ${recipe.is_public ? 'bg-[#17cf54]/90' : 'bg-gray-600/90'
-                                                }`}>
-                                                {recipe.is_public ? (
-                                                    <Globe className="w-3 h-3" />
-                                                ) : (
-                                                    <Lock className="w-3 h-3" />
-                                                )}
-                                                {recipe.is_public ? 'Public' : 'Private'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Content Body */}
-                                    <div className="flex flex-col flex-grow p-4 md:p-5">
-                                        <div className="flex flex-col gap-2 mb-3">
-                                            <h3 className="text-xl font-bold leading-tight text-[#111813] dark:text-white group-hover:text-[#17cf54] transition-colors line-clamp-2 font-serif">
-                                                {recipe.title}
-                                            </h3>
-                                            <div className="flex items-center text-xs text-[#63886f] dark:text-[#a0b3a6] gap-1.5 font-medium">
-                                                <Users className="w-3.5 h-3.5" />
-                                                <span>By {recipe.author_username || 'Chef'}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Footer Metadata */}
-                                        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800/50 flex items-center justify-between text-xs font-medium text-[#63886f] dark:text-[#a0b3a6] uppercase tracking-wide">
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-1.5" title="Prep Time">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>{recipe.prepTime || 15} min</span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5" title="Servings">
-                                                    <Users className="w-4 h-4" />
-                                                    <span>{recipe.servings || 2} Servings</span>
-                                                </div>
-                                            </div>
-                                            <button className="text-[#111813] dark:text-white hover:text-[#17cf54] transition-colors">
-                                                <MoreHorizontal className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </article>
+                                    recipe={recipe}
+                                    onEdit={(id) => navigate(`/edit/${id}`)}
+                                    // Make sure to pass a function that takes the ID, though RecipeCard calls onDelete(recipe.id)
+                                    // So here `(id) => setDeleteId(id)` is correct
+                                    onDelete={(id) => setDeleteId(id)}
+                                    onToggleVisibility={toggleVisibility}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -213,15 +154,15 @@ export default function MyKitchen() {
                             <div className="w-16 h-16 bg-white dark:bg-black/20 rounded-full flex items-center justify-center mb-4 text-[#63886f] dark:text-[#a0b3a6]">
                                 <Search className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">No recipes found</h3>
+                            <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">No recipes found in your kitchen</h3>
                             <p className="text-[#63886f] dark:text-[#a0b3a6] text-center max-w-sm mb-6">
-                                Try adjusting your search or add a new recipe to your kitchen.
+                                Start cooking and add your first masterpiece!
                             </p>
                             <button
                                 onClick={() => navigate('/add')}
                                 className="px-6 py-2.5 rounded-full bg-[#17cf54] text-white font-bold hover:opacity-90 transition-opacity"
                             >
-                                Create Recipe
+                                Create First Recipe
                             </button>
                         </div>
                     )}
@@ -238,6 +179,13 @@ export default function MyKitchen() {
                     </button>
                 </div>
 
+                <ConfirmModal
+                    isOpen={!!deleteId}
+                    onClose={() => setDeleteId(null)}
+                    onConfirm={confirmDelete}
+                    title={t('delete')}
+                    message={t('deleteConfirm')}
+                />
             </div>
         </Layout>
     );
