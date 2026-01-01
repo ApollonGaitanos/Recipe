@@ -1,16 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText, ChefHat, Link } from 'lucide-react';
+import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText, ChefHat, Link } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
-import { recognizeText } from '../utils/ocr';
 
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
 
-    // --- State Management (Original Logic) ---
+    // --- State Management ---
     const [inputValue, setInputValue] = useState('');
-    const [aiMode, setAiMode] = useState('hybrid'); // 'off', 'hybrid', 'on'
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
     const [mode, setMode] = useState('import'); // 'import' or 'create'
@@ -50,7 +48,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         }
     }, [isOpen]);
 
-    // --- Handlers (Original Logic) ---
+    // --- Handlers ---
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -116,24 +114,19 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         try {
             let result;
 
-            // Determine effective mode and AI usage (Matches Original Logic)
+            // Determine effective mode
             const activeMode = mode === 'create' ? 'create' : 'extract';
-            // If Create, Force AI. If Import, use selected AI Mode.
-            const effectiveAiMode = mode === 'create' ? 'on' : aiMode;
 
             if (selectedImage && activeMode === 'extract') {
-                if (effectiveAiMode !== 'off') { // Hybrid or On uses AI for images
-                    setScanProgress(20);
-                    const base64 = await resizeImage(selectedImage);
-                    result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, true, language);
-                } else {
-                    const text = await recognizeText(selectedImage, p => setScanProgress(Math.round(p * 100)));
-                    const combinedText = (inputValue ? inputValue + '\n\n' : '') + text;
-                    result = await parseRecipe(combinedText, false);
-                }
+                // Image Import
+                setScanProgress(20);
+                const base64 = await resizeImage(selectedImage);
+                // Call parser with (input, language, mode)
+                result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, language, 'extract');
             } else {
-                // Pass aiMode string to parser instead of boolean
-                result = await parseRecipe(inputValue, effectiveAiMode, language, activeMode);
+                // Text/URL Import
+                // Call parser with (input, language, mode)
+                result = await parseRecipe(inputValue, language, activeMode);
             }
 
             onImport(result);
@@ -172,35 +165,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {/* AI Mode Toggle - Only in Import Mode */}
-                        {mode === 'import' && (
-                            <div className="flex items-center p-1 bg-[#f6f8f6] dark:bg-[#112116] rounded-lg border border-[#dce5df] dark:border-[#2a4030]">
-                                <button
-                                    onClick={() => setAiMode('off')}
-                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'off' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-gray-700 dark:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
-                                    title="Fast / Standard (Offline)"
-                                >
-                                    <Zap size={16} fill={aiMode === 'off' ? "currentColor" : "none"} />
-                                </button>
-                                <button
-                                    onClick={() => setAiMode('hybrid')}
-                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'hybrid' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-[#17cf54]' : 'text-gray-400 hover:text-gray-600'}`}
-                                    title="Smart / Hybrid"
-                                >
-                                    <Brain size={16} />
-                                </button>
-                                <button
-                                    onClick={() => setAiMode('on')}
-                                    className={`p-1.5 rounded-md transition-all ${aiMode === 'on' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-[#17cf54]' : 'text-gray-400 hover:text-gray-600'}`}
-                                    title="Advanced / AI Chef"
-                                >
-                                    <Sparkles size={16} />
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="h-6 w-[1px] bg-[#dce5df] dark:bg-[#2a4030]" />
-
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
@@ -220,7 +184,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             }`}
                     >
                         <Link size={16} />
-                        Magic Import
+                        Import
                     </button>
                     <button
                         onClick={() => { setMode('create'); setError(null); }}
@@ -230,9 +194,10 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             }`}
                     >
                         <ChefHat size={16} />
-                        AI Chef
+                        Create
                     </button>
                 </div>
+
 
                 {/* Content */}
                 <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20]">
@@ -259,8 +224,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                                 onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
                                 placeholder={mode === 'create' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
                                 className={`w-full h-40 rounded-xl border p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all ${error
-                                        ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
-                                        : 'border-[#dce5df] dark:border-[#2a4030]'
+                                    ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
+                                    : 'border-[#dce5df] dark:border-[#2a4030]'
                                     } bg-white dark:bg-[#112116]`}
                             />
                             <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
