@@ -5,7 +5,6 @@ import { useRecipes } from '../context/RecipeContext';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
 import RecipeCard from './RecipeCard';
-import ConfirmModal from './ConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MyKitchen() {
@@ -16,12 +15,6 @@ export default function MyKitchen() {
 
     const [activeTab, setActiveTab] = useState('my_recipes');
     const [searchQuery, setSearchQuery] = useState('');
-    const [deleteId, setDeleteId] = useState(null);
-
-    // --- Derived Data ---
-    const username = user?.user_metadata?.username || "Chef";
-    const recipeCount = recipes.length;
-
     // Filter Logic
     const filteredRecipes = recipes.filter(recipe => {
         const query = searchQuery.toLowerCase();
@@ -30,13 +23,6 @@ export default function MyKitchen() {
             (recipe.tags && recipe.tags.some(tag => tag.toLowerCase().includes(query)))
         );
     });
-
-    const confirmDelete = async () => {
-        if (deleteId) {
-            await deleteRecipe(deleteId);
-            setDeleteId(null);
-        }
-    };
 
     return (
         <Layout currentView="myRecipes" fullWidth>
@@ -141,9 +127,6 @@ export default function MyKitchen() {
                                     key={recipe.id}
                                     recipe={recipe}
                                     onEdit={(id) => navigate(`/edit/${id}`)}
-                                    // Make sure to pass a function that takes the ID, though RecipeCard calls onDelete(recipe.id)
-                                    // So here `(id) => setDeleteId(id)` is correct
-                                    onDelete={(id) => setDeleteId(id)}
                                     onToggleVisibility={toggleVisibility}
                                 />
                             ))}
@@ -178,14 +161,6 @@ export default function MyKitchen() {
                         <span className="font-bold text-base tracking-wide">New</span>
                     </button>
                 </div>
-
-                <ConfirmModal
-                    isOpen={!!deleteId}
-                    onClose={() => setDeleteId(null)}
-                    onConfirm={confirmDelete}
-                    title={t('delete')}
-                    message={t('deleteConfirm')}
-                />
             </div>
         </Layout>
     );
