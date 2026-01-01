@@ -54,6 +54,44 @@ export default function RecipeContext({ children }) {
 
     // ... (rest of file)
 
+    const addRecipe = async (recipeData) => {
+        if (!user) return;
+
+        console.log("Adding Recipe (App Data):", recipeData);
+
+        const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
+        const newDbRecipe = toDbRecipe(recipeData, user.id, currentUsername);
+
+        console.log("Adding Recipe (DB Data - PRE-INSERT):", newDbRecipe);
+
+        // Optimistic Update
+        const tempId = Date.now().toString();
+        const tempRecipe = { ...toAppRecipe({ ...newDbRecipe, id: tempId, created_at: new Date().toISOString() }), id: tempId };
+        setRecipes(prev => [tempRecipe, ...prev]);
+
+        try {
+            const { data, error } = await supabase
+                .from('recipes')
+                .insert([newDbRecipe])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            console.log("Supabase Insert Success:", data);
+
+            // Replace temp with real
+            const realRecipe = toAppRecipe(data);
+            setRecipes(prev => prev.map(r => r.id === tempId ? realRecipe : r));
+            setPublicRecipes(prev => [realRecipe, ...prev]); // Add to public feed too if applicable? Logic might vary but safe to add
+        } catch (err) {
+            console.error("Error adding recipe:", err);
+            // Rollback
+            setRecipes(prev => prev.filter(r => r.id !== tempId));
+            throw err; // Propagate to form
+        }
+    };
+
     const updateRecipe = async (id, updatedData) => {
         if (user) {
             const dbUpdates = {};
