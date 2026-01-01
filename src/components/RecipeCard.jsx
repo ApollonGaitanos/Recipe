@@ -23,6 +23,7 @@ export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete 
     };
 
     const isOwner = user && user.id === recipe.user_id;
+    console.log(`RecipeCard Debug: ID=${recipe.id}, UserID=${user?.id}, RecipeOwner=${recipe.user_id}, isOwner=${isOwner}, hasOnDelete=${!!onDelete}`);
 
     return (
         <div
