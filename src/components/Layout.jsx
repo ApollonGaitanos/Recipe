@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import { useRecipes } from '../context/RecipeContext';
 import { Search, Globe, Moon, Sun, User as UserIcon, LogOut, Settings, Menu, X, ChefHat } from 'lucide-react';
 import AuthModal from './AuthModal';
-import SettingsModal from './SettingsModal';
 
 export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
@@ -16,13 +15,11 @@ export default function Layout({ children, fullWidth = false }) {
     const { searchQuery, setSearchQuery } = useRecipes();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-display transition-colors duration-200">
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-            <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
 
             {/* HEADER */}
             <header className="sticky top-0 z-40 w-full bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 py-3 px-4 md:px-8 shadow-sm">
@@ -155,7 +152,7 @@ export default function Layout({ children, fullWidth = false }) {
                             <div className="h-px bg-gray-100 dark:bg-white/10 my-2"></div>
                             {user ? (
                                 <>
-                                    <button onClick={() => { setShowSettingsModal(true); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
+                                    <button onClick={() => { navigate('/account'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
                                         <Settings size={20} className="text-gray-400" /> {t('nav.settings')}
                                     </button>
                                     <button onClick={() => { signOut(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-left font-medium text-red-600">

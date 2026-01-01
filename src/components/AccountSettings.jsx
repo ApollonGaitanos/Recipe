@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { User as UserIcon, Settings, LogOut, ChevronRight, Save } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
 import Layout from "./Layout";
 
 const AccountSettings = () => {
     const { user, updateProfile, signOut } = useAuth();
-    // eslint-disable-next-line no-unused-vars
-    const { t } = useLanguage();
     // eslint-disable-next-line no-unused-vars
     const { theme } = useTheme();
 
@@ -24,6 +21,7 @@ const AccountSettings = () => {
         isPublic: false
     });
 
+    // Initialize form with user data
     useEffect(() => {
         if (user?.user_metadata) {
             setFormData({
@@ -80,7 +78,7 @@ const AccountSettings = () => {
         <Layout fullWidth={true}>
             <div className="min-h-[calc(100vh-64px)] bg-[#F6F8F6] dark:bg-black py-12 px-4 sm:px-6 transition-colors duration-200">
                 <div className="max-w-[1280px] mx-auto">
-                    {/* Header */}
+                    {/* Page Title */}
                     <div className="mb-8">
                         <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-white">Account Settings</h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your profile and preferences</p>
