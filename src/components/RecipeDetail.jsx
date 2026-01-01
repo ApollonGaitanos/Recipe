@@ -108,20 +108,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         }
     };
 
-    // Generate deterministic placeholder image if no image_url exists
-    const getPlaceholderImage = (id) => {
-        const images = [
-            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80"
-        ];
-        const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % images.length;
-        return images[index];
-    };
-
-    const displayImage = recipe.image_url || getPlaceholderImage(recipe.id);
     const displayDescription = recipe.description || (typeof recipe.instructions === 'string' ? recipe.instructions : recipe.instructions.join(' ')).substring(0, 160) + "...";
 
     return (
@@ -179,12 +165,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 </div>
 
                 {/* Hero Image - Placeholder Style */}
-                <div className="relative w-full aspect-[21/9] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm">
-                    <img
-                        src={displayImage}
-                        alt={recipe.title}
-                        className="w-full h-full object-cover"
-                    />
+                <div className="relative w-full aspect-[21/9] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                    <div className="text-center p-6">
+                        <span className="text-lg font-medium text-zinc-400 dark:text-zinc-500">
+                            Images are still a work in progress
+                        </span>
+                    </div>
 
                     {/* Floating Action Button */}
                     <button
@@ -195,7 +181,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </button>
                 </div>
 
-                {/* Description Grid */}
                 {/* Description Grid */}
                 <div className="max-w-4xl mx-auto text-center py-8">
                     <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-300 leading-relaxed font-serif">
@@ -359,11 +344,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="group cursor-pointer">
-                                <div className="aspect-[4/3] bg-zinc-200 dark:bg-zinc-800 rounded-xl mb-4 overflow-hidden">
-                                    {/* Placeholder image */}
-                                    {i === 1 && <img src="https://images.unsplash.com/photo-1574484284008-be6d6d8d80c7?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Salad" />}
-                                    {i === 2 && <img src="https://images.unsplash.com/photo-1516100882582-96c3a05fe590?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Pasta" />}
-                                    {i === 3 && <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Soup" />}
+                                <div className="aspect-[4/3] bg-zinc-100 dark:bg-zinc-900 rounded-xl mb-4 overflow-hidden flex items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+                                    <div className="text-center p-4">
+                                        <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                                            Images are still a work in progress
+                                        </span>
+                                    </div>
                                 </div>
                                 <h4 className="font-bold text-lg text-zinc-900 dark:text-white leading-tight group-hover:text-emerald-600 transition-colors">
                                     {i === 1 ? "Summer Grilled Chicken Salad" : i === 2 ? "Creamy Garlic Pasta" : "Rustic Vegetable Soup"}
