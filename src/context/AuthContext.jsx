@@ -58,7 +58,10 @@ export function AuthProvider({ children }) {
         signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
         signUp,
         updateProfile,
-        signOut: () => supabase.auth.signOut(),
+        signOut: async () => {
+            setUser(null);
+            await supabase.auth.signOut();
+        },
     };
 
     return (

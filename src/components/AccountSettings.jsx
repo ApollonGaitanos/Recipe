@@ -28,7 +28,7 @@ const AccountSettings = () => {
     // Redirect if not logged in
     useEffect(() => {
         if (!authLoading && !user) {
-            navigate('/');
+            navigate('/', { replace: true });
         }
     }, [user, authLoading, navigate]);
 
