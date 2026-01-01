@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useRecipes } from '../context/RecipeContext';
 import { Search, Globe, Moon, Sun, User as UserIcon, LogOut, Settings, Menu, X, ChefHat } from 'lucide-react';
 import AuthModal from './AuthModal';
+import LogoutModal from './LogoutModal';
 
 export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
@@ -15,11 +16,13 @@ export default function Layout({ children, fullWidth = false }) {
     const { searchQuery, setSearchQuery } = useRecipes();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-display transition-colors duration-200">
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+            <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
 
             {/* HEADER */}
             <header className="sticky top-0 z-40 w-full bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 py-3 px-4 md:px-8 shadow-sm">
@@ -86,7 +89,7 @@ export default function Layout({ children, fullWidth = false }) {
                                 >
                                     <UserIcon className="w-5 h-5" />
                                 </button>
-                                <button onClick={signOut} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
+                                <button onClick={() => setShowLogoutModal(true)} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
                                     <LogOut size={20} />
                                 </button>
                             </div>
@@ -155,7 +158,7 @@ export default function Layout({ children, fullWidth = false }) {
                                     <button onClick={() => { navigate('/account'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
                                         <Settings size={20} className="text-gray-400" /> {t('nav.settings')}
                                     </button>
-                                    <button onClick={() => { signOut(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-left font-medium text-red-600">
+                                    <button onClick={() => { setShowLogoutModal(true); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-left font-medium text-red-600">
                                         <LogOut size={20} /> {t('nav.signOut')}
                                     </button>
                                 </>

@@ -3,6 +3,7 @@ import { User as UserIcon, Settings, LogOut, ChevronRight, Save } from "lucide-r
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Layout from "./Layout";
+import LogoutModal from "./LogoutModal";
 
 const AccountSettings = () => {
     const { user, updateProfile, signOut } = useAuth();
@@ -11,6 +12,7 @@ const AccountSettings = () => {
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [activeTab, setActiveTab] = useState("edit-profile");
 
     const [formData, setFormData] = useState({
@@ -110,7 +112,7 @@ const AccountSettings = () => {
                                 </div>
                                 <div className="p-2 border-t border-gray-100 dark:border-gray-800">
                                     <button
-                                        onClick={signOut}
+                                        onClick={() => setShowLogoutModal(true)}
                                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-sm font-medium"
                                     >
                                         <LogOut size={18} />
@@ -229,7 +231,9 @@ const AccountSettings = () => {
                     </div>
                 </div>
             </div>
-        </Layout>
+            </div>
+            <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+        </Layout >
     );
 };
 
