@@ -48,7 +48,7 @@ export default function RecipeContext({ children }) {
         tags: appRecipe.tags || [],
         is_public: appRecipe.is_public || false,
         image_url: appRecipe.image_url || null,
-        description: appRecipe.description || null,
+        // description: appRecipe.description || null, // Column missing in DB
         author_username: username || null
     });
 
@@ -93,7 +93,7 @@ export default function RecipeContext({ children }) {
             if (updatedData.servings) dbUpdates.servings = updatedData.servings;
             if (updatedData.tags) dbUpdates.tags = updatedData.tags;
             if (updatedData.image_url) dbUpdates.image_url = updatedData.image_url;
-            if (updatedData.description) dbUpdates.description = updatedData.description;
+            // if (updatedData.description) dbUpdates.description = updatedData.description; // Column missing in DB
             if (updatedData.is_public !== undefined) dbUpdates.is_public = updatedData.is_public;
 
             const currentUsername = user.user_metadata?.username || user.user_metadata?.full_name || user.email.split('@')[0];
