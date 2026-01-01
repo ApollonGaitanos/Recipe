@@ -260,18 +260,23 @@ function AppContent() {
   );
 }
 
+// 5. ERROR BOUNDARY
+import ErrorBoundary from './components/ErrorBoundary';
+
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <AuthProvider>
-        <ThemeContext>
-          <LanguageContext>
-            <RecipeContext>
-              <AppContent />
-            </RecipeContext>
-          </LanguageContext>
-        </ThemeContext>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeContext>
+            <LanguageContext>
+              <RecipeContext>
+                <AppContent />
+              </RecipeContext>
+            </LanguageContext>
+          </ThemeContext>
+        </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }
