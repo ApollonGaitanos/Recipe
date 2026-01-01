@@ -15,6 +15,11 @@ export default function MyKitchen() {
 
     const [activeTab, setActiveTab] = useState('my_recipes');
     const [searchQuery, setSearchQuery] = useState('');
+
+    // --- Derived Data ---
+    const username = user?.user_metadata?.username || "Chef";
+    const recipeCount = recipes.length;
+
     // Filter Logic
     const filteredRecipes = recipes.filter(recipe => {
         const query = searchQuery.toLowerCase();
