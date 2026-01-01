@@ -44,50 +44,50 @@
     @apply px-6 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full font-bold transition-all shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
   }
 
-}
 
-.btn-secondary-small {
-  @apply px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full font-bold text-sm transition-all shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
-}
 
-/* Modal Styles */
-.modal-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300;
-}
+  .btn-secondary-small {
+    @apply px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full font-bold text-sm transition-all shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+  }
 
-.modal-overlay.active {
-  @apply opacity-100 pointer-events-auto;
-}
+  /* Modal Styles */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300;
+  }
 
-.modal-content {
-  @apply bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 w-full max-w-md m-4 transform scale-95 opacity-0 transition-all duration-300 shadow-2xl border border-zinc-100 dark:border-zinc-800 relative;
-}
+  .modal-overlay.active {
+    @apply opacity-100 pointer-events-auto;
+  }
 
-.modal-content.active {
-  @apply scale-100 opacity-100;
-}
+  .modal-content {
+    @apply bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 w-full max-w-md m-4 transform scale-95 opacity-0 transition-all duration-300 shadow-2xl border border-zinc-100 dark:border-zinc-800 relative;
+  }
 
-.modal-close {
-  @apply absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors;
-}
+  .modal-content.active {
+    @apply scale-100 opacity-100;
+  }
 
-.modal-icon-container {
-  @apply w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-500 mb-6 flex items-center justify-center mx-auto text-3xl;
-}
+  .modal-close {
+    @apply absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors;
+  }
 
-.modal-title {
-  @apply text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2 font-serif;
-}
+  .modal-icon-container {
+    @apply w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-500 mb-6 flex items-center justify-center mx-auto text-3xl;
+  }
 
-.modal-description {
-  @apply text-center text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed;
-}
+  .modal-title {
+    @apply text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2 font-serif;
+  }
 
-.modal-actions {
-  @apply flex items-center gap-3 justify-center;
-}
+  .modal-description {
+    @apply text-center text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed;
+  }
 
-.danger-btn-modern {
-  @apply bg-red-500 hover:bg-red-600 text-white shadow-red-200 dark:shadow-none;
-}
+  .modal-actions {
+    @apply flex items-center gap-3 justify-center;
+  }
+
+  .danger-btn-modern {
+    @apply bg-red-500 hover:bg-red-600 text-white shadow-red-200 dark:shadow-none;
+  }
 }
