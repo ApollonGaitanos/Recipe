@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User as UserIcon, Settings, LogOut, ChevronRight, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Layout from "./Layout";
@@ -26,13 +26,9 @@ const AccountSettings = () => {
     });
 
     // Redirect if not logged in
-    useEffect(() => {
-        if (!authLoading && !user) {
-            navigate('/', { replace: true });
-        }
-    }, [user, authLoading, navigate]);
-
-    if (!authLoading && !user) return null;
+    if (!authLoading && !user) {
+        return <Navigate to="/" replace />;
+    }
 
     // Initialize form with user data
     useEffect(() => {
