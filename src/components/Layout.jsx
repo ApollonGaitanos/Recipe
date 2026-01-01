@@ -84,12 +84,10 @@ export default function Layout({ children, fullWidth = false }) {
                         {user ? (
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => setShowSettingsModal(true)}
-                                    className="hidden sm:flex items-center gap-2 pl-1 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                                    onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
+                                    className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-text-primary hover:bg-surface-active transition-colors"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-primary/20">
-                                        {user.user_metadata?.username?.[0]?.toUpperCase() || 'U'}
-                                    </div>
+                                    <UserIcon className="w-5 h-5" />
                                 </button>
                                 <button onClick={signOut} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
                                     <LogOut size={20} />

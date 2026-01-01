@@ -234,6 +234,7 @@ function AppContent() {
 
       <Route path="/add" element={<FormRoute />} />
       <Route path="/edit/:id" element={<FormRoute />} />
+      <Route path="/account" element={<AccountSettings />} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
