@@ -290,10 +290,19 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     Translate
                                 </button>
                                 {isOwner && (
-                                    <button className="btn-secondary text-sm px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2" onClick={onEdit}>
-                                        <Edit2 className="w-4 h-4" />
-                                        Edit
-                                    </button>
+                                    <>
+                                        <button className="btn-secondary text-sm px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2" onClick={onEdit}>
+                                            <Edit2 className="w-4 h-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="btn-secondary text-sm px-4 py-2 rounded-full border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center gap-2 transition-colors"
+                                            onClick={() => setShowConfirm(true)}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>

@@ -201,8 +201,24 @@ export default function RecipeContext({ children }) {
     };
 
     const deleteRecipe = async (id) => {
-        if (user) {
-            await supabase.from('recipes').delete().eq('id', id);
+        if (!user) return;
+
+        // Optimistic Update
+        setRecipes(prev => prev.filter(r => r.id !== id));
+        setPublicRecipes(prev => prev.filter(r => r.id !== id));
+
+        const { error } = await supabase
+            .from('recipes')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id); // Security: Ensure ownership
+
+        if (error) {
+            console.error("Error deleting recipe:", error);
+            // Revert would be complex without refetching, so we'll just refetch if error
+            fetchRecipes();
+            fetchPublicRecipes();
+            alert("Failed to delete recipe.");
         }
     };
 

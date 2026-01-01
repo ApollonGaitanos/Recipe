@@ -1,13 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, User, Award, Heart, Lock, Globe } from 'lucide-react';
+import { Clock, User, Award, Heart, Lock, Globe, Trash2 } from 'lucide-react'; // Added Trash2
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext'; // Added useAuth
 
-export default function RecipeCard({ recipe }) {
+export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete prop
     const navigate = useNavigate();
     const { toggleLike, hasUserLiked } = useRecipes();
     const { t } = useLanguage();
+    const { user } = useAuth(); // Get user
     const [liked, setLiked] = React.useState(false);
 
     React.useEffect(() => {
@@ -19,6 +21,8 @@ export default function RecipeCard({ recipe }) {
         toggleLike(recipe.id);
         setLiked(!liked);
     };
+
+    const isOwner = user && user.id === recipe.user_id;
 
     return (
         <div
@@ -33,7 +37,7 @@ export default function RecipeCard({ recipe }) {
                     </span>
                 </div>
 
-                {/* Top Floating Badges */}
+                {/* Top Left: Like */}
                 <div className="absolute top-3 left-3">
                     <button
                         onClick={handleLike}
@@ -46,7 +50,22 @@ export default function RecipeCard({ recipe }) {
                     </button>
                 </div>
 
-                <div className="absolute top-3 right-3">
+                {/* Top Right: Actions (Visibility + Delete) */}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                    {/* Delete Button (Owner Only) */}
+                    {isOwner && onDelete && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(recipe.id);
+                            }}
+                            className="p-1.5 rounded-full bg-red-500/90 hover:bg-red-600 text-white backdrop-blur-sm shadow-sm transition-colors"
+                            title={t('delete')}
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                    )}
+
                     <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public
                         ? 'bg-black/60 text-white'
                         : 'bg-primary/90 text-white'
