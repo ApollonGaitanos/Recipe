@@ -76,7 +76,7 @@ const AccountSettings = () => {
 
     return (
         <Layout fullWidth={true}>
-            <div className="min-h-[calc(100vh-64px)] bg-[#F6F8F6] dark:bg-black py-12 px-4 sm:px-6 transition-colors duration-200">
+            <div className="min-h-[calc(100vh-64px)] bg-background-light dark:bg-background-dark py-12 px-4 sm:px-6 transition-colors duration-200">
                 <div className="max-w-[1280px] mx-auto">
                     {/* Page Title */}
                     <div className="mb-8">
