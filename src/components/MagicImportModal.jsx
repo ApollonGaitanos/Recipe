@@ -1,24 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText, ChefHat, Link } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 import { recognizeText } from '../utils/ocr';
 
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
+
+    // Original State Logic
     const [inputValue, setInputValue] = useState('');
     const [aiMode, setAiMode] = useState('hybrid'); // 'off', 'hybrid', 'on'
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const [activeTab, setActiveTab] = useState('import'); // 'import' | 'chef'
+    const [mode, setMode] = useState('import'); // 'import' or 'create'
 
+    // Image State
     const [selectedImage, setSelectedImage] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const fileInputRef = useRef(null);
 
     // Close on escape
-    React.useEffect(() => {
+    useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();
         };
@@ -26,8 +28,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
-    if (!isOpen) return null;
-
+    // Original Logic Functions
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -37,7 +38,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     };
 
     const handleRemoveImage = (e) => {
-        e.stopPropagation();
+        e?.stopPropagation();
         setPreviewUrl(null);
         setSelectedImage(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -90,12 +91,14 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
         try {
             let result;
-            const activeMode = activeTab === 'chef' ? 'create' : 'extract';
-            // Force AI if in 'chef' (create) mode, otherwise use toggle
-            const effectiveAiMode = activeTab === 'chef' ? 'on' : aiMode;
+
+            // Determine effective mode and AI usage (Matches Original Logic)
+            const activeMode = mode === 'create' ? 'create' : 'extract';
+            // If Create, Force AI. If Import, use selected AI Mode.
+            const effectiveAiMode = mode === 'create' ? 'on' : aiMode;
 
             if (selectedImage && activeMode === 'extract') {
-                if (effectiveAiMode !== 'off') {
+                if (effectiveAiMode !== 'off') { // Hybrid or On uses AI for images
                     setScanProgress(20);
                     const base64 = await resizeImage(selectedImage);
                     result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, true, language);
@@ -105,17 +108,19 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     result = await parseRecipe(combinedText, false);
                 }
             } else {
+                // Pass aiMode string to parser instead of boolean
                 result = await parseRecipe(inputValue, effectiveAiMode, language, activeMode);
             }
 
             onImport(result);
-            onClose();
-            // Reset after close
+            // Reset and Close
             setTimeout(() => {
                 setInputValue('');
                 setPreviewUrl(null);
                 setSelectedImage(null);
-            }, 300);
+                setMode('import');
+                onClose();
+            }, 100);
 
         } catch (error) {
             console.error("Magic Import Error:", error);
@@ -126,26 +131,36 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
         }
     };
 
-    return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                onClick={onClose}
+            />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-[#dce5df] dark:border-[#2a4030]">
+            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] transition-all duration-300 transform scale-100">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030]">
-                    <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">Add New Recipe</h3>
+                    <div className="flex items-center gap-2">
+                        {mode === 'create' ? <ChefHat size={20} className="text-[#17cf54]" /> : <Sparkles size={20} className="text-[#17cf54]" />}
+                        <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
+                            {mode === 'create' ? 'AI Chef' : 'Magic Import'}
+                        </h3>
+                    </div>
 
                     <div className="flex items-center gap-4">
-                        {/* AI Mode Toggle */}
-                        {activeTab === 'import' && (
+                        {/* AI Mode Toggle - Only in Import Mode */}
+                        {mode === 'import' && (
                             <div className="flex items-center p-1 bg-[#f6f8f6] dark:bg-[#112116] rounded-lg border border-[#dce5df] dark:border-[#2a4030]">
                                 <button
                                     onClick={() => setAiMode('off')}
                                     className={`p-1.5 rounded-md transition-all ${aiMode === 'off' ? 'bg-white dark:bg-[#2a4030] shadow-sm text-gray-700 dark:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
-                                    title="Fast / Standard"
+                                    title="Fast / Standard (Offline)"
                                 >
                                     <Zap size={16} fill={aiMode === 'off' ? "currentColor" : "none"} />
                                 </button>
@@ -180,21 +195,23 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Tabs */}
                 <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030]">
                     <button
-                        onClick={() => setActiveTab('import')}
-                        className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors ${activeTab === 'import'
+                        onClick={() => setMode('import')}
+                        className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'import'
                                 ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
+                        <Link size={16} />
                         Magic Import
                     </button>
                     <button
-                        onClick={() => setActiveTab('chef')}
-                        className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors ${activeTab === 'chef'
+                        onClick={() => setMode('create')}
+                        className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'create'
                                 ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
                                 : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
+                        <ChefHat size={16} />
                         AI Chef
                     </button>
                 </div>
@@ -204,15 +221,16 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
                     {/* Source Input */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Source</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            {mode === 'create' ? 'Details' : 'Source'}
+                        </label>
                         <div className="relative">
                             <textarea
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder={activeTab === 'chef' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
+                                placeholder={mode === 'create' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
                                 className="w-full h-40 rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#112116] p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all"
                             />
-                            {/* Icon inside textarea */}
                             <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
                                 <FileText size={20} />
                             </div>
@@ -220,7 +238,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </div>
 
                     {/* Image Upload (Only for Import) */}
-                    {activeTab === 'import' && (
+                    {mode === 'import' && (
                         <>
                             <input
                                 type="file"
@@ -264,23 +282,22 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             }`}
                     >
                         {isParsing ? (
-                            <span>{activeTab === 'chef' ? 'Creating...' : 'Analyzing...'} {Math.round(scanProgress)}%</span>
+                            <span>{mode === 'create' ? 'Creating...' : 'Analyzing...'} {Math.round(scanProgress)}%</span>
                         ) : (
                             <>
-                                {activeTab === 'chef' ? 'Create Recipe' : 'Import Recipe'}
+                                {mode === 'create' ? 'Create Recipe' : 'Import Recipe'}
                                 <ArrowRight size={18} />
                             </>
                         )}
                     </button>
 
                     <p className="text-center text-xs text-gray-400">
-                        {activeTab === 'chef'
+                        {mode === 'create'
                             ? 'AI Chef will generate a recipe based on your description.'
                             : 'Magic Import analyzes your source to extract ingredients and steps.'}
                     </p>
                 </div>
             </div>
-        </div>,
-        document.body
+        </div>
     );
 }
