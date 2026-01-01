@@ -52,7 +52,142 @@ export default function RecipeContext({ children }) {
         author_username: username || null
     });
 
-    // ... (rest of file)
+    // Fetch User Likes
+    const fetchUserLikes = async () => {
+        if (!user) {
+            setUserLikes(new Set());
+            return;
+        }
+        const { data, error } = await supabase
+            .from('likes')
+            .select('recipe_id')
+            .eq('user_id', user.id);
+
+        if (!error && data) {
+            setUserLikes(new Set(data.map(l => l.recipe_id)));
+        }
+    };
+
+    // Fetch My Recipes
+    const fetchRecipes = async () => {
+        if (user) {
+            console.log("Fetching recipes for user:", user.id);
+            const { data, error } = await supabase
+                .from('recipes')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) console.error("Error fetching my recipes:", error);
+
+            if (!error && data) {
+                console.log("Fetched my recipes count:", data.length);
+                setRecipes(data.map(toAppRecipe));
+            }
+        } else {
+            setRecipes([]);
+        }
+    };
+
+    // Fetch Public Recipes
+    const fetchPublicRecipes = async () => {
+        console.log("Fetching public recipes...");
+        const { data, error } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('is_public', true)
+            .order('created_at', { ascending: false });
+
+        if (error) console.error("Error fetching public recipes:", error);
+
+        if (!error && data) {
+            console.log("Fetched public recipes count:", data.length);
+            setPublicRecipes(data.map(toAppRecipe));
+        }
+    };
+
+    // Initial Fetch & Real-time Subscription
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            await Promise.all([fetchPublicRecipes(), fetchRecipes(), fetchUserLikes()]);
+            setLoading(false);
+        };
+        load();
+
+        // SUBSCRIPTION 1: Content Updates
+        const contentChannel = supabase
+            .channel('public:recipes:content')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'recipes' },
+                (payload) => {
+                    const newRecord = payload.new;
+                    const targetId = newRecord.id;
+                    setPublicRecipes(prev => prev.map(r => r.id === targetId ? { ...r, ...toAppRecipe(newRecord) } : r));
+                    setRecipes(prev => prev.map(r => r.id === targetId ? { ...r, ...toAppRecipe(newRecord) } : r));
+                }
+            )
+            .subscribe();
+
+        // SUBSCRIPTION 2: Visibility Signals
+        const signalChannel = supabase
+            .channel('public:recipe_signals')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'recipe_signals' },
+                async (payload) => {
+                    const { eventType, new: newSig, old: oldSig } = payload;
+                    if (eventType === 'DELETE') {
+                        const targetId = oldSig.recipe_id;
+                        setPublicRecipes(prev => prev.filter(r => r.id !== targetId));
+                        return;
+                    }
+                    const targetId = newSig.recipe_id;
+                    const isPublic = newSig.is_public;
+
+                    if (!isPublic) {
+                        setPublicRecipes(prev => prev.filter(r => r.id !== targetId));
+                    } else {
+                        const { data, error } = await supabase.from('recipes').select('*').eq('id', targetId).single();
+                        if (!error && data) {
+                            const appRecipe = toAppRecipe(data);
+                            setPublicRecipes(prev => {
+                                const exists = prev.find(r => r.id === targetId);
+                                return exists ? prev.map(r => r.id === targetId ? appRecipe : r) : [appRecipe, ...prev];
+                            });
+                            if (user && appRecipe.user_id === user.id) {
+                                setRecipes(prev => {
+                                    const exists = prev.find(r => r.id === targetId);
+                                    return exists ? prev.map(r => r.id === targetId ? appRecipe : r) : [appRecipe, ...prev];
+                                });
+                            }
+                        }
+                    }
+                }
+            )
+            .subscribe();
+
+        // SUBSCRIPTION 3: Deletions
+        const deleteChannel = supabase
+            .channel('public:recipes:delete')
+            .on(
+                'postgres_changes',
+                { event: 'DELETE', schema: 'public', table: 'recipes' },
+                (payload) => {
+                    const oldRecord = payload.old;
+                    setPublicRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
+                    setRecipes(prev => prev.filter(r => r.id !== oldRecord.id));
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(contentChannel);
+            supabase.removeChannel(signalChannel);
+            supabase.removeChannel(deleteChannel);
+        };
+    }, [user?.id]);
 
     const addRecipe = async (recipe) => {
         if (user) {
