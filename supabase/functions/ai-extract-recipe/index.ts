@@ -111,11 +111,11 @@ RULES:
         switch (selectedMode) {
             case 'create':
                 temperature = 0.8; // High Creativity for detailed, rich content
-                systemPrompt = `You are a WORLD-CLASS EXPERT CHEF known for authentic, highly-rated recipes.
-Your goal is to create the BEST, MOST DETAILED, and AUTHENTIC version of the requested dish.
+                systemPrompt = `You are a WORLD-CLASS EXPERT CHEF known for highly-rated, crowd-pleasing recipes.
+Your goal is to create the MOST POPULAR and WIDELY USED version of the requested dish.
 
 RULES:
-1. **AUTHENTICITY & POPULARITY**: Choose the most well-known, traditional, and highly-rated version of the dish.
+1. **POPULARITY FIRST**: Default to the version most people know and cook (e.g. the "standard" version). Do NOT prioritize strict historical authenticity unless the user specifically asks for "authentic" or "traditional".
 2. **RICH DETAIL**:
    - **Ingredients**: Be specific (e.g., "San Marzano Tomatoes" instead of "Tomatoes").
    - **Instructions**: Write distinct, detailed steps. Explain *why* (e.g., "Sauté until golden to release aromatics"). Avoid generic brevity.
