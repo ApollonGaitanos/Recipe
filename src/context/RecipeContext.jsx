@@ -54,6 +54,89 @@ export default function RecipeContext({ children }) {
 
     // ... (rest of file)
 
+    const fetchUserLikes = async () => {
+        if (!user) {
+            setUserLikes(new Set());
+            return;
+        }
+        const { data, error } = await supabase
+            .from('likes')
+            .select('recipe_id')
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error("Error fetching likes:", error);
+        } else {
+            setUserLikes(new Set(data.map(l => l.recipe_id)));
+        }
+    };
+
+    const fetchRecipes = async () => {
+        if (!user) {
+            setRecipes([]);
+            return;
+        }
+        const { data, error } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching my recipes:', error);
+        } else {
+            setRecipes(data.map(toAppRecipe));
+        }
+    };
+
+    const fetchPublicRecipes = async () => {
+        const { data, error } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('is_public', true)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching public recipes:', error);
+        } else {
+            setPublicRecipes(data.map(toAppRecipe));
+        }
+    };
+
+    useEffect(() => {
+        fetchPublicRecipes();
+        if (user) {
+            fetchRecipes();
+            fetchUserLikes();
+        } else {
+            setRecipes([]);
+            setUserLikes(new Set());
+        }
+        setLoading(false);
+
+        // Realtime subscription
+        const subscription = supabase
+            .channel('public:recipes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'recipes' }, (payload) => {
+                console.log('Realtime update:', payload);
+                if (payload.eventType === 'INSERT') {
+                    // Very simple optimistic handling or just refetch
+                    // Refetching is safer for consistent state including user details if we joined tables (we didn't yet)
+                    // But let's just refetch public to be safe
+                    fetchPublicRecipes();
+                    if (user && payload.new.user_id === user.id) fetchRecipes();
+                } else {
+                    fetchPublicRecipes();
+                    if (user) fetchRecipes();
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, [user]);
+
     const addRecipe = async (recipeData) => {
         if (!user) return;
 
