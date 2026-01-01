@@ -10,28 +10,18 @@ export default function Hero({ recipe }) {
     // Placeholder if no recipe provided
     if (!recipe) return null; // Or a skeleton
 
-    // Deterministic placeholder image based on ID
-    const getPlaceholderImage = (id) => {
-        const images = [
-            "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80", // Salad
-            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80", // Pizza
-            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=800&q=80", // Pancakes
-            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=800&q=80", // Toast
-        ];
-        // Use a simple hash of the ID to pick an image
-        const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % images.length;
-        return images[index];
-    };
+    // Placeholder if no recipe provided
+    if (!recipe) return null; // Or a skeleton
 
     return (
         <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 md:p-8 flex flex-col lg:flex-row gap-8 shadow-sm border border-gray-100 dark:border-white/5 mb-12">
             {/* Left: Image */}
-            <div className="w-full lg:w-1/2 relative h-[300px] lg:h-[400px]">
-                <img
-                    src={getPlaceholderImage(recipe.id)}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover rounded-2xl shadow-md"
-                />
+            <div className="w-full lg:w-1/2 relative h-[300px] lg:h-[400px] bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <div className="text-center p-4">
+                    <span className="text-lg font-medium text-gray-400 dark:text-gray-500">
+                        Images are still a work in progress
+                    </span>
+                </div>
             </div>
 
             {/* Right: Content */}
