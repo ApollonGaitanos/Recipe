@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
