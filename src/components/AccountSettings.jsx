@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { User as UserIcon, Settings, LogOut, ChevronRight, Save } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Layout from "./Layout";
 import LogoutModal from "./LogoutModal";
 
 const AccountSettings = () => {
-    const { user, updateProfile, signOut } = useAuth();
+    const { user, updateProfile, signOut, loading: authLoading } = useAuth();
+    const navigate = useNavigate();
     // eslint-disable-next-line no-unused-vars
     const { theme } = useTheme();
 
@@ -22,6 +24,13 @@ const AccountSettings = () => {
         dietary: [],
         isPublic: false
     });
+
+    // Redirect if not logged in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            navigate('/');
+        }
+    }, [user, authLoading, navigate]);
 
     // Initialize form with user data
     useEffect(() => {
