@@ -223,6 +223,19 @@ function FormRoute() {
   );
 }
 
+// 4. PROTECTED ROUTE WRAPPER
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // Or a loading spinner if preferred
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 // --- MAIN APP ---
 
 function AppContent() {
@@ -235,7 +248,11 @@ function AppContent() {
 
       <Route path="/add" element={<FormRoute />} />
       <Route path="/edit/:id" element={<FormRoute />} />
-      <Route path="/account" element={<AccountSettings />} />
+      <Route path="/account" element={
+        <ProtectedRoute>
+          <AccountSettings />
+        </ProtectedRoute>
+      } />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

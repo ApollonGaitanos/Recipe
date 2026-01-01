@@ -25,11 +25,6 @@ const AccountSettings = () => {
         isPublic: false
     });
 
-    // Redirect if not logged in
-    if (!authLoading && !user) {
-        return <Navigate to="/" replace />;
-    }
-
     // Initialize form with user data
     useEffect(() => {
         if (user?.user_metadata) {
