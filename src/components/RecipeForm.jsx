@@ -110,7 +110,19 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             cookTime: data.cookTime || prev.cookTime,
             servings: data.servings || prev.servings,
         }));
-        if (data.ingredients) setIngredientsList(parseIngredients(data.ingredients));
+        if (data.ingredients) {
+            if (Array.isArray(data.ingredients) && typeof data.ingredients[0] === 'object') {
+                // Handle Structured AI Data ({ amount, name })
+                setIngredientsList(data.ingredients.map((ing, i) => ({
+                    id: Date.now() + i,
+                    amount: ing.amount || '',
+                    item: ing.name || ing.item || '' // Support both 'name' and 'item'
+                })));
+            } else {
+                // Handle Legacy/String Data
+                setIngredientsList(parseIngredients(data.ingredients));
+            }
+        }
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
     };
 

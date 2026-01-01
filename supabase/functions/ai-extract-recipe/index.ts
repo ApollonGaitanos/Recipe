@@ -89,7 +89,10 @@ serve(async (req) => {
 Return ONLY valid JSON with this exact structure:
 {
   "title": "Exact Title",
-  "ingredients": ["Ingredient 1", "Ingredient 2"],
+  "ingredients": [
+    {"amount": "1 tbsp", "name": "Olive Oil"},
+    {"amount": "200g", "name": "Flour"}
+  ],
   "instructions": ["Step one.", "Step two.", "Step three."],
   "prepTime": 0,
   "cookTime": 0,
@@ -99,7 +102,7 @@ Return ONLY valid JSON with this exact structure:
 
 RULES:
 - "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
-- "ingredients": Array of strings. Each string is ONE ingredient line.
+- "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name.
 - "instructions": Array of strings. Each string is ONE step. NO numbering.
 - SPLIT instructions into distinct steps.
 - DO NOT return "tags" as a single comma-separated string. IT MUST BE AN ARRAY.
@@ -112,7 +115,7 @@ RULES:
 RULES:
 1. Be creative but practical.
 2. Use clear, step-by-step instructions.
-3. Language: Output in **${targetLanguage === 'el' ? 'Greek' : 'English'}** (unless user requested otherwise).
+3. Language: Detect the language of the User Input. The Output MUST be in the SAME language as the User Input.
 ${jsonStructure}`;
                 break;
 
@@ -322,8 +325,8 @@ IMPORTANT:
             throw new Error('AI response missing title');
         }
 
-        // HELPER: Join arrays to strings for Frontend
-        const formatParam = (param) => {
+        // HELPER: Join arrays to strings for Frontend (Instructions only)
+        const formatInstructions = (param) => {
             if (Array.isArray(param)) return param.join('\n');
             return param || '';
         };
@@ -331,8 +334,8 @@ IMPORTANT:
         // 9. Success Response
         return new Response(JSON.stringify({
             title: recipeData.title,
-            ingredients: formatParam(recipeData.ingredients),
-            instructions: formatParam(recipeData.instructions),
+            ingredients: recipeData.ingredients, // Return structured array directly
+            instructions: formatInstructions(recipeData.instructions),
             prepTime: parseInt(recipeData.prepTime) || 0,
             cookTime: parseInt(recipeData.cookTime) || 0,
             servings: parseInt(recipeData.servings) || 0,
