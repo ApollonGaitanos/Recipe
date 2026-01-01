@@ -311,7 +311,9 @@ export const parseRecipe = async (input, aiMode = 'off', language = 'en', taskMo
             if (isImage) {
                 payload = { ...input, targetLanguage: language, mode: taskMode };
             } else if (typeof input === 'string') {
-                payload = { text: input, targetLanguage: language, mode: taskMode };
+                // Fix for Backend 10-char limit: Prepend context for short create prompts
+                const finalText = isCreateMode ? `Create a recipe for: ${input}` : input;
+                payload = { text: finalText, targetLanguage: language, mode: taskMode };
             } else {
                 payload = { ...input, targetLanguage: language, mode: taskMode };
             }
