@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Sparkles, Image as ImageIcon, Zap, Brain, ArrowRight, FileText, ChefHat, Link } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
@@ -7,7 +8,7 @@ import { recognizeText } from '../utils/ocr';
 export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
 
-    // Original State Logic
+    // --- State Management (Original Logic) ---
     const [inputValue, setInputValue] = useState('');
     const [aiMode, setAiMode] = useState('hybrid'); // 'off', 'hybrid', 'on'
     const [isParsing, setIsParsing] = useState(false);
@@ -19,16 +20,34 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const [previewUrl, setPreviewUrl] = useState(null);
     const fileInputRef = useRef(null);
 
+    // --- Effects ---
     // Close on escape
     useEffect(() => {
+        if (!isOpen) return;
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
-    }, [onClose]);
+    }, [isOpen, onClose]);
 
-    // Original Logic Functions
+    // Reset state when modal opens/closes
+    useEffect(() => {
+        if (!isOpen) {
+            // Small delay to allow fade out if we were doing animations, but for now instant reset
+            const timer = setTimeout(() => {
+                setInputValue('');
+                setPreviewUrl(null);
+                setSelectedImage(null);
+                setMode('import');
+                setScanProgress(0);
+                setIsParsing(false);
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    // --- Handlers (Original Logic) ---
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -113,14 +132,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
             }
 
             onImport(result);
-            // Reset and Close
-            setTimeout(() => {
-                setInputValue('');
-                setPreviewUrl(null);
-                setSelectedImage(null);
-                setMode('import');
-                onClose();
-            }, 100);
+            onClose();
 
         } catch (error) {
             console.error("Magic Import Error:", error);
@@ -133,19 +145,20 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    // Use Portal to render at document body level to avoid overflow/z-index issues
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] transition-all duration-300 transform scale-100">
+            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
                         {mode === 'create' ? <ChefHat size={20} className="text-[#17cf54]" /> : <Sparkles size={20} className="text-[#17cf54]" />}
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
@@ -193,7 +206,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030]">
+                <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030] bg-[#fcfdfc] dark:bg-[#15231a]">
                     <button
                         onClick={() => setMode('import')}
                         className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'import'
@@ -217,7 +230,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 </div>
 
                 {/* Content */}
-                <div className="p-6 flex flex-col gap-4">
+                <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20]">
 
                     {/* Source Input */}
                     <div className="flex flex-col gap-2">
@@ -298,6 +311,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     </p>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
