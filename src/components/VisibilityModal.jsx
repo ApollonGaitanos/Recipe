@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Lock, Globe, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -7,8 +8,8 @@ export default function VisibilityModal({ isOpen, onClose, onConfirm, isMakingPu
 
     if (!isOpen) return null;
 
-    return (
-        <div className="modal-overlay active" onClick={onClose}>
+    return createPortal(
+        <div className="modal-overlay active z-[9999]" onClick={onClose}>
             <div className="modal-content active confirmation-modal" onClick={e => e.stopPropagation()}>
                 <div style={{
                     width: '60px',
@@ -49,5 +50,7 @@ export default function VisibilityModal({ isOpen, onClose, onConfirm, isMakingPu
                 </div>
             </div>
         </div>
+
+        document.body
     );
 }

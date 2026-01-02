@@ -63,9 +63,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     // --- BLOCKER LOGIC ---
     // Block navigation if form is dirty and not currently saving
-    const blocker = useBlocker(
-        ({ currentLocation, nextLocation }) => isDirty && !isSaving && currentLocation.pathname !== nextLocation.pathname
-    );
+    const blocker = useBlocker(isDirty && !isSaving);
 
     useEffect(() => {
         if (recipeId && recipes.length > 0) {

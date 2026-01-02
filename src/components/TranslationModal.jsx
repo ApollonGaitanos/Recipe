@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Globe, Sparkles, Check, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -27,7 +28,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
         }
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
@@ -155,5 +156,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                 </div>
             </div>
         </div>
+
+        document.body
     );
 }
