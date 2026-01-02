@@ -72,6 +72,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         historyLockRef.current = true;
 
         const handlePopState = (e) => {
+            if (isFormSubmit.current) return;
             e.preventDefault();
 
             // Mark that the back button consumed our lock
@@ -323,7 +324,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             type: 'cancel',
                             title: 'Discard Changes?',
                             description: 'Are you sure you want to discard your changes? This action cannot be undone.',
-                            onConfirm: onCancel
+                            onConfirm: () => {
+                                isFormSubmit.current = true;
+                                window.history.back(); // Undo lock
+                                setTimeout(onCancel, 0); // Navigate away
+                            }
                         })}
                         className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
                     >
@@ -459,7 +464,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     <input
                                         className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
                                         type="number"
+                                        min="0"
                                         value={formData.servings}
+                                        onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
                                         onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
                                         placeholder="4"
                                     />
