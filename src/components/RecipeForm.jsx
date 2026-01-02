@@ -128,7 +128,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     newIngredients = data.ingredients.map((ing, i) => ({
                         id: Date.now() + i,
                         amount: typeof ing.amount === 'object' ? JSON.stringify(ing.amount) : (ing.amount || ''), // Safety for nested objects
-                        item: ing.name || ing.item || ''
+                        item: (typeof ing.name === 'object' ? JSON.stringify(ing.name) : ing.name) || (typeof ing.item === 'object' ? JSON.stringify(ing.item) : ing.item) || ''
                     }));
                 } else {
                     // Strategy B: Array of Strings
@@ -476,6 +476,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 mode={actionModal.mode}
                 onConfirm={executeAIAction}
                 isProcessing={isProcessingAI}
+                isPermanent={true}
             />
         </div>
     );

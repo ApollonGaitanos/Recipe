@@ -2,17 +2,30 @@ import React, { useState } from 'react';
 import { X, Globe, Sparkles, Check, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isProcessing }) {
+export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isProcessing, isPermanent = false }) {
     const { t, language } = useLanguage();
     const [targetLang, setTargetLang] = useState(language === 'en' ? 'el' : 'en');
+    const [step, setStep] = useState('select'); // 'select' | 'confirm'
 
     if (!isOpen) return null;
 
-    const handleConfirm = () => {
+    const handleAction = () => {
+        if (isPermanent && mode === 'translate' && step === 'select') {
+            setStep('confirm');
+            return;
+        }
         onConfirm(mode === 'translate' ? targetLang : null);
     };
 
     const isTranslate = mode === 'translate';
+
+    const handleClose = () => {
+        if (step === 'confirm') {
+            setStep('select');
+        } else {
+            onClose();
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -35,7 +48,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                             {isTranslate ? <Globe size={18} /> : <Sparkles size={18} />}
                         </div>
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
-                            {isTranslate ? t('translate') : t('improve')}
+                            {step === 'confirm' ? 'Warning: Permanent Change' : (isTranslate ? t('translate') : t('improve'))}
                         </h3>
                     </div>
                     <button
@@ -49,8 +62,21 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
 
                 {/* Body */}
                 <div className="p-6 bg-white dark:bg-[#1a2c20]">
-                    {isTranslate ? (
-                        <div className="flex flex-col gap-3">
+                    {step === 'confirm' ? (
+                        <div className="flex flex-col gap-4 animate-in slide-in-from-right duration-300">
+                            <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex gap-3 text-amber-800 dark:text-amber-200">
+                                <span className="text-2xl">⚠️</span>
+                                <div className="text-sm">
+                                    <p className="font-bold mb-1">Are you sure?</p>
+                                    <p className="opacity-90">This will <strong>permanently overwrite</strong> your existing recipe (ingredients & instructions) with the translation.</p>
+                                </div>
+                            </div>
+                            <p className="text-sm text-gray-500 text-center">
+                                To keep the original, you might want to Translate in "View Mode" instead.
+                            </p>
+                        </div>
+                    ) : isTranslate ? (
+                        <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Choose the target language for this recipe:</p>
 
                             <div className="relative">
@@ -78,7 +104,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                             </p>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
                             <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
                                 <span className="text-lg">✨</span>
                                 <span className="font-medium text-sm">Fixes typos and formatting</span>
@@ -100,25 +126,28 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#dce5df] dark:border-[#2a4030] bg-[#fcfdfc] dark:bg-[#15231a]">
                     <button
                         className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                        onClick={onClose}
+                        onClick={handleClose}
                         disabled={isProcessing}
                     >
-                        {t('cancel')}
+                        {step === 'confirm' ? 'Back' : t('cancel')}
                     </button>
                     <button
                         className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg transition-all ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:-translate-y-0.5'
-                            } ${isTranslate
-                                ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
-                                : 'bg-purple-600 hover:bg-purple-500 shadow-purple-500/20'
+                            } ${step === 'confirm'
+                                ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20'
+                                : (isTranslate ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-purple-600 hover:bg-purple-500 shadow-purple-500/20')
                             }`}
-                        onClick={handleConfirm}
+                        onClick={handleAction}
                         disabled={isProcessing}
                     >
                         {isProcessing ? (
                             <span>Processing...</span>
                         ) : (
                             <>
-                                {isTranslate ? "Translate Now" : "Enhance Recipe"}
+                                {step === 'confirm'
+                                    ? "Yes, Overwrite"
+                                    : (isTranslate ? "Translate Now" : "Enhance Recipe")
+                                }
                                 <ChevronRight size={16} />
                             </>
                         )}

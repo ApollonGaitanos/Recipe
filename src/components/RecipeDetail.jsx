@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../supabaseClient';
+
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
 import VisibilityModal from './VisibilityModal';
@@ -63,42 +65,91 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         setActionModal({ isOpen: true, mode });
     };
 
-    // Execute the action (called by modal)
+    // AI Enhance/Translate Logic (View-Only / Cache First)
     const executeAIAction = async (targetLang) => {
         const mode = actionModal.mode;
 
+        // 1. Check if translation exists in DB (Cache Check)
+        if (mode === 'translate' && targetLang) {
+            setIsProcessing(true);
+            try {
+                // Fetch from DB
+                const { data: cachedData, error: cacheError } = await supabase
+                    .from('recipe_translations')
+                    .select('*')
+                    .eq('recipe_id', id)
+                    .eq('language_code', targetLang)
+                    .single();
+
+                if (cachedData) {
+                    console.log("Using cached translation for:", targetLang);
+                    setRecipe(prev => ({
+                        ...prev,
+                        title: cachedData.title || prev.title,
+                        ingredients: cachedData.ingredients || prev.ingredients,
+                        instructions: cachedData.instructions || prev.instructions,
+                    }));
+                    setActionModal({ isOpen: false, mode: null });
+                    setIsProcessing(false);
+                    return;
+                }
+            } catch (err) {
+                // Ignore 406/No rows found
+                console.log("No cache found, proceeding to AI.");
+            }
+        }
+
+        // 2. Call AI if no cache
         setIsProcessing(true);
         try {
-            // Prepare input: Stringify the current recipe to give full context
-            const inputPayload = {
-                text: JSON.stringify(recipe, null, 2),
-                mode: mode,
-                targetLanguage: targetLang || language
+            const currentRecipeState = {
+                title: recipe.title,
+                ingredients: recipe.ingredients,
+                instructions: recipe.instructions,
+                tags: recipe.tags
             };
 
-            const result = await parseRecipe(inputPayload, true, targetLang || language, mode);
+            const inputPayload = {
+                text: JSON.stringify(currentRecipeState),
+                mode: mode,
+                targetLanguage: targetLang || 'en'
+            };
+
+            const result = await parseRecipe(inputPayload, targetLang || 'en', mode);
 
             if (result) {
-                // Standardization Helper
+                // 3. Save to DB (Cache It)
+                if (mode === 'translate' && targetLang) {
+                    const { error: insertError } = await supabase
+                        .from('recipe_translations')
+                        .upsert({
+                            recipe_id: id,
+                            language_code: targetLang,
+                            title: result.title,
+                            ingredients: result.ingredients,
+                            instructions: result.instructions
+                        });
+
+                    if (insertError) console.error("Failed to cache translation:", insertError);
+                }
+
+                // 4. Update View (Temporary Local State)
+                // Ensure ingredients/instructions are arrays for display
                 const standardizedResult = {
                     ...result,
-                    ingredients: Array.isArray(result.ingredients) ? result.ingredients.join('\n') : (typeof result.ingredients === 'string' ? result.ingredients : ''),
-                    instructions: Array.isArray(result.instructions) ? result.instructions.join('\n') : (typeof result.instructions === 'string' ? result.instructions : ''),
-                    tags: Array.isArray(result.tags)
-                        ? result.tags
-                        : (typeof result.tags === 'string' ? result.tags.split(',').map(s => s.trim()).filter(Boolean) : [])
+                    ingredients: Array.isArray(result.ingredients)
+                        ? result.ingredients
+                        : (typeof result.ingredients === 'string' ? result.ingredients.split('\n') : []),
+                    instructions: Array.isArray(result.instructions)
+                        ? result.instructions
+                        : (typeof result.instructions === 'string' ? result.instructions.split('\n') : [])
                 };
 
-                // Update the recipe in place
-                updateRecipe(recipe.id, {
-                    ...recipe,
+                setRecipe(prev => ({
+                    ...prev,
                     ...standardizedResult
-                });
-
-                // Close modal only on success
+                }));
                 setActionModal({ isOpen: false, mode: null });
-                // alert(mode === 'improve' ? "Recipe Improved! ✨" : "Recipe Translated! 🌍"); // Optional: Modal closing is enough feedback? Or show toast?
-                // The modal closes, so user sees the change.
             }
         } catch (error) {
             console.error(`AI ${mode} failed:`, error);
@@ -394,6 +445,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 mode={actionModal.mode}
                 onConfirm={executeAIAction}
                 isProcessing={isProcessing}
+                isPermanent={false}
             />
         </div>
     );
