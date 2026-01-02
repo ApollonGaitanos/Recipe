@@ -281,10 +281,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         <div className="flex items-center justify-between">
                             <h2 className="text-3xl font-serif font-bold text-zinc-900 dark:text-white">{t('instructionsSection')}</h2>
                             <div className="flex gap-2">
-                                <button onClick={() => handleMagicAction('improve')} className="btn-primary-small bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 px-4 py-2 rounded-full text-sm">
-                                    <Sparkles className="w-4 h-4" />
-                                    Magic Enhance
-                                </button>
+
                                 <button onClick={() => handleMagicAction('translate')} className="btn-secondary-small bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none">
                                     <Globe className="w-4 h-4" />
                                     Translate

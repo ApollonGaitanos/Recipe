@@ -4,6 +4,8 @@ import { useRecipes } from '../context/RecipeContext';
 // import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
+import ActionModal from './ActionModal';
+import { parseRecipe } from '../utils/recipeParser';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
@@ -13,6 +15,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [showMagicImport, setShowMagicImport] = useState(false);
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
+    const [isProcessingAI, setIsProcessingAI] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -126,6 +130,40 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
     };
 
+    // AI Enhance/Translate Logic
+    const executeAIAction = async (targetLang) => {
+        const mode = actionModal.mode;
+        setIsProcessingAI(true);
+        try {
+            // Construct current recipe state from form
+            const currentRecipeState = {
+                ...formData,
+                ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
+                instructions: instructionsList.map(step => step.text).join('\n')
+            };
+
+            const inputPayload = {
+                text: JSON.stringify(currentRecipeState, null, 2),
+                mode: mode,
+                targetLanguage: targetLang || 'en' // default, controlled by modal
+            };
+
+            const result = await parseRecipe(inputPayload, true, targetLang || 'en', mode);
+
+            if (result) {
+                // Update Form Data with Result
+                // Similar to Magic Import but replacing fields
+                handleMagicImport(result);
+                setActionModal({ isOpen: false, mode: null });
+            }
+        } catch (error) {
+            console.error(`AI ${mode} failed:`, error);
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setIsProcessingAI(false);
+        }
+    };
+
 
 
     return (
@@ -156,6 +194,17 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         <Sparkles size={20} />
                         <span className="hidden md:inline">Magic Import</span>
                     </button>
+
+                    {/* Magic Enhance (Only in Edit Mode) */}
+                    {recipeId && (
+                        <button
+                            onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
+                            className="flex h-10 items-center justify-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/5 px-4 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors mr-1"
+                        >
+                            <Sparkles size={20} />
+                            <span className="hidden md:inline">Enhance</span>
+                        </button>
+                    )}
 
                     <button
                         onClick={onCancel}
@@ -393,6 +442,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onClose={() => setShowVisibilityModal(false)}
                 onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
                 isMakingPublic={true}
+            />
+            <ActionModal
+                isOpen={actionModal.isOpen}
+                onClose={() => !isProcessingAI && setActionModal({ isOpen: false, mode: null })}
+                mode={actionModal.mode}
+                onConfirm={executeAIAction}
+                isProcessing={isProcessingAI}
             />
         </div>
     );
