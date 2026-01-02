@@ -23,6 +23,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     // AI Modal State
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
+    const [translatedRecipe, setTranslatedRecipe] = useState(null);
 
     // Sync Like Status
     const isLiked = checkIsLiked(id);
