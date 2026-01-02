@@ -82,18 +82,19 @@ export default function Layout({ children, fullWidth = false }) {
                         <div className="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
 
                         {user ? (
-                            <div className="flex items-center gap-2">
-                                {/* Username Display */}
-                                <span className="hidden sm:block text-sm font-bold text-gray-700 dark:text-gray-300">
-                                    {/* Try profile username, then metadata, then email */}
-                                    {((useAuth().profile?.username) || (user?.user_metadata?.username) || user?.email?.split('@')[0])}
-                                </span>
+                            <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
-                                    className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-text-primary hover:bg-surface-active transition-colors"
+                                    className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
                                 >
-                                    <UserIcon className="w-5 h-5" />
+                                    <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors">
+                                        {((useAuth().profile?.username) || (user?.user_metadata?.username) || user?.email?.split('@')[0])}
+                                    </span>
+                                    <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                        <UserIcon className="w-5 h-5" />
+                                    </div>
                                 </button>
+
                                 <button onClick={() => setShowLogoutModal(true)} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
                                     <LogOut size={20} />
                                 </button>
