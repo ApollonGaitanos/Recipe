@@ -37,10 +37,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         description: ''
     });
 
-    const markDirty = () => {
-        console.log("!!! markDirty() CALLED !!!");
-        setIsDirty(true);
-    }
+    const markDirty = () => setIsDirty(true);
 
 
     // Helper to parse ingredients string into array
@@ -67,18 +64,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     // --- BLOCKER LOGIC ---
     // Block navigation if form is dirty and not currently saving
-    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-        const shouldBlock = isDirty && !isSaving;
-        console.log("BLOCKER TRIGGERED:", { shouldBlock, isDirty, isSaving, next: nextLocation.pathname });
-        return shouldBlock;
-    });
-
-    useEffect(() => {
-        console.log("Blocker State Updated:", blocker.state);
-        if (blocker.state === 'blocked') {
-            console.log("!!! BLOCKER IS ACTIVE - MODAL SHOULD SHOW !!!");
-        }
-    }, [blocker.state]);
+    const blocker = useBlocker(isDirty && !isSaving);
     useEffect(() => {
         if (recipeId && recipes.length > 0) {
             const recipe = recipes.find(r => r.id === recipeId);
@@ -294,14 +280,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     >
                         <ArrowLeft size={24} />
                     </button>
-                    <div className="flex flex-col">
-                        <h2 className="text-xl font-bold leading-tight tracking-tight text-[#111813] dark:text-[#e0e6e2]">
-                            {recipeId ? 'Edit Recipe' : 'New Recipe'}
-                        </h2>
-                        <span className={`text-xs font-bold uppercase tracking-wider ${isDirty ? 'text-red-500' : 'text-green-500'}`}>
-                            STATUS: {isDirty ? 'UNSAVED CHANGES' : 'ALL SAVED'}
-                        </span>
-                    </div>
+                    <h2 className="text-xl font-bold leading-tight tracking-tight text-[#111813] dark:text-[#e0e6e2]">
+                        {recipeId ? 'Edit Recipe' : 'New Recipe'}
+                    </h2>
+                    <span className="hidden sm:block text-xs font-medium text-[#63886f] dark:text-[#8ca395] bg-[#dce5df]/30 dark:bg-[#2a4030]/30 px-2 py-1 rounded">
+                        Draft saved 2m ago
+                    </span>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -366,7 +350,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 type="text"
                                 value={formData.title}
                                 onChange={(e) => {
-                                    console.log("Title Changed:", e.target.value);
                                     setFormData(prev => ({ ...prev, title: e.target.value }));
                                     markDirty();
                                 }}
