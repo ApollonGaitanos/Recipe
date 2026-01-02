@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { AlertTriangle, X } from 'lucide-react';
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, message }) {
+export default function ConfirmModal({ isOpen, onClose, onConfirm, message, title, description, confirmText, isDanger = true }) {
     const { t } = useLanguage();
     // Simplified animation logic to avoid sync setState warning
     // If complex exit animation is needed, use a dedicated library or setTimeout
@@ -22,18 +22,21 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message }) {
                     <AlertTriangle size={32} />
                 </div>
 
-                <h3 className="modal-title">{message}</h3>
+                <h3 className="modal-title">{title || message}</h3>
 
                 <p className="modal-description">
-                    {t('deleteWarning') || 'This action cannot be undone.'}
+                    {description || t('deleteWarning') || 'This action cannot be undone.'}
                 </p>
 
                 <div className="modal-actions">
                     <button className="btn-secondary" onClick={onClose}>
                         {t('cancel')}
                     </button>
-                    <button className="btn-primary danger-btn-modern" onClick={onConfirm}>
-                        {t('delete')}
+                    <button
+                        className={`btn-primary ${isDanger ? 'danger-btn-modern' : 'bg-[#17cf54] hover:bg-[#17cf54]/90'}`}
+                        onClick={onConfirm}
+                    >
+                        {confirmText || t('delete')}
                     </button>
                 </div>
             </div>

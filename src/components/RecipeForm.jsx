@@ -6,6 +6,7 @@ import { useRecipes } from '../context/RecipeContext';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
 import TranslationModal from './TranslationModal';
+import ConfirmModal from './ConfirmModal';
 import { parseRecipe } from '../utils/recipeParser';
 
 // Note: RecipeForm now purely handles form state and validation.
@@ -17,6 +18,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        type: null, // 'save' | 'cancel'
+        title: '',
+        description: '',
+        onConfirm: null
+    });
     const [isProcessingAI, setIsProcessingAI] = useState(false);
     const [pendingTranslations, setPendingTranslations] = useState([]);
 
@@ -260,7 +268,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={onCancel}
+                        onClick={() => setConfirmModal({
+                            isOpen: true,
+                            type: 'cancel',
+                            title: 'Discard Changes?',
+                            description: 'Are you sure you want to discard your changes? This action cannot be undone.',
+                            onConfirm: onCancel
+                        })}
                         className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
                     >
                         <ArrowLeft size={24} />
@@ -303,18 +317,32 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     )}
 
                     <button
-                        onClick={onCancel}
+                        onClick={() => setConfirmModal({
+                            isOpen: true,
+                            type: 'cancel',
+                            title: 'Discard Changes?',
+                            description: 'Are you sure you want to discard your changes? This action cannot be undone.',
+                            onConfirm: onCancel
+                        })}
                         className="hidden sm:flex h-10 items-center justify-center rounded-lg bg-transparent px-4 text-sm font-bold text-[#63886f] dark:text-[#8ca395] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     >
                         Cancel
                     </button>
 
                     <button
-                        onClick={handleSaveLocal}
+                        onClick={() => setConfirmModal({
+                            isOpen: true,
+                            type: 'save',
+                            title: 'Save Recipe?',
+                            description: 'Are you ready to save this recipe?',
+                            confirmText: 'Save',
+                            isDanger: false,
+                            onConfirm: handleSaveLocal
+                        })}
                         disabled={isSaving}
                         className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
                     >
-                        {isSaving ? 'Save Recipe' : 'Save Recipe'}
+                        {isSaving ? 'Saving...' : 'Save Recipe'}
                     </button>
 
 
@@ -546,6 +574,18 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onConfirm={executeAIAction}
                 isProcessing={isProcessingAI}
                 isPermanent={true}
+            />
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={() => {
+                    confirmModal.onConfirm();
+                    setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText={confirmModal.confirmText || 'Discard'}
+                isDanger={confirmModal.isDanger !== false} // Default to true if not specified
             />
         </div>
     );
