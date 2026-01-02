@@ -178,10 +178,20 @@ ${jsonStructure}`;
 Your goal is to REWRITE THE INSTRUCTIONS to be clearer, easier to follow, and more detailed.
 
 CRITICAL RULES:
-1. **DO NOT CHANGE INGREDIENTS**: Keep the ingredient list EXACTLY as is. Do not add, remove, or change quantities.
-2. **CLARIFY STEPS**: Rewrite the instructions to be more explanatory. Add "why" (e.g. "whisk until peaks form *to ensure fluffiness*").
-3. **FORMATTING**: Split long paragraphs into distinct, logical steps.
-4. **Language**: Keep the original language of the recipe.
+1. **DO NOT CHANGE INGREDIENTS**: Keep the ingredient list EXACTLY as is.
+2. **CLARIFY STEPS**: Rewrite the instructions to be more explanatory. Add "why".
+3. **LANGUAGE**: Detect the language of the input recipe. The Output MUST be in the SAME language.
+   - If Input is Greek -> Output Greek.
+   - If Input is English -> Output English.
+   - DO NOT TRANSLATE.
+
+EXAMPLE:
+Input: { "instructions": ["mix flour and water"] }
+Output: { "instructions": ["In a large bowl, mix the flour and water until combined."] }
+
+Input: { "instructions": ["ανακατεύουμε αλεύρι και νερό"] }
+Output: { "instructions": ["Σε ένα μεγάλο μπολ, ανακατεύουμε το αλεύρι με το νερό μέχρι να ομογενοποιηθούν."] }
+
 ${jsonStructure}`;
                 break;
 
