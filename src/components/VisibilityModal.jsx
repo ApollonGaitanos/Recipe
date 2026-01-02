@@ -49,7 +49,7 @@ export default function VisibilityModal({ isOpen, onClose, onConfirm, isMakingPu
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
 
         document.body
     );

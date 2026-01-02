@@ -155,7 +155,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
 
         document.body
     );
