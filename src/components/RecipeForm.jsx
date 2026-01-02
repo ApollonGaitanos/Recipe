@@ -175,7 +175,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 targetLanguage: targetLang || 'en' // default, controlled by modal
             };
 
-            const result = await parseRecipe(inputPayload, true, targetLang || 'en', mode);
+            const result = await parseRecipe(inputPayload, targetLang || 'en', mode);
 
             if (result) {
                 // Update Form Data with Result

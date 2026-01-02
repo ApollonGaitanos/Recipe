@@ -57,11 +57,13 @@ export const parseRecipe = async (input, language = 'en', taskMode = 'extract') 
     const isImage = typeof input === 'object' && input.imageBase64;
     const isCreateMode = taskMode === 'create';
 
-    if (!isImage && !isCreateMode && (typeof input !== 'string' || !input.trim())) {
+    const isObjectWithText = typeof input === 'object' && input.text;
+
+    if (!isImage && !isCreateMode && (typeof input !== 'string' || !input.trim()) && !isObjectWithText) {
         throw new Error('Invalid input provided');
     }
 
-    const trimmedInput = isImage ? null : (typeof input === 'string' ? input.trim() : '');
+    const trimmedInput = isImage ? null : (typeof input === 'string' ? input.trim() : (input.text || ''));
 
     try {
         // Construct payload
