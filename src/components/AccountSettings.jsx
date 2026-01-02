@@ -19,11 +19,8 @@ const AccountSettings = () => {
 
     const [formData, setFormData] = useState({
         username: '',
-        firstName: '',
-        lastName: '',
         bio: '',
-        dietary: [],
-        isPublic: false
+        dietary: []
     });
 
     // Initialize form with user data
@@ -31,11 +28,8 @@ const AccountSettings = () => {
         if (user) {
             setFormData({
                 username: profile?.username || user.user_metadata?.username || '',
-                firstName: user.user_metadata?.first_name || '',
-                lastName: user.user_metadata?.last_name || '',
                 bio: user.user_metadata?.bio || '',
-                dietary: user.user_metadata?.dietary_preferences || [],
-                isPublic: user.user_metadata?.public_profile || false
+                dietary: user.user_metadata?.dietary_preferences || []
             });
         }
     }, [user, profile]);
@@ -43,13 +37,10 @@ const AccountSettings = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            // Update Auth Metadata (FirstName, LastName, Bio etc)
+            // Update Auth Metadata (Bio, Dietary)
             const { error: metaError } = await updateProfile({
-                first_name: formData.firstName,
-                last_name: formData.lastName,
                 bio: formData.bio,
-                dietary_preferences: formData.dietary,
-                public_profile: formData.isPublic,
+                dietary_preferences: formData.dietary
             });
             if (metaError) throw metaError;
 
@@ -59,7 +50,7 @@ const AccountSettings = () => {
                     username: formData.username
                 });
                 if (profileError) {
-                    if (profileError.code === '23505') throw new Error("Username already taken");
+                    if (profileError.code === '23505') throw new Error("this username already exist");
                     throw profileError;
                 }
             }
@@ -86,9 +77,7 @@ const AccountSettings = () => {
     };
 
     const menuItems = [
-        { id: "edit-profile", label: "Edit Profile", icon: UserIcon },
-        { id: "notifications", label: "Notifications", icon: Settings },
-        { id: "privacy", label: "Privacy & Security", icon: Settings },
+        { id: "edit-profile", label: "Edit Profile", icon: UserIcon }
     ];
 
     return (
@@ -144,15 +133,12 @@ const AccountSettings = () => {
                                 <div className="flex items-start justify-between mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Public Profile</h2>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">This will be displayed on your profile.</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">The following will be displayed in Your Kitchen</p>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-[#17cf54] text-2xl font-bold font-serif">
-                                            {formData.firstName?.[0] || user?.email?.[0]?.toUpperCase()}
+                                            {formData.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                                         </div>
-                                        <button className="text-sm font-bold text-primary dark:text-[#17cf54] hover:underline cursor-pointer">
-                                            Change Avatar
-                                        </button>
                                     </div>
                                 </div>
 
@@ -169,28 +155,6 @@ const AccountSettings = () => {
                                         />
                                         <p className="text-xs text-gray-400 mt-1">Must be unique. Used for public recipes.</p>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                                            <input
-                                                type="text"
-                                                value={formData.firstName}
-                                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                                                placeholder="Jane"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
-                                            <input
-                                                type="text"
-                                                value={formData.lastName}
-                                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                                                placeholder="Doe"
-                                            />
-                                        </div>
-                                    </div>
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bio</label>
@@ -201,7 +165,7 @@ const AccountSettings = () => {
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"
                                             placeholder="Tell us a little about yourself..."
                                         />
-                                        <p className="text-xs text-gray-500 mt-2 text-right">0 / 200 characters</p>
+                                        <p className="text-xs text-gray-500 mt-2 text-right">{formData.bio.length} / 200 characters</p>
                                     </div>
 
                                     {/* Dietary Preferences */}
