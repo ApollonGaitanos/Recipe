@@ -193,47 +193,41 @@ const AccountSettings = () => {
                         <main className="flex-1">
                             <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors duration-200">
                                 {/* Profile Header */}
-                                <div className="flex items-start justify-between mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
+                                <div className="flex items-center justify-between mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Public Profile</h2>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">The following will be displayed in Your Kitchen</p>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-[#17cf54] text-2xl font-bold font-serif">
-                                            {formData.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
-                                        </div>
-                                    </div>
+
+                                    {!isEditing && (
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="px-5 py-2 rounded-lg font-bold text-sm bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-all flex items-center gap-2"
+                                        >
+                                            <Settings size={16} />
+                                            Edit
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Form */}
-                                <div className="space-y-6">
-                                    <div className="flex justify-end">
-                                        {!isEditing && (
-                                            <button
-                                                onClick={() => setIsEditing(true)}
-                                                className="px-6 py-2.5 rounded-full font-bold text-white bg-primary hover:bg-green-600 hover:-translate-y-0.5 shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
-                                            >
-                                                <Settings size={18} />
-                                                Edit Profile
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                                <div className="space-y-8">
+                                    {/* Username Section */}
+                                    <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Username</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
                                                 disabled={!isEditing}
                                                 value={formData.username}
                                                 onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
-                                                className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none pr-10 ${!isEditing
-                                                        ? 'border-transparent bg-transparent pl-0'
-                                                        : usernameStatus === 'unavailable'
-                                                            ? 'border-red-500 focus:ring-2 focus:ring-red-200'
-                                                            : usernameStatus === 'available'
-                                                                ? 'border-green-500 focus:ring-2 focus:ring-green-200'
-                                                                : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                                className={`w-full transition-all outline-none ${!isEditing
+                                                    ? 'bg-transparent text-lg font-medium text-gray-900 dark:text-white border-none p-0'
+                                                    : usernameStatus === 'unavailable'
+                                                        ? 'px-4 py-3 rounded-xl border border-red-500 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-red-200'
+                                                        : usernameStatus === 'available'
+                                                            ? 'px-4 py-3 rounded-xl border border-green-500 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-green-200'
+                                                            : 'px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                     }`}
                                                 placeholder="username"
                                             />
@@ -247,7 +241,7 @@ const AccountSettings = () => {
                                             )}
                                         </div>
 
-                                        {/* Explicit Validation Feedback Text - Only show when editing */}
+                                        {/* Validation Feedback */}
                                         {isEditing && (
                                             <div className="mt-2 text-xs flex items-center gap-1 min-h-[1.25rem]">
                                                 {usernameStatus === 'checking' && (
@@ -272,48 +266,49 @@ const AccountSettings = () => {
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bio</label>
+                                    {/* Bio Section */}
+                                    <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bio</label>
                                         <textarea
                                             disabled={!isEditing}
                                             value={formData.bio}
                                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                            rows={4}
-                                            className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none resize-none ${!isEditing
-                                                    ? 'border-transparent bg-transparent pl-0'
-                                                    : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                            rows={isEditing ? 4 : formData.bio ? undefined : 1}
+                                            style={!isEditing ? { fieldSizing: "content" } : {}}
+                                            className={`w-full transition-all outline-none resize-none ${!isEditing
+                                                ? 'bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 overflow-hidden'
+                                                : 'px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                 }`}
-                                            placeholder={isEditing ? "Tell us a little about yourself..." : "No bio yet."}
+                                            placeholder={isEditing ? "Tell us a little about yourself..." : "No bio added yet."}
                                         />
                                         {isEditing && <p className="text-xs text-gray-500 mt-2 text-right">{formData.bio.length} / 200 characters</p>}
                                     </div>
 
                                     {/* Dietary Preferences */}
-                                    <div>
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Dietary Preferences</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Paleo'].map((option) => (
-                                                <button
-                                                    key={option}
-                                                    disabled={!isEditing}
-                                                    onClick={() => toggleDietary(option)}
-                                                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${formData.dietary?.includes(option)
-                                                        ? 'bg-primary text-white shadow-md shadow-green-500/20 shadow-primary/20'
-                                                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary dark:hover:text-[#17cf54] dark:hover:border-[#17cf54]'
-                                                        } ${!isEditing && !formData.dietary?.includes(option) ? 'hidden' : ''} ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
-                                            {!isEditing && (!formData.dietary || formData.dietary.length === 0) && (
-                                                <span className="text-gray-500 text-sm italic">No preferences selected</span>
-                                            )}
+                                    {(!isEditing && (!formData.dietary || formData.dietary.length === 0)) ? null : (
+                                        <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
+                                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Dietary Preferences</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Paleo'].map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        disabled={!isEditing}
+                                                        onClick={() => toggleDietary(option)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${formData.dietary?.includes(option)
+                                                            ? 'bg-primary text-white shadow-md shadow-green-500/20 shadow-primary/20'
+                                                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary dark:hover:text-[#17cf54] dark:hover:border-[#17cf54]'
+                                                            } ${!isEditing && !formData.dietary?.includes(option) ? 'hidden' : ''} ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Actions */}
                                     {isEditing && (
-                                        <div className="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
+                                        <div className="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3 animate-in fade-in slide-in-from-bottom-2">
                                             <button
                                                 className="px-6 py-2.5 rounded-full font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                                                 onClick={() => {
