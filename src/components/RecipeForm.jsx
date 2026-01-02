@@ -224,13 +224,22 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                     {/* Magic Enhance (Only in Edit Mode) */}
                     {recipeId && (
-                        <button
-                            onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
-                            className="flex h-10 items-center justify-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/5 px-4 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors mr-1"
-                        >
-                            <Sparkles size={20} />
-                            <span className="hidden md:inline">Enhance</span>
-                        </button>
+                        <>
+                            <button
+                                onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
+                                className="flex h-10 items-center justify-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/5 px-4 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors mr-1"
+                            >
+                                <Sparkles size={20} />
+                                <span className="hidden md:inline">Enhance</span>
+                            </button>
+                            <button
+                                onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
+                                className="flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors mr-1"
+                            >
+                                <Globe size={20} />
+                                <span className="hidden md:inline">Translate</span>
+                            </button>
+                        </>
                     )}
 
                     <button
