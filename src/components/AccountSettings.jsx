@@ -56,6 +56,7 @@ const AccountSettings = () => {
             }
 
             setUsernameStatus('checking');
+            console.log("Checking availability for:", usernameToCheck);
 
             try {
                 const { data, error } = await supabase
@@ -64,11 +65,16 @@ const AccountSettings = () => {
                     .eq('username', usernameToCheck)
                     .maybeSingle();
 
-                if (error) throw error;
+                if (error) {
+                    console.error("Supabase query error:", error);
+                    throw error;
+                }
 
                 if (data) {
+                    console.log("Username taken:", data);
                     setUsernameStatus('unavailable');
                 } else {
+                    console.log("Username available");
                     setUsernameStatus('available');
                 }
             } catch (err) {
@@ -77,7 +83,7 @@ const AccountSettings = () => {
             }
         };
 
-        const timeoutId = setTimeout(checkUsername, 500); // 500ms debounce
+        const timeoutId = setTimeout(checkUsername, 300); // 300ms debounce (faster)
         return () => clearTimeout(timeoutId);
     }, [formData.username, profile?.username]);
 
@@ -209,10 +215,10 @@ const AccountSettings = () => {
                                                 value={formData.username}
                                                 onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
                                                 className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none pr-10 ${usernameStatus === 'unavailable'
-                                                        ? 'border-red-500 focus:ring-2 focus:ring-red-200'
-                                                        : usernameStatus === 'available'
-                                                            ? 'border-green-500 focus:ring-2 focus:ring-green-200'
-                                                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                                    ? 'border-red-500 focus:ring-2 focus:ring-red-200'
+                                                    : usernameStatus === 'available'
+                                                        ? 'border-green-500 focus:ring-2 focus:ring-green-200'
+                                                        : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                     }`}
                                                 placeholder="username"
                                             />
@@ -223,11 +229,28 @@ const AccountSettings = () => {
                                                 {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
                                             </div>
                                         </div>
-                                        {usernameStatus === 'unavailable' ? (
-                                            <p className="text-xs text-red-500 mt-1 font-bold">This username is already taken</p>
-                                        ) : (
-                                            <p className="text-xs text-gray-400 mt-1">Must be unique. Used for public recipes.</p>
-                                        )}
+
+                                        {/* Explicit Validation Feedback Text */}
+                                        <div className="mt-2 text-xs flex items-center gap-1 min-h-[1.25rem]">
+                                            {usernameStatus === 'checking' && (
+                                                <span className="text-gray-500 flex items-center gap-1">
+                                                    <Loader2 size={12} className="animate-spin" /> Checking availability...
+                                                </span>
+                                            )}
+                                            {usernameStatus === 'available' && (
+                                                <span className="text-green-600 font-medium">
+                                                    ✓ Username is available
+                                                </span>
+                                            )}
+                                            {usernameStatus === 'unavailable' && (
+                                                <span className="text-red-500 font-bold">
+                                                    ✕ This username is already taken
+                                                </span>
+                                            )}
+                                            {!usernameStatus && (
+                                                <span className="text-gray-400">Must be unique. Used for public recipes.</span>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div>
