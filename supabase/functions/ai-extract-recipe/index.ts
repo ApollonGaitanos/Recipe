@@ -132,26 +132,29 @@ serve(async (req) => {
         let temperature = 0.1;
 
         const jsonStructure = `
-Return ONLY valid JSON with this exact structure:
+Return the output in this strict JSON structure:
 {
-  "title": "Exact Title",
+  "title": "Recipe Title",
+  "prepTime": 15,
+  "cookTime": 30,
+  "servings": 4,
+  "tags": ["tag1", "tag2"],
   "ingredients": [
-    {"amount": "1 κ.σ.", "name": "Ελαιόλαδο"},
-    {"amount": "200γρ", "name": "Αλεύρι"}
+    { "amount": "200g", "name": "Flour" }
   ],
-  "instructions": ["Step one.", "Step two.", "Step three."],
-  "prepTime": 0,
-  "cookTime": 0,
-  "servings": 0,
-  "tags": ["tag1", "tag2"]
+  "instructions": [
+    "Step 1 text",
+    "Step 2 text"
+  ],
+  "detectedLanguage": "en" 
 }
-
-RULES:
+- "detectedLanguage": The ISO 639-1 code (e.g. "en", "el", "fr") of the language the recipe is written in.
+- "title": String.
+- "prepTime", "cookTime", "servings": Integer numbers only (in minutes). Calculate totals if ranges are given. Attempt to infer from text if missing.
 - "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
 - "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name. The UNIT itself must be in the target language (e.g. "tbsp" -> "κ.σ.", "g" -> "γρ").
 - "instructions": Array of strings. Each string is ONE step. NO numbering.
 - SPLIT instructions into distinct steps.
-- DO NOT return "tags" as a single comma-separated string. IT MUST BE AN ARRAY.
 - Returns only valid JSON.`;
 
         switch (selectedMode) {
@@ -396,7 +399,8 @@ IMPORTANT:
             prepTime: parseInt(recipeData.prepTime) || 0,
             cookTime: parseInt(recipeData.cookTime) || 0,
             servings: parseInt(recipeData.servings) || 0,
-            tags: recipeData.tags || ''
+            tags: recipeData.tags || '',
+            detectedLanguage: recipeData.detectedLanguage || 'en'
         }), {
             headers: {
                 'Content-Type': 'application/json',

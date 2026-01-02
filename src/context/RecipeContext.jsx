@@ -167,6 +167,7 @@ export default function RecipeContext({ children }) {
             const realRecipe = toAppRecipe(data);
             setRecipes(prev => prev.map(r => r.id === tempId ? realRecipe : r));
             setPublicRecipes(prev => [realRecipe, ...prev]); // Add to public feed too if applicable? Logic might vary but safe to add
+            return realRecipe;
         } catch (err) {
             console.error("Error adding recipe:", err);
             // Rollback

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
 // import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
@@ -17,6 +18,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [isSaving, setIsSaving] = useState(false);
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
     const [isProcessingAI, setIsProcessingAI] = useState(false);
+    const [pendingTranslations, setPendingTranslations] = useState([]);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -97,7 +99,35 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         };
 
         try {
-            await onSave(recipeData);
+            // Save Recipe (Triggers DB Wipe of old translations)
+            const savedRecipe = await onSave(recipeData);
+
+            // Determine ID (New or Existing)
+            const finalId = savedRecipe?.id || recipeId;
+
+            // Batch Save Pending Translations (Restoring valid ones)
+            if (finalId && pendingTranslations.length > 0) {
+                console.log(`Saving ${pendingTranslations.length} pending translations for ${finalId}...`);
+                const { error: transError } = await supabase
+                    .from('recipe_translations')
+                    .upsert(
+                        pendingTranslations.map(t => ({
+                            recipe_id: finalId,
+                            language_code: t.language_code,
+                            title: t.title,
+                            ingredients: t.ingredients,
+                            instructions: t.instructions,
+                            tags: t.tags
+                        }))
+                    );
+
+                if (transError) console.error("Error saving translations:", transError);
+                else console.log("Translations saved successfully.");
+
+                // Clear pending
+                setPendingTranslations([]);
+            }
+
         } catch (error) {
             console.error("Save failed", error);
             alert(`Failed to save recipe: ${error.message || JSON.stringify(error)}`);
@@ -158,11 +188,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     };
 
     // AI Enhance/Translate Logic
+    // AI Enhance/Translate Logic
     const executeAIAction = async (targetLang) => {
         const mode = actionModal.mode;
         setIsProcessingAI(true);
         try {
-            // Construct current recipe state from form
+            // Construct current recipe state from form (for AI Context)
             const currentRecipeState = {
                 ...formData,
                 ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
@@ -175,11 +206,40 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 targetLanguage: targetLang || 'en' // default, controlled by modal
             };
 
+            // Call AI
             const result = await parseRecipe(inputPayload, targetLang || 'en', mode);
 
             if (result) {
-                // Update Form Data with Result
-                // Similar to Magic Import but replacing fields
+                // Determine Language Codes
+                const detectedCode = result.detectedLanguage; // Should be returned by backend now
+                const targetCode = targetLang || 'en';
+
+                // If Translating: Snapshot both versions for "View Only" cache
+                if (mode === 'translate' && detectedCode && targetCode) {
+                    // 1. Snapshot Original (Current Form State)
+                    const originalSnapshot = {
+                        language_code: detectedCode,
+                        title: formData.title,
+                        ingredients: ingredientsList.map(ing => ({ amount: ing.amount, name: ing.item })),
+                        instructions: instructionsList.map(i => i.text), // Array of strings
+                        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+                    };
+
+                    // 2. Snapshot New (AI Result)
+                    const newSnapshot = {
+                        language_code: targetCode,
+                        title: result.title,
+                        ingredients: result.ingredients, // Already structured
+                        instructions: result.instructions, // Array of strings (from backend)
+                        tags: result.tags
+                    };
+
+                    // Add to Pending
+                    console.log("Queueing translations:", originalSnapshot.language_code, "&", newSnapshot.language_code);
+                    setPendingTranslations(prev => [...prev, originalSnapshot, newSnapshot]);
+                }
+
+                // Update Form Data with Result (Apply Change Permanently)
                 handleMagicImport(result);
                 setActionModal({ isOpen: false, mode: null });
             }
