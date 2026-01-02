@@ -198,6 +198,14 @@ export default function RecipeContext({ children }) {
             setPublicRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updatedData } : r));
 
             await supabase.from('recipes').update(dbUpdates).eq('id', id);
+
+            // Invalidate Translations (Frontend Fallback since DB Trigger might be pending)
+            // If core content changed, wipe old translations to avoid mismatch.
+            const contentChanged = updatedData.title || updatedData.ingredients || updatedData.instructions;
+            if (contentChanged) {
+                console.log("Invalidating translations for modified recipe:", id);
+                await supabase.from('recipe_translations').delete().eq('recipe_id', id);
+            }
         }
     };
 
