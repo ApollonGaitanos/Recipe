@@ -83,12 +83,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                 if (cachedData) {
                     console.log("Using cached translation for:", targetLang);
-                    setRecipe(prev => ({
-                        ...prev,
-                        title: cachedData.title || prev.title,
-                        ingredients: cachedData.ingredients || prev.ingredients,
-                        instructions: cachedData.instructions || prev.instructions,
-                    }));
+                    setTranslatedRecipe({
+                        ...recipe,
+                        title: cachedData.title || recipe.title,
+                        ingredients: cachedData.ingredients || recipe.ingredients,
+                        instructions: cachedData.instructions || recipe.instructions,
+                    });
                     setActionModal({ isOpen: false, mode: null });
                     setIsProcessing(false);
                     return;
@@ -145,10 +145,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         : (typeof result.instructions === 'string' ? result.instructions.split('\n') : [])
                 };
 
-                setRecipe(prev => ({
-                    ...prev,
+                setTranslatedRecipe({
+                    ...recipe,
                     ...standardizedResult
-                }));
+                });
                 setActionModal({ isOpen: false, mode: null });
             }
         } catch (error) {
