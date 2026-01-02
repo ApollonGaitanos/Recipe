@@ -287,7 +287,7 @@ const AccountSettings = () => {
                                                 </div>
                                             </>
                                         ) : (
-                                            <p className="w-full bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 break-words whitespace-pre-wrap text-base">
+                                            <p className="w-full bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 break-all whitespace-pre-wrap text-base">
                                                 {formData.bio || "No bio added yet."}
                                             </p>
                                         )}
