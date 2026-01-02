@@ -9,7 +9,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message, titl
     if (!isOpen) return null;
 
     return createPortal(
-        <div className={`modal-overlay active z-[100]`} onClick={onClose}>
+        <div className={`modal-overlay active z-[9999]`} onClick={onClose}>
             <div className={`modal-content active`} onClick={e => e.stopPropagation()}>
 
                 <button className="modal-close" onClick={onClose}>
