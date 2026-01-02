@@ -165,8 +165,23 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         <div className="min-h-screen bg-white dark:bg-[#112116] pt-24 pb-20 fade-in text-zinc-900 dark:text-zinc-100 font-sans">
             <div className="container mx-auto px-4 md:px-8 max-w-7xl space-y-12">
 
-                {/* Header Section */}
                 <div className="space-y-6 w-full">
+                    {translatedRecipe && (
+                        <div className="w-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-xl p-4 flex items-center justify-between animate-in slide-in-from-top-2">
+                            <div className="flex items-center gap-3 text-blue-800 dark:text-blue-200">
+                                <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <p className="font-medium text-sm">
+                                    Viewing Translated Version <span className="opacity-60 font-normal ml-1">(View-Only)</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setTranslatedRecipe(null)}
+                                className="px-4 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 text-xs font-bold hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
+                            >
+                                View Original
+                            </button>
+                        </div>
+                    )}
                     <div className="flex items-center gap-3 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                         <span className="uppercase tracking-wider">Editor's Pick</span>
                         <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
