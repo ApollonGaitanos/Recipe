@@ -114,19 +114,46 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             cookTime: data.cookTime || prev.cookTime,
             servings: data.servings || prev.servings,
         }));
+
+        // Robust Ingredient Handling
         if (data.ingredients) {
-            if (Array.isArray(data.ingredients) && typeof data.ingredients[0] === 'object') {
-                // Handle Structured AI Data ({ amount, name })
-                setIngredientsList(data.ingredients.map((ing, i) => ({
-                    id: Date.now() + i,
-                    amount: ing.amount || '',
-                    item: ing.name || ing.item || '' // Support both 'name' and 'item'
-                })));
-            } else {
-                // Handle Legacy/String Data
-                setIngredientsList(parseIngredients(data.ingredients));
+            let newIngredients = [];
+
+            if (Array.isArray(data.ingredients)) {
+                // Check content of first element to decide strategy
+                const firstItem = data.ingredients[0];
+
+                if (typeof firstItem === 'object' && firstItem !== null) {
+                    // Strategy A: Array of Objects ({ amount, name })
+                    newIngredients = data.ingredients.map((ing, i) => ({
+                        id: Date.now() + i,
+                        amount: typeof ing.amount === 'object' ? JSON.stringify(ing.amount) : (ing.amount || ''), // Safety for nested objects
+                        item: ing.name || ing.item || ''
+                    }));
+                } else {
+                    // Strategy B: Array of Strings
+                    newIngredients = data.ingredients.map((line, i) => {
+                        // Attempt basic split if it looks like "1 cup Flour"
+                        const parts = String(line).trim().split(' ');
+                        const amount = parts[0] || '';
+                        const item = parts.slice(1).join(' ') || line; // Fallback to full line if split looks weird
+                        return {
+                            id: Date.now() + i,
+                            amount: amount,
+                            item: item
+                        };
+                    });
+                }
+            } else if (typeof data.ingredients === 'string') {
+                // Strategy C: Newline-separated String
+                newIngredients = parseIngredients(data.ingredients);
+            }
+
+            if (newIngredients.length > 0) {
+                setIngredientsList(newIngredients);
             }
         }
+
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
     };
 

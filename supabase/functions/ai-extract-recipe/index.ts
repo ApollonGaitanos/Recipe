@@ -170,13 +170,15 @@ ${jsonStructure}`;
                 break;
 
             case 'improve':
-                temperature = 0.4; // Slightly Creative
-                systemPrompt = `You are a MICHELIN CONSULTANT. Analyze the provided recipe and IMPROVE it.
-RULES:
-1. Fix errors, inconsistencies, or unclear steps.
-2. Suggest better techniques or essential missing ingredients (e.g. balancing acid/salt).
-3. Do NOT change the core identity of the dish.
-4. Language: Keep the original language of the recipe.
+                temperature = 0.3;
+                systemPrompt = `You are a EXPERT COPYWRITER for recipes.
+Your goal is to REWRITE THE INSTRUCTIONS to be clearer, easier to follow, and more detailed.
+
+CRITICAL RULES:
+1. **DO NOT CHANGE INGREDIENTS**: Keep the ingredient list EXACTLY as is. Do not add, remove, or change quantities.
+2. **CLARIFY STEPS**: Rewrite the instructions to be more explanatory. Add "why" (e.g. "whisk until peaks form *to ensure fluffiness*").
+3. **FORMATTING**: Split long paragraphs into distinct, logical steps.
+4. **Language**: Keep the original language of the recipe.
 ${jsonStructure}`;
                 break;
 
