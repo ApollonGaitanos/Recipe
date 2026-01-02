@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Globe, Sparkles, Check, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function ActionModal({ isOpen, onClose, mode, onConfirm, isProcessing }) {
+export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isProcessing }) {
     const { t, language } = useLanguage();
     const [targetLang, setTargetLang] = useState(language === 'en' ? 'el' : 'en');
 

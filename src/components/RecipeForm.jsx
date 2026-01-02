@@ -4,7 +4,7 @@ import { useRecipes } from '../context/RecipeContext';
 // import { useLanguage } from '../context/LanguageContext';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
-import ActionModal from './ActionModal';
+import TranslationModal from './TranslationModal';
 import { parseRecipe } from '../utils/recipeParser';
 
 // Note: RecipeForm now purely handles form state and validation.
@@ -470,7 +470,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
                 isMakingPublic={true}
             />
-            <ActionModal
+            <TranslationModal
                 isOpen={actionModal.isOpen}
                 onClose={() => !isProcessingAI && setActionModal({ isOpen: false, mode: null })}
                 mode={actionModal.mode}

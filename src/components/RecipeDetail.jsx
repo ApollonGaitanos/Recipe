@@ -7,7 +7,7 @@ import ConfirmModal from './ConfirmModal';
 import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 import { parseRecipe } from '../utils/recipeParser';
-import ActionModal from './ActionModal';
+import TranslationModal from './TranslationModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
     const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
@@ -388,7 +388,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 isMakingPublic={!recipe.is_public}
             />
 
-            <ActionModal
+            <TranslationModal
                 isOpen={actionModal.isOpen}
                 onClose={() => !isProcessing && setActionModal({ isOpen: false, mode: null })}
                 mode={actionModal.mode}
