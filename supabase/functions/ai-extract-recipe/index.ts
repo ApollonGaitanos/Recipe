@@ -231,9 +231,9 @@ RULES:
 1. **CONTENT INTEGRITY**: Extract the recipe EXACTLY as provided. Do NOT change the style, tone, or core instructions.
 2. **SMART REPAIR**: If the input is unstructured or missing minor details (e.g., temperature), FORMAT and INFER logical fixes.
 3. **LANGUAGE**: 
-   - Source is Greek -> Output Greek.
-   - Source is English -> Output English.
-   - Source is Other -> Translate to **${targetLanguage || 'English'}**.
+   - Detect the language of the input.
+   - The Output MUST be in the SAME language.
+   - DO NOT TRANSLATE (even if it is a different language like French or German).
 
 EXAMPLE:
 Input URL/Text: "Just mix 2 cups flour and 1 cup water, bake at 350 for 20 mins."
