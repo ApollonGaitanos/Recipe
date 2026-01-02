@@ -323,11 +323,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             isOpen: true,
                             type: 'cancel',
                             title: 'Discard Changes?',
-                            description: 'Are you sure you want to discard your changes? This action cannot be undone.',
                             onConfirm: () => {
+                                setConfirmModal({ isOpen: false, type: null, title: '', description: '', onConfirm: null });
                                 isFormSubmit.current = true;
                                 window.history.back(); // Undo lock
-                                setTimeout(onCancel, 0); // Navigate away
+                                setTimeout(onCancel, 100); // Navigate away
                             }
                         })}
                         className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
