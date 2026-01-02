@@ -256,10 +256,14 @@ IMPORTANT:
         // We will try these models in order.
         // Strategy: High Limit -> specific versions -> experimental -> legacy
         const MODELS_TO_TRY = [
-            'gemini-1.5-flash',           // Primary: Fast & Cost Effective
-            'gemini-1.5-pro',             // Secondary: High Reasoning
-            'gemini-2.0-flash-exp',       // Experimental: Fast
-            'gemini-1.5-flash-8b'         // Fallback: Lightweight
+            'gemini-2.5-flash-lite-preview', // High Quota Experimental
+            'gemini-2.5-flash-lite',         // High Quota Stable
+            'gemma-3-27b-it',                // Open Model (High Quota)
+            'gemma-3-12b-it',                // Open Model (High Quota)
+            'gemini-1.5-flash',              // Standard
+            'gemini-1.5-pro',
+            'gemini-2.0-flash-exp',
+            'gemini-1.5-flash-8b'
         ];
 
         let lastError = null;
