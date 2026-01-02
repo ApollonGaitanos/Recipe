@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { User as UserIcon, Settings, LogOut, ChevronRight, Save } from "lucide-react";
+import { User as UserIcon, Settings, LogOut, ChevronRight, Save, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { supabase } from "../supabaseClient";
 import Layout from "./Layout";
 import LogoutModal from "./LogoutModal";
 
@@ -23,6 +24,8 @@ const AccountSettings = () => {
         dietary: []
     });
 
+    const [usernameStatus, setUsernameStatus] = useState(null); // 'checking', 'available', 'unavailable', null
+
     // Initialize form with user data
     useEffect(() => {
         if (user) {
@@ -34,7 +37,54 @@ const AccountSettings = () => {
         }
     }, [user, profile]);
 
+    // specific useEffect for debounced username check
+    useEffect(() => {
+        const checkUsername = async () => {
+            const usernameToCheck = formData.username.trim();
+            const currentUsername = profile?.username;
+
+            // If empty or same as current, reset status
+            if (!usernameToCheck || usernameToCheck === currentUsername) {
+                setUsernameStatus(null);
+                return;
+            }
+
+            // Only check if length > 2
+            if (usernameToCheck.length < 3) {
+                setUsernameStatus(null);
+                return;
+            }
+
+            setUsernameStatus('checking');
+
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('username')
+                    .eq('username', usernameToCheck)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (data) {
+                    setUsernameStatus('unavailable');
+                } else {
+                    setUsernameStatus('available');
+                }
+            } catch (err) {
+                console.error("Error checking username:", err);
+                setUsernameStatus(null); // Reset on error to avoid blocking
+            }
+        };
+
+        const timeoutId = setTimeout(checkUsername, 500); // 500ms debounce
+        return () => clearTimeout(timeoutId);
+    }, [formData.username, profile?.username]);
+
+
     const handleSave = async () => {
+        if (usernameStatus === 'unavailable') return; // Prevent save if unavailable
+
         setLoading(true);
         try {
             // Update Auth Metadata (Bio, Dietary)
@@ -50,7 +100,11 @@ const AccountSettings = () => {
                     username: formData.username
                 });
                 if (profileError) {
-                    if (profileError.code === '23505') throw new Error("this username already exist");
+                    // Fallback database check
+                    if (profileError.code === '23505') {
+                        setUsernameStatus('unavailable');
+                        throw new Error("this username already exist");
+                    }
                     throw profileError;
                 }
             }
@@ -59,7 +113,10 @@ const AccountSettings = () => {
             setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
             console.error("Failed to update profile", err);
-            alert(`Error: ${err.message}`);
+            // Only alert if it's NOT the username error (which is handled by UI)
+            if (err.message !== "this username already exist") {
+                alert(`Error: ${err.message}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -146,14 +203,31 @@ const AccountSettings = () => {
                                 <div className="space-y-6">
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Username</label>
-                                        <input
-                                            type="text"
-                                            value={formData.username}
-                                            onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
-                                            placeholder="username"
-                                        />
-                                        <p className="text-xs text-gray-400 mt-1">Must be unique. Used for public recipes.</p>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={formData.username}
+                                                onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
+                                                className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none pr-10 ${usernameStatus === 'unavailable'
+                                                        ? 'border-red-500 focus:ring-2 focus:ring-red-200'
+                                                        : usernameStatus === 'available'
+                                                            ? 'border-green-500 focus:ring-2 focus:ring-green-200'
+                                                            : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                                    }`}
+                                                placeholder="username"
+                                            />
+                                            {/* Validation Icons */}
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                {usernameStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
+                                                {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
+                                            </div>
+                                        </div>
+                                        {usernameStatus === 'unavailable' ? (
+                                            <p className="text-xs text-red-500 mt-1 font-bold">This username is already taken</p>
+                                        ) : (
+                                            <p className="text-xs text-gray-400 mt-1">Must be unique. Used for public recipes.</p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -197,9 +271,9 @@ const AccountSettings = () => {
                                         </button>
                                         <button
                                             onClick={handleSave}
-                                            disabled={loading}
-                                            className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all ${loading
-                                                ? 'bg-gray-400 cursor-not-allowed'
+                                            disabled={loading || usernameStatus === 'unavailable'}
+                                            className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all ${loading || usernameStatus === 'unavailable'
+                                                ? 'bg-gray-400 cursor-not-allowed opacity-70'
                                                 : 'bg-primary hover:bg-green-600 hover:-translate-y-0.5'
                                                 }`}
                                         >
