@@ -184,7 +184,8 @@ ${jsonStructure}`;
 
             case 'translate':
                 temperature = 0.1; // Strict
-                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${targetLanguage === 'el' ? 'Greek' : 'English'}**.
+                const langName = targetLanguage === 'el' ? 'Greek' : (targetLanguage === 'en' ? 'English' : targetLanguage);
+                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${langName}**.
 RULES:
 1. Translate Title, Ingredients, Instructions, and Tags.
 2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek). TRANSLATE THE UNIT NAME ITSELF (e.g. 'cups' -> 'φλιτζάνια', 'oz' -> 'γρ').
