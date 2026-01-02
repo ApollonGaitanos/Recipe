@@ -430,6 +430,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         <input
                                             className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
                                             type="number"
+                                            min="0"
                                             value={formData.prepTime}
                                             onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
                                             placeholder="15"
@@ -443,6 +444,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         <input
                                             className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
                                             type="number"
+                                            min="0"
                                             value={formData.cookTime}
                                             onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
                                             placeholder="45"

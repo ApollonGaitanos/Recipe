@@ -190,11 +190,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             </button>
                         </div>
                     )}
-                    <div className="flex items-center gap-3 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                        <span className="uppercase tracking-wider">Editor's Pick</span>
-                        <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                        <span className="uppercase tracking-wider">Gluten Free</span>
-                    </div>
+
 
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl">
                         {recipe.title}
@@ -396,17 +392,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
                                         {step}
                                     </p>
-                                    {/* Simulated Tip for visual matching */}
-                                    {index === 0 && (
-                                        <div className="mt-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20 flex gap-3">
-                                            <div className="shrink-0 text-blue-500">
-                                                <Users className="w-5 h-5" />
-                                            </div>
-                                            <p className="text-sm text-blue-700 dark:text-blue-300 italic">
-                                                Tip: The drier the skin, the crispier it will get! Don't skip the paper towels.
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>

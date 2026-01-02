@@ -19,7 +19,7 @@ const translations = {
         noRecipes: 'No recipes found. Try adding one!',
         prepTime: 'Prep',
         cookTime: 'Cook',
-        minSuffix: 'm',
+        minSuffix: ' min',
         servings: 'Servings',
         edit: 'Edit',
         delete: 'Delete',
