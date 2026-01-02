@@ -24,6 +24,7 @@ const AccountSettings = () => {
         dietary: []
     });
 
+    const [isEditing, setIsEditing] = useState(false);
     const [usernameStatus, setUsernameStatus] = useState(null); // 'checking', 'available', 'unavailable', null
 
     // Initialize form with user data
@@ -39,6 +40,8 @@ const AccountSettings = () => {
 
     // specific useEffect for debounced username check
     useEffect(() => {
+        if (!isEditing) return; // Don't check if not editing
+
         const checkUsername = async () => {
             const usernameToCheck = formData.username.trim();
             const currentUsername = profile?.username;
@@ -56,7 +59,6 @@ const AccountSettings = () => {
             }
 
             setUsernameStatus('checking');
-            console.log("Checking availability for:", usernameToCheck);
 
             try {
                 const { data, error } = await supabase
@@ -65,16 +67,11 @@ const AccountSettings = () => {
                     .eq('username', usernameToCheck)
                     .maybeSingle();
 
-                if (error) {
-                    console.error("Supabase query error:", error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 if (data) {
-                    console.log("Username taken:", data);
                     setUsernameStatus('unavailable');
                 } else {
-                    console.log("Username available");
                     setUsernameStatus('available');
                 }
             } catch (err) {
@@ -85,7 +82,7 @@ const AccountSettings = () => {
 
         const timeoutId = setTimeout(checkUsername, 300); // 300ms debounce (faster)
         return () => clearTimeout(timeoutId);
-    }, [formData.username, profile?.username]);
+    }, [formData.username, profile?.username, isEditing]);
 
 
     const handleSave = async () => {
@@ -116,7 +113,10 @@ const AccountSettings = () => {
             }
 
             setSuccess(true);
-            setTimeout(() => setSuccess(false), 3000);
+            setTimeout(() => {
+                setSuccess(false);
+                setIsEditing(false); // Disable edit mode on success
+            }, 1000); // Short delay to show "Saved!"
         } catch (err) {
             console.error("Failed to update profile", err);
             // Only alert if it's NOT the username error (which is handled by UI)
@@ -207,62 +207,85 @@ const AccountSettings = () => {
 
                                 {/* Form */}
                                 <div className="space-y-6">
+                                    <div className="flex justify-end">
+                                        {!isEditing && (
+                                            <button
+                                                onClick={() => setIsEditing(true)}
+                                                className="px-6 py-2.5 rounded-full font-bold text-white bg-primary hover:bg-green-600 hover:-translate-y-0.5 shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+                                            >
+                                                <Settings size={18} />
+                                                Edit Profile
+                                            </button>
+                                        )}
+                                    </div>
+
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Username</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
+                                                disabled={!isEditing}
                                                 value={formData.username}
                                                 onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
-                                                className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none pr-10 ${usernameStatus === 'unavailable'
-                                                    ? 'border-red-500 focus:ring-2 focus:ring-red-200'
-                                                    : usernameStatus === 'available'
-                                                        ? 'border-green-500 focus:ring-2 focus:ring-green-200'
-                                                        : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                                className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none pr-10 ${!isEditing
+                                                        ? 'border-transparent bg-transparent pl-0'
+                                                        : usernameStatus === 'unavailable'
+                                                            ? 'border-red-500 focus:ring-2 focus:ring-red-200'
+                                                            : usernameStatus === 'available'
+                                                                ? 'border-green-500 focus:ring-2 focus:ring-green-200'
+                                                                : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                     }`}
                                                 placeholder="username"
                                             />
-                                            {/* Validation Icons */}
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                {usernameStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
-                                                {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                                                {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
-                                            </div>
+                                            {/* Validation Icons - Only show when editing */}
+                                            {isEditing && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    {usernameStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
+                                                    {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                    {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Explicit Validation Feedback Text */}
-                                        <div className="mt-2 text-xs flex items-center gap-1 min-h-[1.25rem]">
-                                            {usernameStatus === 'checking' && (
-                                                <span className="text-gray-500 flex items-center gap-1">
-                                                    <Loader2 size={12} className="animate-spin" /> Checking availability...
-                                                </span>
-                                            )}
-                                            {usernameStatus === 'available' && (
-                                                <span className="text-green-600 font-medium">
-                                                    ✓ Username is available
-                                                </span>
-                                            )}
-                                            {usernameStatus === 'unavailable' && (
-                                                <span className="text-red-500 font-bold">
-                                                    ✕ This username is already taken
-                                                </span>
-                                            )}
-                                            {!usernameStatus && (
-                                                <span className="text-gray-400">Must be unique. Used for public recipes.</span>
-                                            )}
-                                        </div>
+                                        {/* Explicit Validation Feedback Text - Only show when editing */}
+                                        {isEditing && (
+                                            <div className="mt-2 text-xs flex items-center gap-1 min-h-[1.25rem]">
+                                                {usernameStatus === 'checking' && (
+                                                    <span className="text-gray-500 flex items-center gap-1">
+                                                        <Loader2 size={12} className="animate-spin" /> Checking availability...
+                                                    </span>
+                                                )}
+                                                {usernameStatus === 'available' && (
+                                                    <span className="text-green-600 font-medium">
+                                                        ✓ Username is available
+                                                    </span>
+                                                )}
+                                                {usernameStatus === 'unavailable' && (
+                                                    <span className="text-red-500 font-bold">
+                                                        ✕ This username is already taken
+                                                    </span>
+                                                )}
+                                                {!usernameStatus && (
+                                                    <span className="text-gray-400">Must be unique. Used for public recipes.</span>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bio</label>
                                         <textarea
+                                            disabled={!isEditing}
                                             value={formData.bio}
                                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                             rows={4}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"
-                                            placeholder="Tell us a little about yourself..."
+                                            className={`w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white transition-all outline-none resize-none ${!isEditing
+                                                    ? 'border-transparent bg-transparent pl-0'
+                                                    : 'border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary/20 focus:border-primary'
+                                                }`}
+                                            placeholder={isEditing ? "Tell us a little about yourself..." : "No bio yet."}
                                         />
-                                        <p className="text-xs text-gray-500 mt-2 text-right">{formData.bio.length} / 200 characters</p>
+                                        {isEditing && <p className="text-xs text-gray-500 mt-2 text-right">{formData.bio.length} / 200 characters</p>}
                                     </div>
 
                                     {/* Dietary Preferences */}
@@ -272,46 +295,60 @@ const AccountSettings = () => {
                                             {['Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Paleo'].map((option) => (
                                                 <button
                                                     key={option}
+                                                    disabled={!isEditing}
                                                     onClick={() => toggleDietary(option)}
                                                     className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${formData.dietary?.includes(option)
                                                         ? 'bg-primary text-white shadow-md shadow-green-500/20 shadow-primary/20'
                                                         : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary dark:hover:text-[#17cf54] dark:hover:border-[#17cf54]'
-                                                        }`}
+                                                        } ${!isEditing && !formData.dietary?.includes(option) ? 'hidden' : ''} ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
                                                 >
                                                     {option}
                                                 </button>
                                             ))}
+                                            {!isEditing && (!formData.dietary || formData.dietary.length === 0) && (
+                                                <span className="text-gray-500 text-sm italic">No preferences selected</span>
+                                            )}
                                         </div>
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
-                                        <button
-                                            className="px-6 py-2.5 rounded-full font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-                                            onClick={() => window.history.back()}
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={loading || usernameStatus === 'unavailable'}
-                                            className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all ${loading || usernameStatus === 'unavailable'
-                                                ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                                : 'bg-primary hover:bg-green-600 hover:-translate-y-0.5'
-                                                }`}
-                                        >
-                                            {loading ? (
-                                                <span>Saving...</span>
-                                            ) : success ? (
-                                                <span>Saved!</span>
-                                            ) : (
-                                                <>
-                                                    <Save size={18} />
-                                                    Save Changes
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
+                                    {isEditing && (
+                                        <div className="pt-8 mt-8 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
+                                            <button
+                                                className="px-6 py-2.5 rounded-full font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                                                onClick={() => {
+                                                    setIsEditing(false);
+                                                    // Reset form to original user data
+                                                    setFormData({
+                                                        username: profile?.username || user.user_metadata?.username || '',
+                                                        bio: user.user_metadata?.bio || '',
+                                                        dietary: user.user_metadata?.dietary_preferences || []
+                                                    });
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleSave}
+                                                disabled={loading || usernameStatus === 'unavailable'}
+                                                className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all ${loading || usernameStatus === 'unavailable'
+                                                    ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                                    : 'bg-primary hover:bg-green-600 hover:-translate-y-0.5'
+                                                    }`}
+                                            >
+                                                {loading ? (
+                                                    <span>Saving...</span>
+                                                ) : success ? (
+                                                    <span>Saved!</span>
+                                                ) : (
+                                                    <>
+                                                        <Save size={18} />
+                                                        Save Changes
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </main>
