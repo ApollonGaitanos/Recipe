@@ -15,74 +15,102 @@ export default function ActionModal({ isOpen, onClose, mode, onConfirm, isProces
     const isTranslate = mode === 'translate';
 
     return (
-        <div className="modal-overlay active" onClick={isProcessing ? null : onClose}>
-            <div className="modal-content active" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                onClick={isProcessing ? null : onClose}
+            />
+
+            {/* Modal Content */}
+            <div className="relative w-full max-w-md bg-white dark:bg-[#1a2c20] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
-                <div className="modal-header">
-                    <div className="header-left">
-                        <div className={`modal-icon-container-small ${isTranslate ? 'blue' : 'purple'}`}>
-                            {isTranslate ? <Globe size={20} /> : <Sparkles size={20} />}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isTranslate
+                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                : 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'
+                            }`}>
+                            {isTranslate ? <Globe size={18} /> : <Sparkles size={18} />}
                         </div>
-                        <h3 className="modal-title-small">
+                        <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
                             {isTranslate ? t('translate') : t('improve')}
                         </h3>
                     </div>
-                    <button className="modal-close-btn" onClick={onClose} disabled={isProcessing}>
+                    <button
+                        onClick={onClose}
+                        disabled={isProcessing}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                    >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="modal-body">
+                <div className="p-6 bg-white dark:bg-[#1a2c20]">
                     {isTranslate ? (
-                        <div className="language-selector">
-                            <p className="modal-desc">Choose the target language for this recipe:</p>
+                        <div className="flex flex-col gap-3">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Choose the target language for this recipe:</p>
 
                             <button
-                                className={`lang-option ${targetLang === 'en' ? 'active' : ''}`}
+                                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${targetLang === 'en'
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300'
+                                        : 'border-[#dce5df] dark:border-[#2a4030] hover:border-blue-300 dark:hover:border-blue-700 bg-white dark:bg-[#112116] text-[#111813] dark:text-[#e0e6e2]'
+                                    }`}
                                 onClick={() => setTargetLang('en')}
                             >
-                                <span className="flag">🇬🇧</span>
-                                <span className="lang-name">English</span>
-                                {targetLang === 'en' && <Check size={18} className="check-icon" />}
+                                <span className="text-xl">🇬🇧</span>
+                                <span className="font-medium">English</span>
+                                {targetLang === 'en' && <Check size={18} className="ml-auto text-blue-500" />}
                             </button>
 
                             <button
-                                className={`lang-option ${targetLang === 'el' ? 'active' : ''}`}
+                                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${targetLang === 'el'
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300'
+                                        : 'border-[#dce5df] dark:border-[#2a4030] hover:border-blue-300 dark:hover:border-blue-700 bg-white dark:bg-[#112116] text-[#111813] dark:text-[#e0e6e2]'
+                                    }`}
                                 onClick={() => setTargetLang('el')}
                             >
-                                <span className="flag">🇬🇷</span>
-                                <span className="lang-name">Ελληνικά</span>
-                                {targetLang === 'el' && <Check size={18} className="check-icon" />}
+                                <span className="text-xl">🇬🇷</span>
+                                <span className="font-medium">Ελληνικά</span>
+                                {targetLang === 'el' && <Check size={18} className="ml-auto text-blue-500" />}
                             </button>
                         </div>
                     ) : (
-                        <div className="improve-content">
-                            <div className="improve-feature">
-                                <span className="bullet">✨</span>
-                                <span>Fixes typos and formatting</span>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
+                                <span className="text-lg">✨</span>
+                                <span className="font-medium text-sm">Fixes typos and formatting</span>
                             </div>
-                            <div className="improve-feature">
-                                <span className="bullet">📊</span>
-                                <span>Standardizes measurements</span>
+                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
+                                <span className="text-lg">📊</span>
+                                <span className="font-medium text-sm">Standardizes measurements</span>
                             </div>
-                            <div className="improve-feature">
-                                <span className="bullet">📝</span>
-                                <span>Clarifies instructions</span>
+                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
+                                <span className="text-lg">📝</span>
+                                <span className="font-medium text-sm">Clarifies instructions</span>
                             </div>
-                            <p className="modal-note">This will update your current recipe.</p>
+                            <p className="text-center text-xs text-gray-400 mt-2">This will update your current recipe.</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="modal-footer">
-                    <button className="btn-secondary" onClick={onClose} disabled={isProcessing}>
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#dce5df] dark:border-[#2a4030] bg-[#fcfdfc] dark:bg-[#15231a]">
+                    <button
+                        className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                        onClick={onClose}
+                        disabled={isProcessing}
+                    >
                         {t('cancel')}
                     </button>
                     <button
-                        className={`btn-primary ${isTranslate ? 'blue-btn' : 'purple-btn'}`}
+                        className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg transition-all ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:-translate-y-0.5'
+                            } ${isTranslate
+                                ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
+                                : 'bg-purple-600 hover:bg-purple-500 shadow-purple-500/20'
+                            }`}
                         onClick={handleConfirm}
                         disabled={isProcessing}
                     >
@@ -96,181 +124,7 @@ export default function ActionModal({ isOpen, onClose, mode, onConfirm, isProces
                         )}
                     </button>
                 </div>
-
             </div>
-
-            <style jsx>{`
-                .modal-content {
-                    background: var(--color-surface);
-                    width: 90%;
-                    max-width: 400px; /* Compact width */
-                    border-radius: var(--radius-lg);
-                    box-shadow: var(--shadow-xl);
-                    border: 1px solid var(--color-border);
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-
-                @keyframes modalPop {
-                    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
-                }
-
-                .modal-header {
-                    padding: 16px 20px;
-                    border-bottom: 1px solid var(--color-border);
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    background: var(--color-surface);
-                }
-
-                .header-left {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                }
-
-                .modal-icon-container-small {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                
-                .modal-icon-container-small.blue {
-                    background: #e0f2fe; color: #0284c7;
-                }
-                .modal-icon-container-small.purple {
-                    background: #f3e8ff; color: #9333ea;
-                }
-
-                body.dark-mode .modal-icon-container-small.blue { background: rgba(14, 165, 233, 0.2); }
-                body.dark-mode .modal-icon-container-small.purple { background: rgba(147, 51, 234, 0.2); }
-
-                .modal-title-small {
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    margin: 0;
-                    color: var(--color-text);
-                }
-
-                .modal-close-btn {
-                    color: var(--color-text-light);
-                    background: transparent;
-                    border: none;
-                    padding: 4px;
-                    border-radius: 50%;
-                    cursor: pointer;
-                }
-
-                .modal-body {
-                    padding: 24px;
-                    color: var(--color-text);
-                }
-
-                .modal-desc {
-                    margin-top: 0;
-                    margin-bottom: 16px;
-                    color: var(--color-text-light);
-                    font-size: 0.95rem;
-                }
-
-                /* Language Options */
-                .language-selector {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                }
-
-                .lang-option {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 12px 16px;
-                    border: 2px solid var(--color-border);
-                    border-radius: 12px;
-                    background: var(--color-bg);
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    color: var(--color-text);
-                    text-align: left;
-                    font-size: 1rem;
-                    font-weight: 500;
-                    position: relative;
-                }
-
-                .lang-option:hover {
-                    border-color: #0ea5e9;
-                    background: var(--color-surface);
-                }
-
-                .lang-option.active {
-                    border-color: #0ea5e9;
-                    background: rgba(14, 165, 233, 0.05);
-                    color: #0ea5e9;
-                }
-
-                .flag { font-size: 1.4rem; }
-                .check-icon { margin-left: auto; color: #0ea5e9; }
-
-                /* Improve Features */
-                .improve-content {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                .improve-feature {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 8px 12px;
-                    background: rgba(147, 51, 234, 0.05);
-                    border-radius: 8px;
-                    color: var(--color-text);
-                    font-weight: 500;
-                }
-
-                .bullet { font-size: 1.2rem; }
-                
-                .modal-note {
-                    font-size: 0.85rem;
-                    color: var(--color-text-light);
-                    text-align: center;
-                    margin-top: 12px;
-                    margin-bottom: 0;
-                }
-
-                /* Footer */
-                .modal-footer {
-                    padding: 16px 24px;
-                    border-top: 1px solid var(--color-border);
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 12px;
-                    background: var(--color-surface);
-                }
-
-                .blue-btn {
-                    background: #0ea5e9;
-                    color: white;
-                }
-                
-                .blue-btn:hover { background: #0284c7; }
-
-                .purple-btn {
-                    background: #9333ea;
-                    color: white;
-                }
-                
-                .purple-btn:hover { background: #7e22ce; }
-
-            `}</style>
         </div>
     );
 }
