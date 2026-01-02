@@ -172,8 +172,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         {isSaving ? 'Save Recipe' : 'Save Recipe'}
                     </button>
 
-                    {/* Profile Avatar Placeholder (from reference) */}
-                    <div className="ml-4 h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 bg-cover bg-center border border-[#dce5df] dark:border-[#2a4030]" style={{ backgroundImage: "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix')" }}></div>
+
                 </div>
             </header>
 
