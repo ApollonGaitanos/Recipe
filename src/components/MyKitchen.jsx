@@ -17,7 +17,9 @@ export default function MyKitchen() {
     const [searchQuery, setSearchQuery] = useState('');
 
     // --- Derived Data ---
-    const username = user?.user_metadata?.username || "Chef";
+    const { profile } = useAuth(); // Need to destructure profile from useAuth
+    const displayUsername = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || "Chef";
+    const displayBio = profile?.bio || user?.user_metadata?.bio || "No bio yet";
     const recipeCount = recipes.length;
 
     // Filter Logic
@@ -41,15 +43,13 @@ export default function MyKitchen() {
                             {/* Profile Info (No Icon) */}
                             <div className="flex flex-col gap-2">
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
-                                    {username}'s Kitchen
+                                    {displayUsername}'s Kitchen
                                 </h1>
                                 <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg">
-                                    Culinary enthusiast & sourdough baker
+                                    {displayBio}
                                 </p>
                                 <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
                                     <span><strong>{recipeCount}</strong> Recipes</span>
-                                    <span><strong>12</strong> Followers</span>
-                                    <span><strong>8</strong> Following</span>
                                 </div>
                             </div>
 
