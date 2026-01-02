@@ -83,6 +83,11 @@ export default function Layout({ children, fullWidth = false }) {
 
                         {user ? (
                             <div className="flex items-center gap-2">
+                                {/* Username Display */}
+                                <span className="hidden sm:block text-sm font-bold text-gray-700 dark:text-gray-300 mr-2">
+                                    {/* Try profile username, then metadata, then email */}
+                                    {((useAuth().profile?.username) || (user?.user_metadata?.username) || user?.email?.split('@')[0])}
+                                </span>
                                 <button
                                     onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
                                     className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center text-text-primary hover:bg-surface-active transition-colors"

@@ -30,7 +30,7 @@ export default function RecipeContext({ children }) {
         tags: dbRecipe.tags || [],
         is_public: !!dbRecipe.is_public,
         user_id: dbRecipe.user_id,
-        author_username: dbRecipe.author_username || '',
+        author_username: dbRecipe.profiles?.username || dbRecipe.author_username || '',
         likes_count: dbRecipe.likes_count || 0,
         image_url: dbRecipe.image_url,
         description: dbRecipe.description || '',
@@ -78,7 +78,7 @@ export default function RecipeContext({ children }) {
         }
         const { data, error } = await supabase
             .from('recipes')
-            .select('*')
+            .select('*, profiles(username)')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
@@ -92,7 +92,7 @@ export default function RecipeContext({ children }) {
     const fetchPublicRecipes = async () => {
         const { data, error } = await supabase
             .from('recipes')
-            .select('*')
+            .select('*, profiles(username)')
             .eq('is_public', true)
             .order('created_at', { ascending: false });
 

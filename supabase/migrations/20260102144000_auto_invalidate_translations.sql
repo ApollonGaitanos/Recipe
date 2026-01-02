@@ -11,7 +11,8 @@ end;
 $$ language plpgsql security definer;
 
 -- Trigger to fire after update
-create or replace trigger on_recipe_update
+drop trigger if exists on_recipe_update on public.recipes;
+create trigger on_recipe_update
 after update on public.recipes
 for each row
 execute function public.handle_recipe_update();

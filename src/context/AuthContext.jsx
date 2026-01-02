@@ -10,18 +10,44 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const fetchProfile = async (userId) => {
+        if (!userId) {
+            setProfile(null);
+            return;
+        }
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (!error && data) {
+            setProfile(data);
+        } else {
+            console.error("Error fetching profile:", error);
+            // Fallback: create one if missing? (Trigger should handle it, but fallback is safe)
+            setProfile(null);
+        }
+    };
 
     useEffect(() => {
         // Check active sessions
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            if (currentUser) fetchProfile(currentUser.id);
             setLoading(false);
         });
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            if (currentUser) fetchProfile(currentUser.id);
+            else setProfile(null);
             setLoading(false);
         });
 
@@ -53,13 +79,32 @@ export function AuthProvider({ children }) {
         return { data: user, error };
     };
 
+    const updateProfileTable = async (updates) => {
+        if (!user) return { error: { message: "No user logged in" } };
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', user.id)
+            .select()
+            .single();
+
+        if (data) {
+            setProfile(data);
+        }
+        return { data, error };
+    };
+
     const value = {
         user,
+        profile,
         signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
         signUp,
         updateProfile,
+        updateProfileTable,
         signOut: async () => {
             setUser(null);
+            setProfile(null);
             await supabase.auth.signOut();
         },
     };

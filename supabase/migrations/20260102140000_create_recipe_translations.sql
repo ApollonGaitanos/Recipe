@@ -19,6 +19,7 @@ alter table recipe_translations enable row level security;
 
 -- Policies
 -- 1. Public recipes translations are viewable by everyone
+drop policy if exists "Public translations are viewable by everyone" on recipe_translations;
 create policy "Public translations are viewable by everyone"
   on recipe_translations for select
   using (
@@ -30,6 +31,7 @@ create policy "Public translations are viewable by everyone"
   );
 
 -- 2. Users can view translations of their own private recipes
+drop policy if exists "Users can view their own private translations" on recipe_translations;
 create policy "Users can view their own private translations"
   on recipe_translations for select
   using (
@@ -42,10 +44,12 @@ create policy "Users can view their own private translations"
 
 -- 3. Users can insert/update translations (this is loose, usually server-side, but client-side AI flow needs it)
 -- Ideally we check if they have access to the base recipe, but for now allow auth users to cache translations
+drop policy if exists "Authenticated users can create translations" on recipe_translations;
 create policy "Authenticated users can create translations"
   on recipe_translations for insert
   with check (auth.role() = 'authenticated');
 
+drop policy if exists "Authenticated users can update translations" on recipe_translations;
 create policy "Authenticated users can update translations"
   on recipe_translations for update
   using (auth.role() = 'authenticated');

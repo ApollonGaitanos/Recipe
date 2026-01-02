@@ -7,7 +7,7 @@ import Layout from "./Layout";
 import LogoutModal from "./LogoutModal";
 
 const AccountSettings = () => {
-    const { user, updateProfile, signOut, loading: authLoading } = useAuth();
+    const { user, profile, updateProfile, updateProfileTable, signOut, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     // eslint-disable-next-line no-unused-vars
     const { theme } = useTheme();
@@ -18,6 +18,7 @@ const AccountSettings = () => {
     const [activeTab, setActiveTab] = useState("edit-profile");
 
     const [formData, setFormData] = useState({
+        username: '',
         firstName: '',
         lastName: '',
         bio: '',
@@ -27,35 +28,47 @@ const AccountSettings = () => {
 
     // Initialize form with user data
     useEffect(() => {
-        if (user?.user_metadata) {
+        if (user) {
             setFormData({
-                firstName: user.user_metadata.first_name || '',
-                lastName: user.user_metadata.last_name || '',
-                bio: user.user_metadata.bio || '',
-                dietary: user.user_metadata.dietary_preferences || [],
-                isPublic: user.user_metadata.public_profile || false
+                username: profile?.username || user.user_metadata?.username || '',
+                firstName: user.user_metadata?.first_name || '',
+                lastName: user.user_metadata?.last_name || '',
+                bio: user.user_metadata?.bio || '',
+                dietary: user.user_metadata?.dietary_preferences || [],
+                isPublic: user.user_metadata?.public_profile || false
             });
         }
-    }, [user]);
+    }, [user, profile]);
 
     const handleSave = async () => {
         setLoading(true);
         try {
-            const { error } = await updateProfile({
+            // Update Auth Metadata (FirstName, LastName, Bio etc)
+            const { error: metaError } = await updateProfile({
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 bio: formData.bio,
                 dietary_preferences: formData.dietary,
                 public_profile: formData.isPublic,
-                username: `${formData.firstName} ${formData.lastName}`.trim() || user.email.split('@')[0]
             });
+            if (metaError) throw metaError;
 
-            if (error) throw error;
+            // Update Profile Table (Username)
+            if (formData.username !== profile?.username) {
+                const { error: profileError } = await updateProfileTable({
+                    username: formData.username
+                });
+                if (profileError) {
+                    if (profileError.code === '23505') throw new Error("Username already taken");
+                    throw profileError;
+                }
+            }
+
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
             console.error("Failed to update profile", err);
-            alert("Error updating profile. Please try again.");
+            alert(`Error: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -145,6 +158,17 @@ const AccountSettings = () => {
 
                                 {/* Form */}
                                 <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                                        <input
+                                            type="text"
+                                            value={formData.username}
+                                            onChange={(e) => setFormData({ ...formData, username: e.target.value.trim() })}
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                                            placeholder="username"
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1">Must be unique. Used for public recipes.</p>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">First Name</label>
