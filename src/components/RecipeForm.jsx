@@ -68,506 +68,507 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     useEffect(() => {
         console.log("DEBUG: isDirty:", isDirty, "isSaving:", isSaving, "blocker.state:", blocker.state);
     }, [isDirty, isSaving, blocker.state]);
-    if (recipeId && recipes.length > 0) {
-        const recipe = recipes.find(r => r.id === recipeId);
-        if (recipe) {
-            setFormData({
-                ...recipe,
-                tags: recipe.tags ? recipe.tags.join(', ') : '',
-                is_public: recipe.is_public || false,
-                description: recipe.description || ''
-            });
-            setIngredientsList(parseIngredients(recipe.ingredients));
-            setInstructionsList(parseInstructions(recipe.instructions));
+    useEffect(() => {
+        if (recipeId && recipes.length > 0) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (recipe) {
+                setFormData({
+                    ...recipe,
+                    tags: recipe.tags ? recipe.tags.join(', ') : '',
+                    is_public: recipe.is_public || false,
+                    description: recipe.description || ''
+                });
+                setIngredientsList(parseIngredients(recipe.ingredients));
+                setInstructionsList(parseInstructions(recipe.instructions));
+            }
+        } else if (!recipeId) {
+            // New Recipe Defaults
+            setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
+            setInstructionsList([{ id: Date.now(), text: '' }]);
         }
-    } else if (!recipeId) {
-        // New Recipe Defaults
-        setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
-        setInstructionsList([{ id: Date.now(), text: '' }]);
-    }
-}, [recipeId, recipes]);
+    }, [recipeId, recipes]);
 
-const handleSaveLocal = async () => {
-    setIsSaving(true);
-    // Note: setting isSaving=true prevents blocker from triggering on navigation inside handleSave
+    const handleSaveLocal = async () => {
+        setIsSaving(true);
+        // Note: setting isSaving=true prevents blocker from triggering on navigation inside handleSave
 
-    // Serialize lists back to strings
-    const ingredientsStr = ingredientsList
-        .map(ing => `${ing.amount} ${ing.item}`.trim())
-        .filter(str => str.length > 0)
-        .join('\n');
+        // Serialize lists back to strings
+        const ingredientsStr = ingredientsList
+            .map(ing => `${ing.amount} ${ing.item}`.trim())
+            .filter(str => str.length > 0)
+            .join('\n');
 
-    const instructionsStr = instructionsList
-        .map(step => step.text.trim())
-        .filter(str => str.length > 0)
-        .join('\n');
+        const instructionsStr = instructionsList
+            .map(step => step.text.trim())
+            .filter(str => str.length > 0)
+            .join('\n');
 
-    const recipeData = {
-        ...formData,
-        ingredients: ingredientsStr,
-        instructions: instructionsStr,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
-        prepTime: Number(formData.prepTime) || 0,
-        cookTime: Number(formData.cookTime) || 0,
-        servings: Number(formData.servings) || 1,
-        is_public: formData.is_public
+        const recipeData = {
+            ...formData,
+            ingredients: ingredientsStr,
+            instructions: instructionsStr,
+            tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
+            prepTime: Number(formData.prepTime) || 0,
+            cookTime: Number(formData.cookTime) || 0,
+            servings: Number(formData.servings) || 1,
+            is_public: formData.is_public
+        };
+
+        try {
+            // Save Recipe (Triggers DB Wipe of old translations)
+            const savedRecipe = await onSave(recipeData);
+
+            // Determine ID (New or Existing)
+            const finalId = savedRecipe?.id || recipeId;
+
+            // Batch Save Pending Translations (Restoring valid ones)
+            if (finalId && pendingTranslations.length > 0) {
+                console.log(`Saving ${pendingTranslations.length} pending translations for ${finalId}...`);
+                const { error: transError } = await supabase
+                    .from('recipe_translations')
+                    .upsert(
+                        pendingTranslations.map(t => ({
+                            recipe_id: finalId,
+                            language_code: t.language_code,
+                            title: t.title,
+                            ingredients: t.ingredients,
+                            instructions: t.instructions,
+                            tags: t.tags
+                        }))
+                    );
+
+                if (transError) console.error("Error saving translations:", transError);
+                else console.log("Translations saved successfully.");
+
+                // Clear pending
+                setPendingTranslations([]);
+            }
+            // Reset dirty state on successful save (though we usually navigate away)
+            setIsDirty(false);
+
+        } catch (error) {
+            console.error("Save failed", error);
+            setIsSaving(false); // Re-enable blocker if save failed
+            alert(`Failed to save recipe: ${error.message || JSON.stringify(error)}`);
+        }
     };
 
-    try {
-        // Save Recipe (Triggers DB Wipe of old translations)
-        const savedRecipe = await onSave(recipeData);
+    const handleMagicImport = (data) => {
+        setFormData(prev => ({
+            ...prev,
+            title: data.title || prev.title,
+            prepTime: data.prepTime || prev.prepTime,
+            cookTime: data.cookTime || prev.cookTime,
+            servings: data.servings || prev.servings,
+        }));
+        markDirty();
 
-        // Determine ID (New or Existing)
-        const finalId = savedRecipe?.id || recipeId;
+        // Robust Ingredient Handling
+        if (data.ingredients) {
+            let newIngredients = [];
 
-        // Batch Save Pending Translations (Restoring valid ones)
-        if (finalId && pendingTranslations.length > 0) {
-            console.log(`Saving ${pendingTranslations.length} pending translations for ${finalId}...`);
-            const { error: transError } = await supabase
-                .from('recipe_translations')
-                .upsert(
-                    pendingTranslations.map(t => ({
-                        recipe_id: finalId,
-                        language_code: t.language_code,
-                        title: t.title,
-                        ingredients: t.ingredients,
-                        instructions: t.instructions,
-                        tags: t.tags
-                    }))
-                );
+            if (Array.isArray(data.ingredients)) {
+                // Check content of first element to decide strategy
+                const firstItem = data.ingredients[0];
 
-            if (transError) console.error("Error saving translations:", transError);
-            else console.log("Translations saved successfully.");
-
-            // Clear pending
-            setPendingTranslations([]);
-        }
-        // Reset dirty state on successful save (though we usually navigate away)
-        setIsDirty(false);
-
-    } catch (error) {
-        console.error("Save failed", error);
-        setIsSaving(false); // Re-enable blocker if save failed
-        alert(`Failed to save recipe: ${error.message || JSON.stringify(error)}`);
-    }
-};
-
-const handleMagicImport = (data) => {
-    setFormData(prev => ({
-        ...prev,
-        title: data.title || prev.title,
-        prepTime: data.prepTime || prev.prepTime,
-        cookTime: data.cookTime || prev.cookTime,
-        servings: data.servings || prev.servings,
-    }));
-    markDirty();
-
-    // Robust Ingredient Handling
-    if (data.ingredients) {
-        let newIngredients = [];
-
-        if (Array.isArray(data.ingredients)) {
-            // Check content of first element to decide strategy
-            const firstItem = data.ingredients[0];
-
-            if (typeof firstItem === 'object' && firstItem !== null) {
-                // Strategy A: Array of Objects ({ amount, name })
-                newIngredients = data.ingredients.map((ing, i) => ({
-                    id: Date.now() + i,
-                    amount: typeof ing.amount === 'object' ? JSON.stringify(ing.amount) : (ing.amount || ''), // Safety for nested objects
-                    item: (typeof ing.name === 'object' ? JSON.stringify(ing.name) : ing.name) || (typeof ing.item === 'object' ? JSON.stringify(ing.item) : ing.item) || ''
-                }));
-            } else {
-                // Strategy B: Array of Strings
-                newIngredients = data.ingredients.map((line, i) => {
-                    // Attempt basic split if it looks like "1 cup Flour"
-                    const parts = String(line).trim().split(' ');
-                    const amount = parts[0] || '';
-                    const item = parts.slice(1).join(' ') || line; // Fallback to full line if split looks weird
-                    return {
+                if (typeof firstItem === 'object' && firstItem !== null) {
+                    // Strategy A: Array of Objects ({ amount, name })
+                    newIngredients = data.ingredients.map((ing, i) => ({
                         id: Date.now() + i,
-                        amount: amount,
-                        item: item
+                        amount: typeof ing.amount === 'object' ? JSON.stringify(ing.amount) : (ing.amount || ''), // Safety for nested objects
+                        item: (typeof ing.name === 'object' ? JSON.stringify(ing.name) : ing.name) || (typeof ing.item === 'object' ? JSON.stringify(ing.item) : ing.item) || ''
+                    }));
+                } else {
+                    // Strategy B: Array of Strings
+                    newIngredients = data.ingredients.map((line, i) => {
+                        // Attempt basic split if it looks like "1 cup Flour"
+                        const parts = String(line).trim().split(' ');
+                        const amount = parts[0] || '';
+                        const item = parts.slice(1).join(' ') || line; // Fallback to full line if split looks weird
+                        return {
+                            id: Date.now() + i,
+                            amount: amount,
+                            item: item
+                        };
+                    });
+                }
+            } else if (typeof data.ingredients === 'string') {
+                // Strategy C: Newline-separated String
+                newIngredients = parseIngredients(data.ingredients);
+            }
+
+            if (newIngredients.length > 0) {
+                setIngredientsList(newIngredients);
+            }
+        }
+
+        if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
+    };
+
+    // AI Enhance/Translate Logic
+    // AI Enhance/Translate Logic
+    const executeAIAction = async (targetLang) => {
+        const mode = actionModal.mode;
+        setIsProcessingAI(true);
+        try {
+            // Construct current recipe state from form (for AI Context)
+            const currentRecipeState = {
+                ...formData,
+                ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
+                instructions: instructionsList.map(step => step.text).join('\n')
+            };
+
+            const inputPayload = {
+                text: JSON.stringify(currentRecipeState, null, 2),
+                mode: mode,
+                targetLanguage: targetLang || 'en' // default, controlled by modal
+            };
+
+            // Call AI
+            const result = await parseRecipe(inputPayload, targetLang || 'en', mode);
+
+            if (result) {
+                // Determine Language Codes
+                const detectedCode = result.detectedLanguage; // Should be returned by backend now
+                const targetCode = targetLang || 'en';
+
+                // If Translating: Snapshot both versions for "View Only" cache
+                if (mode === 'translate' && detectedCode && targetCode) {
+                    // 1. Snapshot Original (Current Form State)
+                    const originalSnapshot = {
+                        language_code: detectedCode,
+                        title: formData.title,
+                        ingredients: ingredientsList.map(ing => ({ amount: ing.amount, name: ing.item })),
+                        instructions: instructionsList.map(i => i.text), // Array of strings
+                        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
                     };
-                });
+
+                    // 2. Snapshot New (AI Result)
+                    const newSnapshot = {
+                        language_code: targetCode,
+                        title: result.title,
+                        ingredients: result.ingredients, // Already structured
+                        instructions: result.instructions, // Array of strings (from backend)
+                        tags: result.tags
+                    };
+
+                    // Add to Pending
+                    console.log("Queueing translations:", originalSnapshot.language_code, "&", newSnapshot.language_code);
+                    setPendingTranslations(prev => [...prev, originalSnapshot, newSnapshot]);
+                }
+
+                // Update Form Data with Result (Apply Change Permanently)
+                handleMagicImport(result);
+                setActionModal({ isOpen: false, mode: null });
             }
-        } else if (typeof data.ingredients === 'string') {
-            // Strategy C: Newline-separated String
-            newIngredients = parseIngredients(data.ingredients);
+        } catch (error) {
+            console.error(`AI ${mode} failed:`, error);
+            alert(`Failed: ${error.message}`);
+        } finally {
+            setIsProcessingAI(false);
         }
-
-        if (newIngredients.length > 0) {
-            setIngredientsList(newIngredients);
-        }
-    }
-
-    if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
-};
-
-// AI Enhance/Translate Logic
-// AI Enhance/Translate Logic
-const executeAIAction = async (targetLang) => {
-    const mode = actionModal.mode;
-    setIsProcessingAI(true);
-    try {
-        // Construct current recipe state from form (for AI Context)
-        const currentRecipeState = {
-            ...formData,
-            ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
-            instructions: instructionsList.map(step => step.text).join('\n')
-        };
-
-        const inputPayload = {
-            text: JSON.stringify(currentRecipeState, null, 2),
-            mode: mode,
-            targetLanguage: targetLang || 'en' // default, controlled by modal
-        };
-
-        // Call AI
-        const result = await parseRecipe(inputPayload, targetLang || 'en', mode);
-
-        if (result) {
-            // Determine Language Codes
-            const detectedCode = result.detectedLanguage; // Should be returned by backend now
-            const targetCode = targetLang || 'en';
-
-            // If Translating: Snapshot both versions for "View Only" cache
-            if (mode === 'translate' && detectedCode && targetCode) {
-                // 1. Snapshot Original (Current Form State)
-                const originalSnapshot = {
-                    language_code: detectedCode,
-                    title: formData.title,
-                    ingredients: ingredientsList.map(ing => ({ amount: ing.amount, name: ing.item })),
-                    instructions: instructionsList.map(i => i.text), // Array of strings
-                    tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
-                };
-
-                // 2. Snapshot New (AI Result)
-                const newSnapshot = {
-                    language_code: targetCode,
-                    title: result.title,
-                    ingredients: result.ingredients, // Already structured
-                    instructions: result.instructions, // Array of strings (from backend)
-                    tags: result.tags
-                };
-
-                // Add to Pending
-                console.log("Queueing translations:", originalSnapshot.language_code, "&", newSnapshot.language_code);
-                setPendingTranslations(prev => [...prev, originalSnapshot, newSnapshot]);
-            }
-
-            // Update Form Data with Result (Apply Change Permanently)
-            handleMagicImport(result);
-            setActionModal({ isOpen: false, mode: null });
-        }
-    } catch (error) {
-        console.error(`AI ${mode} failed:`, error);
-        alert(`Failed: ${error.message}`);
-    } finally {
-        setIsProcessingAI(false);
-    }
-};
+    };
 
 
 
-return (
-    <div className="fixed inset-0 z-50 bg-[#f6f8f6] dark:bg-[#112116] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+    return (
+        <div className="fixed inset-0 z-50 bg-[#f6f8f6] dark:bg-[#112116] overflow-y-auto animate-in slide-in-from-bottom duration-300">
 
-        {/* --- Top Navigation (Reference Match) --- */}
-        <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
-            <div className="flex items-center gap-4">
-                <button
-                    onClick={onCancel} // Triggers navigation, checking blocker
-                    className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
-                >
-                    <ArrowLeft size={24} />
-                </button>
-                <h2 className="text-xl font-bold leading-tight tracking-tight text-[#111813] dark:text-[#e0e6e2]">
-                    {recipeId ? 'Edit Recipe' : 'New Recipe'}
-                </h2>
-                <span className="hidden sm:block text-xs font-medium text-[#63886f] dark:text-[#8ca395] bg-[#dce5df]/30 dark:bg-[#2a4030]/30 px-2 py-1 rounded">
-                    Draft saved 2m ago {isDirty ? '(Unsaved)' : '(Saved)'}
-                </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-                <button
-                    onClick={() => setShowMagicImport(true)}
-                    className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#17cf54]/30 bg-[#17cf54]/5 px-4 text-sm font-bold text-[#17cf54] hover:bg-[#17cf54]/10 transition-colors mr-1"
-                >
-                    <Sparkles size={20} />
-                    <span className="hidden md:inline">Magic Import</span>
-                </button>
-
-                {/* Magic Enhance (Only in Edit Mode) */}
-                {recipeId && (
-                    <>
-                        <button
-                            onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
-                            className="flex h-10 items-center justify-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/5 px-4 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors mr-1"
-                        >
-                            <Sparkles size={20} />
-                            <span className="hidden md:inline">Enhance</span>
-                        </button>
-                        <button
-                            onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
-                            className="flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors mr-1"
-                        >
-                            <Globe size={20} />
-                            <span className="hidden md:inline">Translate</span>
-                        </button>
-                    </>
-                )}
-
-                <button
-                    onClick={onCancel} // Triggers navigation, checking blocker
-                    className="hidden sm:flex h-10 items-center justify-center rounded-lg bg-transparent px-4 text-sm font-bold text-[#63886f] dark:text-[#8ca395] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                >
-                    Cancel
-                </button>
-
-                <button
-                    onClick={handleSaveLocal} // Direct save call
-                    disabled={isSaving}
-                    className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
-                >
-                    {isSaving ? 'Saving...' : 'Save Recipe'}
-                </button>
-
-
-            </div>
-        </header>
-
-        <main className="max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-                {/* --- Sidebar (Left Column) --- */}
-                <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
-
-                    {/* Title Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
-                        <input
-                            className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors"
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => {
-                                setFormData(prev => ({ ...prev, title: e.target.value }));
-                                markDirty();
-                            }}
-                            placeholder="e.g. Grandma's Spanakopita"
-                        />
-                    </div>
-
-                    {/* Details Card */}
-                    <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 shadow-sm">
-                        <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
-                            <Sparkles className="text-[#17cf54]" size={20} />
-                            Details
-                        </h3>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                        type="number"
-                                        min="0"
-                                        value={formData.prepTime}
-                                        onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                        onChange={(e) => {
-                                            setFormData(prev => ({ ...prev, prepTime: e.target.value }));
-                                            markDirty();
-                                        }}
-                                        placeholder="15"
-                                    />
-                                    <span className="text-sm">min</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                        type="number"
-                                        min="0"
-                                        value={formData.cookTime}
-                                        onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                        onChange={(e) => {
-                                            setFormData(prev => ({ ...prev, cookTime: e.target.value }));
-                                            markDirty();
-                                        }}
-                                        placeholder="45"
-                                    />
-                                    <span className="text-sm">min</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-1 col-span-2">
-                                <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
-                                <input
-                                    className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                    type="number"
-                                    min="0"
-                                    value={formData.servings}
-                                    onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                    onChange={(e) => {
-                                        setFormData(prev => ({ ...prev, servings: e.target.value }));
-                                        markDirty();
-                                    }}
-                                    placeholder="4"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Photo Upload */}
-                    <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
-                        <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                            <Sparkles size={32} />
-                        </div>
-                        <p className="font-bold text-lg">Add Cover Photo</p>
-                        <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
-                    </div>
-
-                    {/* Description */}
-                    <div className="flex flex-col gap-3">
-                        <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
-                        <textarea
-                            value={formData.description || ''}
-                            onChange={(e) => {
-                                setFormData(prev => ({ ...prev, description: e.target.value }));
-                                markDirty();
-                            }}
-                            placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
-                            className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
-                            rows={4}
-                        />
-                    </div>
-
+            {/* --- Top Navigation (Reference Match) --- */}
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onCancel} // Triggers navigation, checking blocker
+                        className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                    <h2 className="text-xl font-bold leading-tight tracking-tight text-[#111813] dark:text-[#e0e6e2]">
+                        {recipeId ? 'Edit Recipe' : 'New Recipe'}
+                    </h2>
+                    <span className="hidden sm:block text-xs font-medium text-[#63886f] dark:text-[#8ca395] bg-[#dce5df]/30 dark:bg-[#2a4030]/30 px-2 py-1 rounded">
+                        Draft saved 2m ago {isDirty ? '(Unsaved)' : '(Saved)'}
+                    </span>
                 </div>
 
-                {/* --- Main Content (Right Column) --- */}
-                <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowMagicImport(true)}
+                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#17cf54]/30 bg-[#17cf54]/5 px-4 text-sm font-bold text-[#17cf54] hover:bg-[#17cf54]/10 transition-colors mr-1"
+                    >
+                        <Sparkles size={20} />
+                        <span className="hidden md:inline">Magic Import</span>
+                    </button>
 
-                    {/* Ingredients Section */}
-                    <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-2xl font-bold text-[#111813] dark:text-[#e0e6e2]">Ingredients</h3>
+                    {/* Magic Enhance (Only in Edit Mode) */}
+                    {recipeId && (
+                        <>
+                            <button
+                                onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
+                                className="flex h-10 items-center justify-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/5 px-4 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors mr-1"
+                            >
+                                <Sparkles size={20} />
+                                <span className="hidden md:inline">Enhance</span>
+                            </button>
+                            <button
+                                onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
+                                className="flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 text-sm font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors mr-1"
+                            >
+                                <Globe size={20} />
+                                <span className="hidden md:inline">Translate</span>
+                            </button>
+                        </>
+                    )}
+
+                    <button
+                        onClick={onCancel} // Triggers navigation, checking blocker
+                        className="hidden sm:flex h-10 items-center justify-center rounded-lg bg-transparent px-4 text-sm font-bold text-[#63886f] dark:text-[#8ca395] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        onClick={handleSaveLocal} // Direct save call
+                        disabled={isSaving}
+                        className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
+                    >
+                        {isSaving ? 'Saving...' : 'Save Recipe'}
+                    </button>
+
+
+                </div>
+            </header>
+
+            <main className="max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+                    {/* --- Sidebar (Left Column) --- */}
+                    <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
+
+                        {/* Title Input */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
+                            <input
+                                className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors"
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, title: e.target.value }));
+                                    markDirty();
+                                }}
+                                placeholder="e.g. Grandma's Spanakopita"
+                            />
                         </div>
 
-                        <div className="flex flex-col gap-4">
-                            <div className="hidden sm:flex gap-4 px-2 pb-2 border-b border-[#dce5df] dark:border-[#2a4030] text-xs font-bold uppercase text-[#63886f] dark:text-[#8ca395] tracking-wider">
-                                <span className="w-8"></span>
-                                <span className="w-24">Amount</span>
-                                <span className="flex-1">Ingredient</span>
-                                <span className="w-8"></span>
-                            </div>
-
-                            {ingredientsList.map((ing, i) => (
-                                <div key={ing.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
-                                    <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
-                                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
-                                    </div>
-                                    <input
-                                        className="w-full sm:w-24 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                        placeholder="e.g. 200g"
-                                        value={ing.amount}
-                                        onChange={e => {
-                                            const newList = [...ingredientsList];
-                                            newList[i].amount = e.target.value;
-                                            setIngredientsList(newList);
-                                            markDirty();
-                                        }}
-                                    />
-                                    <input
-                                        className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                        placeholder="e.g. Flour"
-                                        value={ing.item}
-                                        onChange={e => {
-                                            const newList = [...ingredientsList];
-                                            newList[i].item = e.target.value;
-                                            setIngredientsList(newList);
-                                            markDirty();
-                                        }}
-                                    />
-                                    <button
-                                        onClick={() => {
-                                            setIngredientsList(ingredientsList.filter(item => item.id !== ing.id));
-                                            markDirty();
-                                        }}
-                                        className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
-                                markDirty();
-                            }}
-                            className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
-                        >
-                            <Plus size={18} /> Add Ingredient
-                        </button>
-                    </section>
-
-                    {/* Method Section */}
-                    <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
-                        <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
-
-                        <div className="flex flex-col gap-6">
-                            {instructionsList.map((step, i) => (
-                                <div key={step.id} className="group flex gap-4">
-                                    <div className="flex flex-col items-center gap-2 pt-2">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
-                                            {i + 1}
-                                        </div>
-                                        <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
-                                    </div>
-                                    <div className="flex-1 pb-4">
-                                        <textarea
-                                            className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
-                                            placeholder={`Describe step ${i + 1}...`}
-                                            value={step.text}
-                                            onChange={e => {
-                                                const newList = [...instructionsList];
-                                                newList[i].text = e.target.value;
-                                                setInstructionsList(newList);
+                        {/* Details Card */}
+                        <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 shadow-sm">
+                            <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
+                                <Sparkles className="text-[#17cf54]" size={20} />
+                                Details
+                            </h3>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            type="number"
+                                            min="0"
+                                            value={formData.prepTime}
+                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, prepTime: e.target.value }));
                                                 markDirty();
                                             }}
-                                        ></textarea>
-                                        <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => {
-                                                    setInstructionsList(instructionsList.filter(s => s.id !== step.id));
-                                                    markDirty();
-                                                }}
-                                                className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
-                                            >
-                                                <Trash2 size={14} /> Remove Step
-                                            </button>
-                                        </div>
+                                            placeholder="15"
+                                        />
+                                        <span className="text-sm">min</span>
                                     </div>
                                 </div>
-                            ))}
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            type="number"
+                                            min="0"
+                                            value={formData.cookTime}
+                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, cookTime: e.target.value }));
+                                                markDirty();
+                                            }}
+                                            placeholder="45"
+                                        />
+                                        <span className="text-sm">min</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1 col-span-2">
+                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
+                                    <input
+                                        className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                        type="number"
+                                        min="0"
+                                        value={formData.servings}
+                                        onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, servings: e.target.value }));
+                                            markDirty();
+                                        }}
+                                        placeholder="4"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <button
-                            onClick={() => {
-                                setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
-                                markDirty();
-                            }}
-                            className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
-                        >
-                            <Plus size={18} /> Add Step
-                        </button>
-                    </section>
+                        {/* Photo Upload */}
+                        <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
+                            <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                                <Sparkles size={32} />
+                            </div>
+                            <p className="font-bold text-lg">Add Cover Photo</p>
+                            <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
+                        </div>
 
-                    {/* Chef's Notes (Moved above/beside but based on reference order, it was bottom or side) */}
-                    {/* Re-checking reference: Chef's notes was yellow box at bottom of main content in reference code snippet I saw earlier? 
+                        {/* Description */}
+                        <div className="flex flex-col gap-3">
+                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
+                            <textarea
+                                value={formData.description || ''}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, description: e.target.value }));
+                                    markDirty();
+                                }}
+                                placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
+                                className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
+                                rows={4}
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* --- Main Content (Right Column) --- */}
+                    <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+
+                        {/* Ingredients Section */}
+                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-2xl font-bold text-[#111813] dark:text-[#e0e6e2]">Ingredients</h3>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <div className="hidden sm:flex gap-4 px-2 pb-2 border-b border-[#dce5df] dark:border-[#2a4030] text-xs font-bold uppercase text-[#63886f] dark:text-[#8ca395] tracking-wider">
+                                    <span className="w-8"></span>
+                                    <span className="w-24">Amount</span>
+                                    <span className="flex-1">Ingredient</span>
+                                    <span className="w-8"></span>
+                                </div>
+
+                                {ingredientsList.map((ing, i) => (
+                                    <div key={ing.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
+                                        <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+                                        </div>
+                                        <input
+                                            className="w-full sm:w-24 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            placeholder="e.g. 200g"
+                                            value={ing.amount}
+                                            onChange={e => {
+                                                const newList = [...ingredientsList];
+                                                newList[i].amount = e.target.value;
+                                                setIngredientsList(newList);
+                                                markDirty();
+                                            }}
+                                        />
+                                        <input
+                                            className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            placeholder="e.g. Flour"
+                                            value={ing.item}
+                                            onChange={e => {
+                                                const newList = [...ingredientsList];
+                                                newList[i].item = e.target.value;
+                                                setIngredientsList(newList);
+                                                markDirty();
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                setIngredientsList(ingredientsList.filter(item => item.id !== ing.id));
+                                                markDirty();
+                                            }}
+                                            className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
+                                    markDirty();
+                                }}
+                                className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                            >
+                                <Plus size={18} /> Add Ingredient
+                            </button>
+                        </section>
+
+                        {/* Method Section */}
+                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                            <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
+
+                            <div className="flex flex-col gap-6">
+                                {instructionsList.map((step, i) => (
+                                    <div key={step.id} className="group flex gap-4">
+                                        <div className="flex flex-col items-center gap-2 pt-2">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
+                                                {i + 1}
+                                            </div>
+                                            <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
+                                        </div>
+                                        <div className="flex-1 pb-4">
+                                            <textarea
+                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
+                                                placeholder={`Describe step ${i + 1}...`}
+                                                value={step.text}
+                                                onChange={e => {
+                                                    const newList = [...instructionsList];
+                                                    newList[i].text = e.target.value;
+                                                    setInstructionsList(newList);
+                                                    markDirty();
+                                                }}
+                                            ></textarea>
+                                            <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => {
+                                                        setInstructionsList(instructionsList.filter(s => s.id !== step.id));
+                                                        markDirty();
+                                                    }}
+                                                    className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 size={14} /> Remove Step
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
+                                    markDirty();
+                                }}
+                                className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                            >
+                                <Plus size={18} /> Add Step
+                            </button>
+                        </section>
+
+                        {/* Chef's Notes (Moved above/beside but based on reference order, it was bottom or side) */}
+                        {/* Re-checking reference: Chef's notes was yellow box at bottom of main content in reference code snippet I saw earlier? 
                             Actually, in the code.html head dump, Chef's Notes (Story & Description) was in the sidebar! 
                             Line 108 of head dump: <label ... for="description">Story & Description</label> inside the col-span-5 div.
                             So I moved it to sidebar above.
@@ -576,39 +577,39 @@ return (
                             I will stick to the reference layout: "Story & Description" in sidebar.
                         */}
 
+                    </div>
                 </div>
-            </div>
-        </main>
+            </main>
 
-        <MagicImportModal
-            isOpen={showMagicImport}
-            onClose={() => setShowMagicImport(false)}
-            onImport={handleMagicImport}
-        />
+            <MagicImportModal
+                isOpen={showMagicImport}
+                onClose={() => setShowMagicImport(false)}
+                onImport={handleMagicImport}
+            />
 
-        <VisibilityModal
-            isOpen={showVisibilityModal}
-            onClose={() => setShowVisibilityModal(false)}
-            onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
-            isMakingPublic={true}
-        />
-        <TranslationModal
-            isOpen={actionModal.isOpen}
-            onClose={() => !isProcessingAI && setActionModal({ isOpen: false, mode: null })}
-            mode={actionModal.mode}
-            onConfirm={executeAIAction}
-            isProcessing={isProcessingAI}
-            isPermanent={true}
-        />
-        <ConfirmModal
-            isOpen={blocker.state === 'blocked'}
-            onClose={() => blocker.reset()}
-            onConfirm={() => blocker.proceed()}
-            title="Discard Changes?"
-            description="You have unsaved changes. Are you sure you want to discard them?"
-            confirmText="Discard"
-            isDanger={true}
-        />
-    </div>
-);
+            <VisibilityModal
+                isOpen={showVisibilityModal}
+                onClose={() => setShowVisibilityModal(false)}
+                onConfirm={() => setFormData(prev => ({ ...prev, is_public: true }))}
+                isMakingPublic={true}
+            />
+            <TranslationModal
+                isOpen={actionModal.isOpen}
+                onClose={() => !isProcessingAI && setActionModal({ isOpen: false, mode: null })}
+                mode={actionModal.mode}
+                onConfirm={executeAIAction}
+                isProcessing={isProcessingAI}
+                isPermanent={true}
+            />
+            <ConfirmModal
+                isOpen={blocker.state === 'blocked'}
+                onClose={() => blocker.reset()}
+                onConfirm={() => blocker.proceed()}
+                title="Discard Changes?"
+                description="You have unsaved changes. Are you sure you want to discard them?"
+                confirmText="Discard"
+                isDanger={true}
+            />
+        </div>
+    );
 }
