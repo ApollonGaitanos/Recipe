@@ -31,10 +31,17 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const contentRef = useRef(null);
 
     // Logic to find recipe
-    let recipe = recipes.find(r => r.id === id);
-    if (!recipe) {
-        recipe = publicRecipes.find(r => r.id === id);
+    let originalRecipe = recipes.find(r => r.id === id);
+    if (!originalRecipe) {
+        originalRecipe = publicRecipes.find(r => r.id === id);
     }
+
+    // Effect: Reset translation when navigating to a different recipe
+    React.useEffect(() => {
+        setTranslatedRecipe(null);
+    }, [id]);
+
+    const recipe = translatedRecipe || originalRecipe;
 
     if (!recipe) return null;
 
