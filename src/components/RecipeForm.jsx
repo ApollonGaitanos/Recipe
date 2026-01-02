@@ -327,7 +327,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 setConfirmModal({ isOpen: false, type: null, title: '', description: '', onConfirm: null });
                                 isFormSubmit.current = true;
                                 if (historyLockRef.current) {
-                                    window.history.go(-2);
+                                    window.history.back(); // Undo lock
+                                    setTimeout(onCancel, 300); // Navigate away after short delay
                                 } else {
                                     onCancel();
                                 }
