@@ -45,7 +45,7 @@ export default function MyKitchen() {
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
                                     {displayUsername}'s Kitchen
                                 </h1>
-                                <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg">
+                                <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap max-w-2xl">
                                     {displayBio}
                                 </p>
                                 <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
