@@ -250,7 +250,7 @@ IMPORTANT:
         };
 
         // 6. API Call with Fallback Logic
-        // We will try these models in order. 
+        // We will try these models in order.
         // Strategy: High Limit -> specific versions -> experimental -> legacy
         const MODELS_TO_TRY = [
             'gemini-3-flash-preview',     // Newest Flash (Fast & Capable)
@@ -355,7 +355,10 @@ IMPORTANT:
         // Replaces ", }" with "}" and ", ]" with "]"
         cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
 
-        // 3. Fix unescaped newlines in strings (rare but happens)
+        // 3. Fix missing commas between objects (e.g. } { -> }, {)
+        cleanJson = cleanJson.replace(/}\s*\{/g, '}, {');
+
+        // 4. Fix unescaped newlines in strings (rare but happens)
         // This is risky with regex, sticking to comma fix for now.
 
         let recipeData;
