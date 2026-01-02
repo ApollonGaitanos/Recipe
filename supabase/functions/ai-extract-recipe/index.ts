@@ -164,11 +164,17 @@ Return the output in this strict JSON structure:
 Your goal is to create the MOST POPULAR and WIDELY USED version of the requested dish.
 
 RULES:
-1. **POPULARITY FIRST**: Default to the version most people know and cook (e.g. the "standard" version). Do NOT prioritize strict historical authenticity unless the user specifically asks for "authentic" or "traditional".
-2. **RICH DETAIL**:
-   - **Ingredients**: Be specific (e.g., "San Marzano Tomatoes" instead of "Tomatoes").
-   - **Instructions**: Write distinct, detailed steps. Explain *why* (e.g., "Sauté until golden to release aromatics"). Avoid generic brevity.
-3. **Language**: Detect the language of the User Input. The Output MUST be in the SAME language as the User Input. This includes MEASUREMENT UNITS (e.g. usage 'γρ' instead of 'g' for Greek).
+1. **POPULARITY FIRST**: Default to the version most people know and cook.
+2. **RICH DETAIL**: Be specific with ingredients (e.g., "San Marzano Tomatoes") and explain *why* in steps.
+3. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
+
+EXAMPLE:
+Input: "Spaghetti Carbonara"
+Output: { "title": "Spaghetti Carbonara", "ingredients": [{"amount": "200g", "name": "Guanciale"}], "instructions": ["Cook guanciale until crispy..."] }
+
+Input: "Σπαγγέτι Καρμπονάρα"
+Output: { "title": "Σπαγγέτι Καρμπονάρα", "ingredients": [{"amount": "200γρ", "name": "Γκουαντσιάλε"}], "instructions": ["Μαγειρέψτε το γκουαντσιάλε..."] }
+
 ${jsonStructure}`;
                 break;
 
@@ -222,15 +228,16 @@ ${jsonStructure}`;
 Your job is to read the input and structure it into a perfect recipe JSON.
 
 RULES:
-1. **CONTENT INTEGRITY**: Your primary goal is to extract the recipe EXACTLY as provided. Do NOT change the style, tone, or core instructions.
-2. **SMART REPAIR**: 
-   - If the input text is unstructured (e.g. a blob of text), FORMAT it into clean ingredients and steps.
-   - If there are OBVIOUS missing parts (e.g. ingredients listed but not used, or a step implies "bake" but no temp is given), you MAY infer and ADD the missing logic to make the recipe functional.
-   - Do NOT rewrite or "improve" the recipe unless it is broken. Just Make it Work.
-3. **Language**:
+1. **CONTENT INTEGRITY**: Extract the recipe EXACTLY as provided. Do NOT change the style, tone, or core instructions.
+2. **SMART REPAIR**: If the input is unstructured or missing minor details (e.g., temperature), FORMAT and INFER logical fixes.
+3. **LANGUAGE**: 
    - Source is Greek -> Output Greek.
    - Source is English -> Output English.
    - Source is Other -> Translate to **${targetLanguage || 'English'}**.
+
+EXAMPLE:
+Input URL/Text: "Just mix 2 cups flour and 1 cup water, bake at 350 for 20 mins."
+Output: { "ingredients": [{"amount": "2 cups", "name": "flour"}, {"amount": "1 cup", "name": "water"}], "instructions": ["Preheat oven to 350°F.", "Mix flour and water.", "Bake for 20 minutes."] }
 
 ${jsonStructure}
 
