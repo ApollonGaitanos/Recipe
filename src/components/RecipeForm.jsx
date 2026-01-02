@@ -63,11 +63,18 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     // --- BLOCKER LOGIC ---
     // Block navigation if form is dirty and not currently saving
-    const blocker = useBlocker(isDirty && !isSaving);
+    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+        const shouldBlock = isDirty && !isSaving;
+        console.log("BLOCKER TRIGGERED:", { shouldBlock, isDirty, isSaving, next: nextLocation.pathname });
+        return shouldBlock;
+    });
 
     useEffect(() => {
-        console.log("DEBUG: isDirty:", isDirty, "isSaving:", isSaving, "blocker.state:", blocker.state);
-    }, [isDirty, isSaving, blocker.state]);
+        console.log("Blocker State Updated:", blocker.state);
+        if (blocker.state === 'blocked') {
+            console.log("!!! BLOCKER IS ACTIVE - MODAL SHOULD SHOW !!!");
+        }
+    }, [blocker.state]);
     useEffect(() => {
         if (recipeId && recipes.length > 0) {
             const recipe = recipes.find(r => r.id === recipeId);

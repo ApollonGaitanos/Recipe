@@ -5,6 +5,7 @@ import { AlertTriangle, X } from 'lucide-react';
 
 export default function ConfirmModal({ isOpen, onClose, onConfirm, message, title, description, confirmText, isDanger = true }) {
     const { t } = useLanguage();
+    console.log("ConfirmModal Render:", { isOpen, zIndex: '9999' });
 
     if (!isOpen) return null;
 
