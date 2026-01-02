@@ -64,6 +64,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     // History Interception for Back Button
     const historyLockRef = useRef(false);
+    const isFormSubmit = useRef(false); // Track if we are navigating away due to valid submit
 
     useEffect(() => {
         // Push a state to trap the back button
@@ -71,14 +72,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         historyLockRef.current = true;
 
         const handlePopState = (e) => {
-            // Prevent default back (user is now physically 'back', but we want to confirm)
-            // We show the modal.
-            // If they choose to 'Stay', we pushState again.
-            // If they choose 'Discard', we allow the back (which already happened) and just close the form.
-
-            // Note: Since we are in an event handler, we can't block the navigation, 
-            // but we can react to it.
-
             e.preventDefault();
 
             // Mark that the back button consumed our lock
@@ -90,14 +83,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 title: 'Discard Changes?',
                 description: 'You pressed Back. Are you sure you want to discard your changes?',
                 onConfirm: () => {
-                    // User confirmed discard.
-                    // We are ALREADY back in history (because popstate fired).
-                    // Just unmount the form.
+                    // User confirmed. ALREADY back.
                     onCancel();
                 },
                 onCancel: () => {
-                    // User chose to "Stay" (Cancel the discard).
-                    // We need to restore the history lock because they are staying.
+                    // User chose to "Stay". Restore lock.
                     if (!historyLockRef.current) {
                         window.history.pushState({ modalOpen: true }, '', '');
                         historyLockRef.current = true;
@@ -110,9 +100,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
         return () => {
             window.removeEventListener('popstate', handlePopState);
-            // Cleanup: If we are unmounting and we still have the lock (e.g. Save button or UI Cancel button),
-            // we need to manually go back to remove our history entry.
-            if (historyLockRef.current) {
+            // Cleanup: Only go back if we are NOT submitting/saving validly.
+            // If we are saving (going forward), we leave the history state as is (it's fine to have a history entry for the edit page).
+            if (historyLockRef.current && !isFormSubmit.current) {
                 window.history.back();
             }
         };
@@ -163,6 +153,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         };
 
         try {
+            // Mark as submitting so cleanup doesn't undo our navigation
+            isFormSubmit.current = true;
+
             // Save Recipe (Triggers DB Wipe of old translations)
             const savedRecipe = await onSave(recipeData);
 
@@ -194,6 +187,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
         } catch (error) {
             console.error("Save failed", error);
+            isFormSubmit.current = false; // Reset if save failed
             alert(`Failed to save recipe: ${error.message || JSON.stringify(error)}`);
         } finally {
             setIsSaving(false);
