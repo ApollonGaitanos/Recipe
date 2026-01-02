@@ -188,11 +188,20 @@ ${jsonStructure}`;
             case 'translate':
                 temperature = 0.1; // Strict
                 const langName = targetLanguage === 'el' ? 'Greek' : (targetLanguage === 'en' ? 'English' : targetLanguage);
-                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Translate the recipe to **${langName}**.
-RULES:
-1. Translate Title, Ingredients, Instructions, and Tags.
-2. Convert measurements to metric if appropriate for the target language (e.g. cups to grams for EU/Greek). TRANSLATE THE UNIT NAME ITSELF (e.g. 'cups' -> 'φλιτζάνια', 'oz' -> 'γρ').
-3. Keep the exact same meaning.
+                systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Your task is to translate the JSON content into **${langName}**.
+
+INSTRUCTIONS:
+1. Translate the 'title' value.
+2. Translate ALL 'ingredients' values ('amount' and 'name').
+3. Translate ALL 'instructions' strings.
+4. Translate ALL 'tags'.
+5. Convert measurements to metric (grams/ml) if translating to Greek/European languages.
+6. DO NOT translate the JSON keys (keep "ingredients", "instructions", etc. strictly as is).
+
+EXAMPLE:
+Input: { "title": "Cake", "ingredients": [{ "amount": "1 cup", "name": "Flour" }] }
+Output (Greek): { "title": "Κέικ", "ingredients": [{ "amount": "250γρ", "name": "Αλεύρι" }] }
+
 ${jsonStructure}`;
                 break;
 
