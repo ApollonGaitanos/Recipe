@@ -253,24 +253,32 @@ IMPORTANT:
         };
 
         // 6. API Call with Fallback Logic
-        // We will try these models in order.
-        // Strategy: High Limit -> specific versions -> experimental -> legacy
-        const MODELS_TO_TRY = [
-            'gemini-2.5-flash-lite-preview', // High Quota Experimental
-            'gemini-2.5-flash-lite',         // High Quota Stable
-            'gemma-3-27b-it',                // Open Model (High Quota)
-            'gemma-3-12b-it',                // Open Model (High Quota)
-            'gemini-1.5-flash',              // Standard
+        // Strategy: 
+        // - Text/URL: Use Gemma models (High RPD Limit)
+        // - Image: Must use Gemini models (Visual support)
+
+        const TEXT_MODELS = [
+            'gemma-3-27b-it',             // High Quota, Smart
+            'gemma-3-12b-it',             // High Quota, Fast
+            'gemini-2.5-flash-lite',      // Experimental High Quota
+            'gemini-1.5-flash',           // Fallback
+            'gemini-1.5-pro'
+        ];
+
+        const VISUAL_MODELS = [
+            'gemini-2.0-flash-exp',       // Experimental (Often separate quota)
+            'gemini-1.5-flash',           // Standard
             'gemini-1.5-pro',
-            'gemini-2.0-flash-exp',
             'gemini-1.5-flash-8b'
         ];
+
+        const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
 
         let lastError = null;
         let successfulModel = null;
         let responseData = null;
 
-        for (const model of MODELS_TO_TRY) {
+        for (const model of availableModels) {
             try {
                 console.log(`Attempting model: ${model}...`);
                 const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
