@@ -326,8 +326,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             onConfirm: () => {
                                 setConfirmModal({ isOpen: false, type: null, title: '', description: '', onConfirm: null });
                                 isFormSubmit.current = true;
-                                window.history.back(); // Undo lock
-                                setTimeout(onCancel, 100); // Navigate away
+                                if (historyLockRef.current) {
+                                    window.history.go(-2);
+                                } else {
+                                    onCancel();
+                                }
                             }
                         })}
                         className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
