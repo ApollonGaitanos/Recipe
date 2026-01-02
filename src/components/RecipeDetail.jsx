@@ -400,11 +400,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         <div className="border-t border-zinc-200 dark:border-zinc-800 pt-8 mt-12">
                             <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Tags</h4>
                             <div className="flex flex-wrap gap-2">
-                                {['#Dinner', '#Roast', '#Chicken', '#Healthy', '#Mediterranean'].map(tag => (
+                                {(recipe.tags && recipe.tags.length > 0 ? recipe.tags : []).map(tag => (
                                     <span key={tag} className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer transition-colors">
-                                        {tag}
+                                        #{tag}
                                     </span>
                                 ))}
+                                {(!recipe.tags || recipe.tags.length === 0) && (
+                                    <span className="text-zinc-400 text-sm italic">No tags</span>
+                                )}
                             </div>
                         </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Navigate, useNavigate, useParams, Outlet } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
 import RecipeContext, { useRecipes } from './context/RecipeContext';
 import LanguageContext, { useLanguage } from './context/LanguageContext';
@@ -12,11 +12,9 @@ import RecipeDetail from './components/RecipeDetail';
 import ConfirmationModal from './components/ConfirmModal';
 import MyKitchen from './components/MyKitchen';
 import AccountSettings from './components/AccountSettings';
+import ErrorBoundary from './components/ErrorBoundary'; // Moved up for usage
 
 // --- ROUTE COMPONENTS ---
-
-// 1. HOME / FEED ROUTE
-import Hero from './components/Hero';
 
 // 1. HOME / FEED ROUTE
 function Feed({ isPrivate = false }) {
@@ -236,16 +234,17 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// --- MAIN APP ---
+// --- HERO COMPONENT ---
+import Hero from './components/Hero';
 
-function AppContent() {
-  return (
-    <Routes>
+// --- MAIN ROUTER ---
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
       <Route path="/" element={<Feed isPrivate={false} />} />
       <Route path="/my-recipes" element={<MyKitchen />} />
-
       <Route path="/recipe/:id" element={<DetailRoute />} />
-
       <Route path="/add" element={<FormRoute />} />
       <Route path="/edit/:id" element={<FormRoute />} />
       <Route path="/account" element={
@@ -253,31 +252,27 @@ function AppContent() {
           <AccountSettings />
         </ProtectedRoute>
       } />
-
-      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
-
-// 5. ERROR BOUNDARY
-import ErrorBoundary from './components/ErrorBoundary';
+    </>
+  ),
+  {
+    basename: import.meta.env.BASE_URL
+  }
+);
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <ErrorBoundary>
-        <AuthProvider>
-          <ThemeContext>
-            <LanguageContext>
-              <RecipeContext>
-                <AppContent />
-              </RecipeContext>
-            </LanguageContext>
-          </ThemeContext>
-        </AuthProvider>
-      </ErrorBoundary>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeContext>
+          <LanguageContext>
+            <RecipeContext>
+              <RouterProvider router={router} />
+            </RecipeContext>
+          </LanguageContext>
+        </ThemeContext>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

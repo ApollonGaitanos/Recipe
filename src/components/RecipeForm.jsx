@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { useBlocker } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
 // import { useLanguage } from '../context/LanguageContext';
@@ -18,15 +19,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
-    const [confirmModal, setConfirmModal] = useState({
-        isOpen: false,
-        type: null, // 'save' | 'cancel'
-        title: '',
-        description: '',
-        onConfirm: null
-    });
     const [isProcessingAI, setIsProcessingAI] = useState(false);
     const [pendingTranslations, setPendingTranslations] = useState([]);
+
+    // Dirty State Tracking
+    const [isDirty, setIsDirty] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -39,6 +36,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         is_public: false,
         description: ''
     });
+
+    const markDirty = () => setIsDirty(true);
 
     // Helper to parse ingredients string into array
     const parseIngredients = (str) => {
@@ -62,52 +61,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [ingredientsList, setIngredientsList] = useState([]);
     const [instructionsList, setInstructionsList] = useState([]);
 
-    // History Interception for Back Button
-    const historyLockRef = useRef(false);
-    const isFormSubmit = useRef(false); // Track if we are navigating away due to valid submit
-
-    useEffect(() => {
-        // Push a state to trap the back button
-        window.history.pushState({ modalOpen: true }, '', '');
-        historyLockRef.current = true;
-
-        const handlePopState = (e) => {
-            if (isFormSubmit.current) return;
-            e.preventDefault();
-
-            // Mark that the back button consumed our lock
-            historyLockRef.current = false;
-
-            setConfirmModal({
-                isOpen: true,
-                type: 'cancel',
-                title: 'Discard Changes?',
-                description: 'You pressed Back. Are you sure you want to discard your changes?',
-                onConfirm: () => {
-                    // User confirmed. ALREADY back.
-                    onCancel();
-                },
-                onCancel: () => {
-                    // User chose to "Stay". Restore lock.
-                    if (!historyLockRef.current) {
-                        window.history.pushState({ modalOpen: true }, '', '');
-                        historyLockRef.current = true;
-                    }
-                }
-            });
-        };
-
-        window.addEventListener('popstate', handlePopState);
-
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-            // Cleanup: Only go back if we are NOT submitting/saving validly.
-            // If we are saving (going forward), we leave the history state as is (it's fine to have a history entry for the edit page).
-            if (historyLockRef.current && !isFormSubmit.current) {
-                window.history.back();
-            }
-        };
-    }, []); // Run once on mount
+    // --- BLOCKER LOGIC ---
+    // Block navigation if form is dirty and not currently saving
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) => isDirty && !isSaving && currentLocation.pathname !== nextLocation.pathname
+    );
 
     useEffect(() => {
         if (recipeId && recipes.length > 0) {
@@ -131,6 +89,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     const handleSaveLocal = async () => {
         setIsSaving(true);
+        // Note: setting isSaving=true prevents blocker from triggering on navigation inside handleSave
+
         // Serialize lists back to strings
         const ingredientsStr = ingredientsList
             .map(ing => `${ing.amount} ${ing.item}`.trim())
@@ -154,9 +114,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         };
 
         try {
-            // Mark as submitting so cleanup doesn't undo our navigation
-            isFormSubmit.current = true;
-
             // Save Recipe (Triggers DB Wipe of old translations)
             const savedRecipe = await onSave(recipeData);
 
@@ -185,13 +142,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 // Clear pending
                 setPendingTranslations([]);
             }
+            // Reset dirty state on successful save (though we usually navigate away)
+            setIsDirty(false);
 
         } catch (error) {
             console.error("Save failed", error);
-            isFormSubmit.current = false; // Reset if save failed
+            setIsSaving(false); // Re-enable blocker if save failed
             alert(`Failed to save recipe: ${error.message || JSON.stringify(error)}`);
-        } finally {
-            setIsSaving(false);
         }
     };
 
@@ -203,6 +160,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             cookTime: data.cookTime || prev.cookTime,
             servings: data.servings || prev.servings,
         }));
+        markDirty();
 
         // Robust Ingredient Handling
         if (data.ingredients) {
@@ -319,21 +277,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => setConfirmModal({
-                            isOpen: true,
-                            type: 'cancel',
-                            title: 'Discard Changes?',
-                            onConfirm: () => {
-                                setConfirmModal({ isOpen: false, type: null, title: '', description: '', onConfirm: null });
-                                isFormSubmit.current = true;
-                                if (historyLockRef.current) {
-                                    window.history.back(); // Undo lock
-                                    setTimeout(onCancel, 300); // Navigate away after short delay
-                                } else {
-                                    onCancel();
-                                }
-                            }
-                        })}
+                        onClick={onCancel} // Triggers navigation, checking blocker
                         className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
                     >
                         <ArrowLeft size={24} />
@@ -376,28 +320,14 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     )}
 
                     <button
-                        onClick={() => setConfirmModal({
-                            isOpen: true,
-                            type: 'cancel',
-                            title: 'Discard Changes?',
-                            description: 'Are you sure you want to discard your changes? This action cannot be undone.',
-                            onConfirm: onCancel
-                        })}
+                        onClick={onCancel} // Triggers navigation, checking blocker
                         className="hidden sm:flex h-10 items-center justify-center rounded-lg bg-transparent px-4 text-sm font-bold text-[#63886f] dark:text-[#8ca395] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                     >
                         Cancel
                     </button>
 
                     <button
-                        onClick={() => setConfirmModal({
-                            isOpen: true,
-                            type: 'save',
-                            title: 'Save Recipe?',
-                            description: 'Are you ready to save this recipe?',
-                            confirmText: 'Save',
-                            isDanger: false,
-                            onConfirm: handleSaveLocal
-                        })}
+                        onClick={handleSaveLocal} // Direct save call
                         disabled={isSaving}
                         className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
                     >
@@ -421,7 +351,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors"
                                 type="text"
                                 value={formData.title}
-                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, title: e.target.value }));
+                                    markDirty();
+                                }}
                                 placeholder="e.g. Grandma's Spanakopita"
                             />
                         </div>
@@ -442,7 +375,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                             min="0"
                                             value={formData.prepTime}
                                             onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, prepTime: e.target.value }));
+                                                markDirty();
+                                            }}
                                             placeholder="15"
                                         />
                                         <span className="text-sm">min</span>
@@ -457,7 +393,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                             min="0"
                                             value={formData.cookTime}
                                             onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, cookTime: e.target.value }));
+                                                markDirty();
+                                            }}
                                             placeholder="45"
                                         />
                                         <span className="text-sm">min</span>
@@ -471,7 +410,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         min="0"
                                         value={formData.servings}
                                         onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, servings: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, servings: e.target.value }));
+                                            markDirty();
+                                        }}
                                         placeholder="4"
                                     />
                                 </div>
@@ -492,7 +434,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
                             <textarea
                                 value={formData.description || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, description: e.target.value }));
+                                    markDirty();
+                                }}
                                 placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
                                 className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
                                 rows={4}
@@ -531,6 +476,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                 const newList = [...ingredientsList];
                                                 newList[i].amount = e.target.value;
                                                 setIngredientsList(newList);
+                                                markDirty();
                                             }}
                                         />
                                         <input
@@ -541,10 +487,14 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                 const newList = [...ingredientsList];
                                                 newList[i].item = e.target.value;
                                                 setIngredientsList(newList);
+                                                markDirty();
                                             }}
                                         />
                                         <button
-                                            onClick={() => setIngredientsList(ingredientsList.filter(item => item.id !== ing.id))}
+                                            onClick={() => {
+                                                setIngredientsList(ingredientsList.filter(item => item.id !== ing.id));
+                                                markDirty();
+                                            }}
                                             className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
                                         >
                                             <Trash2 size={18} />
@@ -554,7 +504,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             </div>
 
                             <button
-                                onClick={() => setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }])}
+                                onClick={() => {
+                                    setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
+                                    markDirty();
+                                }}
                                 className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
                             >
                                 <Plus size={18} /> Add Ingredient
@@ -583,11 +536,15 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                     const newList = [...instructionsList];
                                                     newList[i].text = e.target.value;
                                                     setInstructionsList(newList);
+                                                    markDirty();
                                                 }}
                                             ></textarea>
                                             <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    onClick={() => setInstructionsList(instructionsList.filter(s => s.id !== step.id))}
+                                                    onClick={() => {
+                                                        setInstructionsList(instructionsList.filter(s => s.id !== step.id));
+                                                        markDirty();
+                                                    }}
                                                     className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 size={14} /> Remove Step
@@ -599,7 +556,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             </div>
 
                             <button
-                                onClick={() => setInstructionsList([...instructionsList, { id: Date.now(), text: '' }])}
+                                onClick={() => {
+                                    setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
+                                    markDirty();
+                                }}
                                 className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
                             >
                                 <Plus size={18} /> Add Step
@@ -641,19 +601,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 isPermanent={true}
             />
             <ConfirmModal
-                isOpen={confirmModal.isOpen}
-                onClose={() => {
-                    if (confirmModal.onCancel) confirmModal.onCancel();
-                    setConfirmModal({ ...confirmModal, isOpen: false });
-                }}
-                onConfirm={() => {
-                    if (confirmModal.onConfirm) confirmModal.onConfirm();
-                    setConfirmModal({ ...confirmModal, isOpen: false });
-                }}
-                title={confirmModal.title}
-                description={confirmModal.description}
-                confirmText={confirmModal.confirmText || 'Discard'}
-                isDanger={confirmModal.isDanger !== false} // Default to true if not specified
+                isOpen={blocker.state === 'blocked'}
+                onClose={() => blocker.reset()}
+                onConfirm={() => blocker.proceed()}
+                title="Discard Changes?"
+                description="You have unsaved changes. Are you sure you want to discard them?"
+                confirmText="Discard"
+                isDanger={true}
             />
         </div>
     );
