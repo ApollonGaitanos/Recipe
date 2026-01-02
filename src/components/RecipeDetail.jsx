@@ -282,7 +282,15 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <li key={index} className="flex items-center gap-3 group cursor-pointer">
                                         <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-emerald-500 transition-colors" />
                                         <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                            {typeof ingredient === 'object' ? `${ingredient.amount || ''} ${ingredient.name || ingredient.item || ''}` : ingredient}
+                                            {(() => {
+                                                if (!ingredient) return '';
+                                                if (typeof ingredient === 'object') {
+                                                    const amt = ingredient.amount || '';
+                                                    const name = ingredient.name || ingredient.item || '';
+                                                    return `${amt} ${name}`.trim();
+                                                }
+                                                return String(ingredient);
+                                            })()}
                                         </span>
                                     </li>
                                 ))}
