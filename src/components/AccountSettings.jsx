@@ -269,25 +269,27 @@ const AccountSettings = () => {
                                     {/* Bio Section */}
                                     <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bio</label>
-                                        <textarea
-                                            disabled={!isEditing}
-                                            value={formData.bio}
-                                            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                            rows={isEditing ? 4 : formData.bio ? undefined : 1}
-                                            style={!isEditing ? { fieldSizing: "content" } : {}}
-                                            maxLength={350}
-                                            className={`w-full transition-all outline-none resize-none break-words whitespace-pre-wrap ${!isEditing
-                                                ? 'bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 overflow-hidden'
-                                                : 'px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary'
-                                                }`}
-                                            placeholder={isEditing ? "Tell us a little about yourself..." : "No bio added yet."}
-                                        />
-                                        {isEditing && (
-                                            <div className="flex justify-end mt-2">
-                                                <p className={`text-xs ${formData.bio.length > 300 ? 'text-amber-500 font-bold' : 'text-gray-500'}`}>
-                                                    {formData.bio.length} / 350 characters
-                                                </p>
-                                            </div>
+
+                                        {isEditing ? (
+                                            <>
+                                                <textarea
+                                                    maxLength={350}
+                                                    value={formData.bio}
+                                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                                    rows={4}
+                                                    className="w-full transition-all outline-none resize-none px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 dark:text-white"
+                                                    placeholder="Tell us a little about yourself..."
+                                                />
+                                                <div className="flex justify-end mt-2">
+                                                    <p className={`text-xs ${formData.bio.length > 300 ? 'text-amber-500 font-bold' : 'text-gray-500'}`}>
+                                                        {formData.bio.length} / 350 characters
+                                                    </p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p className="w-full bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 break-words whitespace-pre-wrap text-base">
+                                                {formData.bio || "No bio added yet."}
+                                            </p>
                                         )}
                                     </div>
 
