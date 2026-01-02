@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
@@ -61,6 +61,62 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     const [ingredientsList, setIngredientsList] = useState([]);
     const [instructionsList, setInstructionsList] = useState([]);
+
+    // History Interception for Back Button
+    const historyLockRef = useRef(false);
+
+    useEffect(() => {
+        // Push a state to trap the back button
+        window.history.pushState({ modalOpen: true }, '', '');
+        historyLockRef.current = true;
+
+        const handlePopState = (e) => {
+            // Prevent default back (user is now physically 'back', but we want to confirm)
+            // We show the modal.
+            // If they choose to 'Stay', we pushState again.
+            // If they choose 'Discard', we allow the back (which already happened) and just close the form.
+
+            // Note: Since we are in an event handler, we can't block the navigation, 
+            // but we can react to it.
+
+            e.preventDefault();
+
+            // Mark that the back button consumed our lock
+            historyLockRef.current = false;
+
+            setConfirmModal({
+                isOpen: true,
+                type: 'cancel',
+                title: 'Discard Changes?',
+                description: 'You pressed Back. Are you sure you want to discard your changes?',
+                onConfirm: () => {
+                    // User confirmed discard.
+                    // We are ALREADY back in history (because popstate fired).
+                    // Just unmount the form.
+                    onCancel();
+                },
+                onCancel: () => {
+                    // User chose to "Stay" (Cancel the discard).
+                    // We need to restore the history lock because they are staying.
+                    if (!historyLockRef.current) {
+                        window.history.pushState({ modalOpen: true }, '', '');
+                        historyLockRef.current = true;
+                    }
+                }
+            });
+        };
+
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            // Cleanup: If we are unmounting and we still have the lock (e.g. Save button or UI Cancel button),
+            // we need to manually go back to remove our history entry.
+            if (historyLockRef.current) {
+                window.history.back();
+            }
+        };
+    }, []); // Run once on mount
 
     useEffect(() => {
         if (recipeId && recipes.length > 0) {
@@ -577,9 +633,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             />
             <ConfirmModal
                 isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onClose={() => {
+                    if (confirmModal.onCancel) confirmModal.onCancel();
+                    setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
                 onConfirm={() => {
-                    confirmModal.onConfirm();
+                    if (confirmModal.onConfirm) confirmModal.onConfirm();
                     setConfirmModal({ ...confirmModal, isOpen: false });
                 }}
                 title={confirmModal.title}
