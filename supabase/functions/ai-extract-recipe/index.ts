@@ -256,15 +256,10 @@ IMPORTANT:
         // We will try these models in order.
         // Strategy: High Limit -> specific versions -> experimental -> legacy
         const MODELS_TO_TRY = [
-            'gemini-3-flash-preview',     // Newest Flash (Fast & Capable)
-            'gemini-3-pro-preview',       // Newest Pro (High Reasoning)
-            'gemini-1.5-flash',           // Standard Alias (High Quota usually)
-            'gemini-1.5-flash-latest',    // Explicit latest
-            'gemini-1.5-flash-001',       // Specific stable version
-            'gemini-1.5-flash-002',       // Specific updated version
-            'gemini-1.5-flash-8b',        // Lightweight 8b variant
-            'gemini-2.0-flash-exp',       // Experimental 2.0 (often free)
-            'gemini-1.0-pro'              // Legacy fallback
+            'gemini-1.5-flash',           // Primary: Fast & Cost Effective
+            'gemini-1.5-pro',             // Secondary: High Reasoning
+            'gemini-2.0-flash-exp',       // Experimental: Fast
+            'gemini-1.5-flash-8b'         // Fallback: Lightweight
         ];
 
         let lastError = null;
