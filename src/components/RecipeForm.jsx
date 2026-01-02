@@ -432,6 +432,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                             type="number"
                                             min="0"
                                             value={formData.prepTime}
+                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
                                             onChange={(e) => setFormData(prev => ({ ...prev, prepTime: e.target.value }))}
                                             placeholder="15"
                                         />
@@ -446,6 +447,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                             type="number"
                                             min="0"
                                             value={formData.cookTime}
+                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
                                             onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
                                             placeholder="45"
                                         />
