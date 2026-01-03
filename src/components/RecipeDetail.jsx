@@ -46,7 +46,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     if (!recipe) return null;
 
-    const isOwner = user && recipe && String(user.id) === String(recipe.user_id);
+    const isOwner = React.useMemo(() => {
+        if (!user || !user.id || !recipe || !recipe.user_id) return false;
+        return user.id === recipe.user_id;
+    }, [user, recipe]);
 
 
 

@@ -30,7 +30,12 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
         toggleSave(recipe);
     };
 
-    const isOwner = user && recipe && String(user.id) === String(recipe.user_id);
+    // DEBUG: Inspect full objects
+    // console.log('Current User:', user);
+    // console.log('Recipe Owner ID:', recipe.user_id, typeof recipe.user_id);
+
+    // Strict comparison
+    const isOwner = user?.id && recipe?.user_id && String(user.id).trim() === String(recipe.user_id).trim();
 
     return (
         <div
