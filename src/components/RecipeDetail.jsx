@@ -197,8 +197,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 setActionModal({ isOpen: false, mode: null });
             }
         } catch (error) {
-            console.error(`AI ${ mode } failed: `, error);
-            alert(`Failed: ${ error.message } `);
+            console.error('AI ' + mode + ' failed: ', error);
+            alert('Failed: ' + error.message);
         } finally {
             setIsProcessing(false);
         }
