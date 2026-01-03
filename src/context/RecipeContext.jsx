@@ -3,6 +3,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 // import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
 
 const RecipeContextData = createContext();
 
@@ -12,6 +13,7 @@ export function useRecipes() {
 
 export default function RecipeContext({ children }) {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [recipes, setRecipes] = useState([]); // My Recipes
     const [publicRecipes, setPublicRecipes] = useState([]); // Public Feed
     const [userLikes, setUserLikes] = useState(new Set()); // Set of liked recipe IDs
