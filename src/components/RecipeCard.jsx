@@ -35,7 +35,11 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
     // console.log('Recipe Owner ID:', recipe.user_id, typeof recipe.user_id);
 
     // Strict comparison
-    const isOwner = user?.id && recipe?.user_id && String(user.id).trim() === String(recipe.user_id).trim();
+    // Strict comparison with memoization
+    const isOwner = React.useMemo(() => {
+        if (!user || !user.id || !recipe || !recipe.user_id) return false;
+        return String(user.id).trim() === String(recipe.user_id).trim();
+    }, [user, recipe]);
 
     return (
         <div
