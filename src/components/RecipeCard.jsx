@@ -44,7 +44,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
     return (
         <div
             onClick={() => navigate(`/recipe/${recipe.id}`)}
-            className="group cursor-pointer flex flex-col gap-3"
+            className="group cursor-pointer flex flex-col gap-3 relative"
         >
             {/* Image Container */}
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700">
