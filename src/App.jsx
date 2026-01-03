@@ -134,6 +134,7 @@ function Feed({ isPrivate = false }) {
               onEdit={(id) => navigate(`/edit/${id}`)}
               onDelete={(id) => setDeleteId(id)}
               onToggleVisibility={toggleVisibility}
+              hidePublicTag={!isPrivate}
             />
           ))}
         </div>

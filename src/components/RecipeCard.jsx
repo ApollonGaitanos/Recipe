@@ -5,7 +5,7 @@ import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext'; // Added useAuth
 
-export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete prop
+export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) { // Accepted onDelete prop
     const navigate = useNavigate();
     const { toggleLike, hasUserLiked } = useRecipes();
     const { t } = useLanguage();
@@ -51,15 +51,17 @@ export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete 
                 </div>
 
                 {/* Top Left: Visibility Badge Only */}
-                <div className="absolute top-3 left-3">
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public
-                        ? 'bg-black/60 text-white'
-                        : 'bg-primary/90 text-white'
-                        }`}>
-                        {recipe.is_public ? <Globe size={12} /> : <Lock size={12} />}
-                        {recipe.is_public ? t('visibility.publicBadge') : t('visibility.privateBadge')}
-                    </span>
-                </div>
+                {(!hidePublicTag || !recipe.is_public) && (
+                    <div className="absolute top-3 left-3">
+                        <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public
+                            ? 'bg-black/60 text-white'
+                            : 'bg-primary/90 text-white'
+                            }`}>
+                            {recipe.is_public ? <Globe size={12} /> : <Lock size={12} />}
+                            {recipe.is_public ? t('visibility.publicBadge') : t('visibility.privateBadge')}
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* Content */}
