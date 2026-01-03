@@ -260,7 +260,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <button
                                 onClick={() => isOwner && setIsVisModalOpen(true)}
                                 disabled={!isOwner}
-                                className={`flex items - center gap - 2 text - sm font - medium transition - colors ${ !isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer' } `}
+                                className={'flex items-center gap-2 text-sm font-medium transition-colors ' + (!isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer')}
                             >
                                 <span className="text-zinc-500 dark:text-zinc-400">{recipe.is_public ? 'Public' : 'Private'}</span>
                                 {recipe.is_public ? <Globe className="w-4 h-4 text-[#17cf54]" /> : <Lock className="w-4 h-4 text-amber-500" />}
@@ -279,14 +279,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             {!isOwner && (
                                 <button
                                     onClick={handleSave}
-                                    className={`flex items - center gap - 2 px - 5 py - 1.5 rounded - full border transition - colors text - sm font - medium
-                                        ${
-    isSaved
-        ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
-        : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-} `}
+                                    className={'flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium ' +
+                                        (isSaved
+                                            ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
+                                            : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300')}
                                 >
-                                    <Bookmark className={`w - 3.5 h - 3.5 ${ isSaved ? 'fill-current' : '' } `} />
+                                    <Bookmark className={'w-3.5 h-3.5 ' + (isSaved ? 'fill-current' : '')} />
                                     <span>{isSaved ? 'Saved' : 'Save'}</span>
                                 </button>
                             )}
@@ -307,7 +305,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         onClick={() => toggleLike(recipe.id)}
                         className="absolute bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 shadow-lg hover:scale-105 transition-transform group"
                     >
-                        <Heart className={`w - 6 h - 6 ${ isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 group-hover:text-red-500" } `} />
+                        <Heart className={'w-6 h-6 ' + (isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 group-hover:text-red-500")} />
                     </button>
                 </div>
 
