@@ -172,6 +172,7 @@ export default function MyKitchen() {
                         </button>
                     </div>
                 </div>
+            </div>
         </Layout>
     );
 }

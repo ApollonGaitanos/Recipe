@@ -51,7 +51,7 @@ export default function RecipeContext({ children }) {
         cook_time: appRecipe.cookTime,
         servings: appRecipe.servings,
         tags: appRecipe.tags || [],
-        tags: appRecipe.tags || [],
+        // tags: appRecipe.tags || [], // Removed duplicate
         is_public: appRecipe.is_public || false,
         origin_id: appRecipe.originId || null // Forking support
         // image_url: appRecipe.image_url || null,
@@ -410,7 +410,7 @@ export default function RecipeContext({ children }) {
             addRecipe,
             updateRecipe,
             deleteRecipe,
-            deleteRecipe,
+            // deleteRecipe, // Removed duplicate
             toggleVisibility,
             duplicateRecipe,
             toggleSave,
