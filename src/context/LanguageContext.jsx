@@ -35,7 +35,7 @@ const translations = {
         servingsLabel: 'Servings',
         ingredientsLabel: 'Ingredients (one per line)',
         instructionsLabel: 'Instructions',
-        tagsLabel: 'Tags (comma separated)',
+        tagsLabel: 'Filters',
         deleteConfirm: 'Are you sure you want to delete this recipe?',
         ingredientsSection: 'Ingredients',
         instructionsSection: 'Instructions',
@@ -159,16 +159,41 @@ const translations = {
         },
         filters: {
             all: "All",
+            // Meal Type
             breakfast: "Breakfast",
-            vegan: "Vegan",
-            quickEasy: "Quick & Easy",
-            pasta: "Pasta",
-            desserts: "Desserts",
-            healthy: "Healthy",
-            mainCourse: "Main Course",
-            salad: "Salad",
+            brunch: "Brunch",
+            lunch: "Lunch",
+            dinner: "Dinner",
+            snack: "Snack",
+            appetizer: "Appetizer",
             soup: "Soup",
-            appetizer: "Appetizer"
+            salad: "Salad",
+            side_dish: "Side Dish",
+            dessert: "Dessert",
+            drink: "Drink",
+            // Dietary
+            vegetarian: "Vegetarian",
+            vegan: "Vegan",
+            gluten_free: "Gluten-Free",
+            dairy_free: "Dairy-Free",
+            keto: "Keto",
+            low_carb: "Low Carb",
+            healthy: "Healthy",
+            // Cuisine
+            italian: "Italian",
+            mexican: "Mexican",
+            greek: "Greek",
+            asian: "Asian",
+            indian: "Indian",
+            mediterranean: "Mediterranean",
+            american: "American",
+            // Method
+            quick: "Quick (< 30m)",
+            easy: "Easy",
+            baking: "Baking",
+            air_fryer: "Air Fryer",
+            slow_cooker: "Slow Cooker",
+            grilling: "Grilling"
         }
     },
     el: {
@@ -198,7 +223,7 @@ const translations = {
         servingsLabel: 'Μερίδες',
         ingredientsLabel: 'Υλικά (ένα ανά γραμμή)',
         instructionsLabel: 'Οδηγίες',
-        tagsLabel: 'Ετικέτες (χωρισμένες με κόμμα)',
+        tagsLabel: 'Φίλτρα',
         deleteConfirm: 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνταγή;',
         ingredientsSection: 'Υλικά',
         instructionsSection: 'Οδηγίες',
@@ -320,16 +345,41 @@ const translations = {
         },
         filters: {
             all: "Όλα",
+            // Meal Type
             breakfast: "Πρωινό",
-            vegan: "Vegan",
-            quickEasy: "Γρήγορα & Εύκολα",
-            pasta: "Ζυμαρικά",
-            desserts: "Γλυκά",
-            healthy: "Υγιεινά",
-            mainCourse: "Κυρίως Πιάτο",
-            salad: "Σαλάτα",
+            brunch: "Δεκατιανό",
+            lunch: "Μεσημεριανό",
+            dinner: "Βραδινό",
+            snack: "Σνακ",
+            appetizer: "Ορεκτικό",
             soup: "Σούπα",
-            appetizer: "Ορεκτικό"
+            salad: "Σαλάτα",
+            side_dish: "Συνοδευτικό",
+            dessert: "Γλυκό",
+            drink: "Ποτό",
+            // Dietary
+            vegetarian: "Χορτοφαγικό",
+            vegan: "Vegan",
+            gluten_free: "Χωρίς Γλουτένη",
+            dairy_free: "Χωρίς Γαλακτοκομικά",
+            keto: "Κέτο",
+            low_carb: "Χαμηλοί Υδατάνθρακες",
+            healthy: "Υγιεινό",
+            // Cuisine
+            italian: "Ιταλική",
+            mexican: "Μεξικάνικη",
+            greek: "Ελληνική",
+            asian: "Ασιατική",
+            indian: "Ινδική",
+            mediterranean: "Μεσογειακή",
+            american: "Αμερικάνικη",
+            // Method
+            quick: "Γρήγορο (< 30λ)",
+            easy: "Εύκολο",
+            baking: "Φούρνου",
+            air_fryer: "Air Fryer",
+            slow_cooker: "Γάστρα/Αργό",
+            grilling: "Σχάρας"
         }
     }
 };
