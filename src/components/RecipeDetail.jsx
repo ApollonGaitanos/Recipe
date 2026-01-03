@@ -428,7 +428,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     onClick={async () => {
                                         if (confirm("Create a copy of this recipe?")) {
                                             const newRecipe = await duplicateRecipe(recipe);
-                                            if (newRecipe) navigate(`/ recipe / ${ newRecipe.id } `);
+                                            if (newRecipe) navigate('/recipe/' + newRecipe.id);
                                         }
                                     }}
                                     className="btn-secondary-small bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-gray-200 flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none"
