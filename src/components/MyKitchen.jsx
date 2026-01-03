@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Share2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
 import { useAuth } from '../context/AuthContext';
@@ -120,11 +120,23 @@ export default function MyKitchen() {
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif flex items-baseline gap-3">
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif flex items-center flex-wrap gap-3">
                                     <span>{displayUsername}'s Kitchen</span>
                                     <span className="text-lg md:text-xl font-medium text-[#63886f] dark:text-[#a0b3a6]">
-                                        {recipeCount} Recipes
+                                        ({recipeCount} Recipes)
                                     </span>
+                                    <button
+                                        onClick={() => {
+                                            const url = window.location.origin + '/' + (isOwner ? (profile?.username || user?.user_metadata?.username) : (visitorProfile?.username || username));
+                                            navigator.clipboard.writeText(url).then(() => {
+                                                alert('Profile link copied to clipboard!');
+                                            });
+                                        }}
+                                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#63886f] dark:text-[#a0b3a6] transition-colors"
+                                        title="Share Kitchen"
+                                    >
+                                        <Share2 size={24} />
+                                    </button>
                                 </h1>
                                 <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                     {displayBio}
