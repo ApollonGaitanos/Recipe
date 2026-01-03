@@ -30,7 +30,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
         toggleSave(recipe);
     };
 
-    const isOwner = user && user.id === recipe.user_id;
+    const isOwner = user && recipe && String(user.id) === String(recipe.user_id);
 
     return (
         <div

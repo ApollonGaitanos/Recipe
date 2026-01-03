@@ -46,7 +46,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     if (!recipe) return null;
 
-    const isOwner = user && user.id === recipe.user_id;
+    const isOwner = user && recipe && String(user.id) === String(recipe.user_id);
 
 
 
