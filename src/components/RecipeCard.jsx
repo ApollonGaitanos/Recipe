@@ -37,8 +37,8 @@ export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete 
                     </span>
                 </div>
 
-                {/* Top Left: Like */}
-                <div className="absolute top-3 left-3">
+                {/* Bottom Right: Like */}
+                <div className="absolute bottom-3 right-3">
                     <button
                         onClick={handleLike}
                         className="p-2 rounded-lg bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200 transition-colors backdrop-blur-sm shadow-sm group/btn"
@@ -50,8 +50,8 @@ export default function RecipeCard({ recipe, onDelete }) { // Accepted onDelete 
                     </button>
                 </div>
 
-                {/* Top Right: Visibility Badge Only */}
-                <div className="absolute top-3 right-3">
+                {/* Top Left: Visibility Badge Only */}
+                <div className="absolute top-3 left-3">
                     <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public
                         ? 'bg-black/60 text-white'
                         : 'bg-primary/90 text-white'
