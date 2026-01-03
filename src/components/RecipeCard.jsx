@@ -173,7 +173,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                 onClose={() => setShowUnsaveConfirm(false)}
                 onConfirm={confirmUnsave}
                 title="Remove from Saved?"
-                message={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
+                description={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
                 confirmText="Remove"
                 isDanger={true}
             />
