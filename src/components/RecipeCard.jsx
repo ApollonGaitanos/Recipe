@@ -167,9 +167,6 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                 {/* Footer */}
                 <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 dark:border-white/5">
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-600">
-                            {recipe.author_username ? recipe.author_username[0].toUpperCase() : 'U'}
-                        </div>
                         <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                             {recipe.author_username || t('card.chef')}
                         </span>
