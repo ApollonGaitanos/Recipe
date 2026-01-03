@@ -4,6 +4,7 @@ import { Clock, User, Award, Heart, Lock, Globe, Bookmark } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext'; // Added useAuth
+import ConfirmModal from './ConfirmModal';
 
 export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) { // Accepted onDelete prop
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
     const { t } = useLanguage();
     const { user } = useAuth(); // Get user
     const [liked, setLiked] = React.useState(false);
+    const [showUnsaveConfirm, setShowUnsaveConfirm] = React.useState(false);
 
     // Check if recipe is saved
     const isSaved = isRecipeSaved ? isRecipeSaved(recipe.id) : false;
@@ -27,7 +29,16 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
 
     const handleSave = (e) => {
         e.stopPropagation();
+        if (isSaved) {
+            setShowUnsaveConfirm(true);
+        } else {
+            toggleSave(recipe);
+        }
+    };
+
+    const confirmUnsave = () => {
         toggleSave(recipe);
+        setShowUnsaveConfirm(false);
     };
 
     // DEBUG: Inspect full objects
@@ -156,6 +167,16 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                     <span className="text-xs text-gray-400">2h {t('card.ago')}</span>
                 </div>
             </div>
+            {/* Unsave Confirmation Modal */}
+            <ConfirmModal
+                isOpen={showUnsaveConfirm}
+                onClose={() => setShowUnsaveConfirm(false)}
+                onConfirm={confirmUnsave}
+                title="Remove from Saved?"
+                message={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
+                confirmText="Remove"
+                isDanger={true}
+            />
         </div>
     );
 }

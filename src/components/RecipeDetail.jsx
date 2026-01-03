@@ -17,6 +17,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const { user } = useAuth();
 
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showUnsaveConfirm, setShowUnsaveConfirm] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -81,6 +82,19 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     };
 
 
+
+    const handleSave = () => {
+        if (isSaved) {
+            setShowUnsaveConfirm(true);
+        } else {
+            toggleSave(recipe);
+        }
+    };
+
+    const confirmUnsave = () => {
+        toggleSave(recipe);
+        setShowUnsaveConfirm(false);
+    };
 
     // Open the modal
     const handleMagicAction = (mode) => {
@@ -246,7 +260,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             </button>
                             {!isOwner && (
                                 <button
-                                    onClick={() => toggleSave(recipe)}
+                                    onClick={handleSave}
                                     className={`flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium
                                         ${isSaved
                                             ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
@@ -476,6 +490,16 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 onClose={() => setShowConfirm(false)}
                 onConfirm={handleConfirmDelete}
                 message={t('deleteConfirm')}
+            />
+
+            <ConfirmModal
+                isOpen={showUnsaveConfirm}
+                onClose={() => setShowUnsaveConfirm(false)}
+                onConfirm={confirmUnsave}
+                title="Remove from Saved?"
+                message={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
+                confirmText="Remove"
+                isDanger={true}
             />
 
             <VisibilityModal
