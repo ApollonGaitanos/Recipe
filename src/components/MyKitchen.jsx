@@ -56,38 +56,40 @@ export default function MyKitchen() {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col items-end justify-between gap-4 flex-shrink-0">
+                                <div className="flex-shrink-0">
                                     <button className="px-6 py-3 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                                         Share Kitchen
                                     </button>
-                                    <div className="text-sm font-medium text-[#63886f] dark:text-[#a0b3a6] pb-1">
-                                        <strong>{recipeCount}</strong> Recipes
-                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* --- Tab Navigation --- */}
-                        <div className="flex items-center gap-8 mt-12">
-                            {[
-                                { id: 'my_recipes', label: 'My Recipes' },
-                                { id: 'saved', label: 'Saved Collection' },
-                                { id: 'drafts', label: 'Drafts' }
-                            ].map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
-                                        ? 'text-[#17cf54]'
-                                        : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
-                                        }`}
-                                >
-                                    {tab.label}
-                                    {activeTab === tab.id && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#17cf54] rounded-t-full" />
-                                    )}
-                                </button>
-                            ))}
+                        {/* --- Tab Navigation & Stats --- */}
+                        <div className="flex items-end justify-between mt-12">
+                            <div className="flex items-center gap-8">
+                                {[
+                                    { id: 'my_recipes', label: 'My Recipes' },
+                                    { id: 'saved', label: 'Saved Collection' },
+                                    { id: 'drafts', label: 'Drafts' }
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
+                                            ? 'text-[#17cf54]'
+                                            : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
+                                            }`}
+                                    >
+                                        {tab.label}
+                                        {activeTab === tab.id && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#17cf54] rounded-t-full" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="pb-4 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                <strong>{recipeCount}</strong> Recipes
+                            </div>
                         </div>
                     </div>
                 </div>
