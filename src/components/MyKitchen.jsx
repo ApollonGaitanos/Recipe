@@ -54,16 +54,16 @@ export default function MyKitchen() {
                                         <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                             {displayBio}
                                         </p>
-                                        <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
-                                            <span><strong>{recipeCount}</strong> Recipes</span>
-                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="flex-shrink-0">
+                                <div className="flex flex-col items-end gap-3 flex-shrink-0">
                                     <button className="px-6 py-3 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                                         Share Kitchen
                                     </button>
+                                    <div className="text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                        <strong>{recipeCount}</strong> Recipes
+                                    </div>
                                 </div>
                             </div>
                         </div>
