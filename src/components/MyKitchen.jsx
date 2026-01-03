@@ -43,7 +43,7 @@ export default function MyKitchen() {
 
                 {/* --- Profile Header Section --- */}
                 <div className="bg-white dark:bg-[#192b20] border-b border-gray-200 dark:border-gray-800">
-                    <div className="max-w-7xl mx-auto px-6 py-10 md:py-12">
+                    <div className="max-w-7xl mx-auto px-6 pt-10 md:pt-12 pb-0">
                         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
 
                             <div className="flex flex-col gap-4 w-full md:w-2/3">
@@ -68,7 +68,7 @@ export default function MyKitchen() {
                         </div>
 
                         {/* --- Tab Navigation --- */}
-                        <div className="flex items-center gap-8 mt-12 border-b border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-8 mt-12">
                             {[
                                 { id: 'my_recipes', label: 'My Recipes' },
                                 { id: 'saved', label: 'Saved Collection' },
