@@ -42,6 +42,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     const navigate = useNavigate();
     const [originalSource, setOriginalSource] = useState(null);
+    const [showCopyConfirm, setShowCopyConfirm] = useState(false);
 
     React.useEffect(() => {
         if (originalRecipe?.originId) {
@@ -426,12 +427,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 {/* Make a Copy Button */}
                                 {!isOwner && (
                                     <button
-                                        onClick={async () => {
-                                            if (confirm("Create a copy of this recipe?")) {
-                                                const newRecipe = await duplicateRecipe(recipe);
-                                                if (newRecipe) navigate('/recipe/' + newRecipe.id);
-                                            }
-                                        }}
+                                        onClick={() => setShowCopyConfirm(true)}
                                         className="btn-secondary-small bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-gray-200 flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none"
                                     >
                                         <GitFork className="w-4 h-4" />
@@ -535,6 +531,19 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 description={'Are you sure you want to remove "' + recipe.title + '" by ' + (recipe.author_username || 'the Chef') + ' from your saved recipes?'}
                 confirmText="Remove"
                 isDanger={true}
+            />
+
+            <ConfirmModal
+                isOpen={showCopyConfirm}
+                onClose={() => setShowCopyConfirm(false)}
+                onConfirm={async () => {
+                    setShowCopyConfirm(false);
+                    const newRecipe = await duplicateRecipe(recipe);
+                    if (newRecipe) navigate('/recipe/' + newRecipe.id);
+                }}
+                title="Make a Copy?"
+                description="This will create a new private copy of this recipe in your kitchen. You can edit it however you like."
+                confirmText="Create Copy"
             />
 
             <VisibilityModal
