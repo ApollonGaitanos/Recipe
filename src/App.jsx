@@ -24,6 +24,7 @@ function Feed({ isPrivate = false }) {
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [visibleCount, setVisibleCount] = useState(12); // Pagination state
 
   // Redirect if accessing private while logged out
   useEffect(() => {
@@ -61,6 +62,14 @@ function Feed({ isPrivate = false }) {
 
     return matchesSearch && matchesCategory;
   });
+
+  // Slice for pagination
+  const visibleRecipes = filteredRecipes.slice(0, visibleCount);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [activeCategory, searchQuery]);
 
   const confirmDelete = async () => {
     if (deleteId) {
@@ -115,16 +124,13 @@ function Feed({ isPrivate = false }) {
               <Plus size={18} /> <span className="hidden sm:inline">{t('addRecipe')}</span>
             </button>
           )}
-          <button className="text-primary text-sm font-bold hover:underline">
-            {t('feed.viewAll')}
-          </button>
         </div>
       </div>
 
       {/* RECIPE GRID */}
-      {filteredRecipes.length > 0 ? (
+      {visibleRecipes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {filteredRecipes.map(recipe => (
+          {visibleRecipes.map(recipe => (
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
@@ -155,10 +161,13 @@ function Feed({ isPrivate = false }) {
         </div>
       )}
 
-      {/* Load More Button (Mockup Visual) */}
-      {filteredRecipes.length > 0 && searchQuery === "" && activeCategory === "All" && (
+      {/* Load More Button */}
+      {visibleRecipes.length < filteredRecipes.length && (
         <div className="flex justify-center mt-12 mb-8">
-          <button className="px-8 py-3 min-w-[220px] justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-gray-900 dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm">
+          <button
+            onClick={() => setVisibleCount(prev => prev + 12)}
+            className="px-8 py-3 min-w-[220px] justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-gray-900 dark:text-white font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm"
+          >
             {t('feed.loadMore')}
           </button>
         </div>
