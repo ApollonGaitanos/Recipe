@@ -252,9 +252,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                     <div className="flex flex-wrap items-center gap-6 text-zinc-500 dark:text-zinc-400 text-sm md:text-base">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
-                                {recipe.author_username ? recipe.author_username[0].toUpperCase() : 'C'}
-                            </div>
+
                             <span className="font-medium text-zinc-900 dark:text-zinc-200">
                                 {t('detail.by')} {recipe.author_username || 'Chef'}
                             </span>
