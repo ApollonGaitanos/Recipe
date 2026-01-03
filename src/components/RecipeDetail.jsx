@@ -82,7 +82,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         if (!contentRef.current) return;
         setIsDownloading(true);
         try {
-            await generateRecipePDF(contentRef.current, `${ recipe.title }.pdf`);
+            await generateRecipePDF(contentRef.current, recipe.title + ".pdf");
         } catch (error) {
             console.error('PDF Generation failed:', error);
         } finally {
