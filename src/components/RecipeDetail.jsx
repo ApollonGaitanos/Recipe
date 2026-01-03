@@ -1,4 +1,4 @@
-```javascript
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark, GitFork } from 'lucide-react';
@@ -45,8 +45,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     React.useEffect(() => {
         if (originalRecipe?.originId) {
-             supabase.from('recipes').select('title, author_username').eq('id', originalRecipe.originId).single()
-             .then(({ data }) => setOriginalSource(data));
+            supabase.from('recipes').select('title, author_username').eq('id', originalRecipe.originId).single()
+                .then(({ data }) => setOriginalSource(data));
         }
     }, [originalRecipe?.originId]);
 
@@ -234,10 +234,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </h1>
 
                     {recipe.originId && (
-                         <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/recipe/' + recipe.originId)}>
+                        <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/recipe/' + recipe.originId)}>
                             <GitFork size={14} />
                             <span>Copy of <span className="font-semibold underline">{originalSource?.title || 'Original Recipe'}</span> by {originalSource?.author_username || 'Unknown'}</span>
-                         </div>
+                        </div>
                     )}
 
 
@@ -424,7 +424,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 </button>
 
                                 {/* Make a Copy Button */}
-                                <button 
+                                <button
                                     onClick={async () => {
                                         if (confirm("Create a copy of this recipe?")) {
                                             const newRecipe = await duplicateRecipe(recipe);
