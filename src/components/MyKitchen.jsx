@@ -42,7 +42,7 @@ export default function MyKitchen() {
             <div className="min-h-screen bg-[#f6f8f6] dark:bg-[#112116] text-[#111813] dark:text-white font-sans transition-colors duration-200">
 
                 <div className="bg-white dark:bg-[#192b20] border-b border-gray-200 dark:border-gray-800">
-                    <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
+                    <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-8">
                         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
                             <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
 
@@ -60,119 +60,126 @@ export default function MyKitchen() {
                                     </div>
                                 </div>
 
-                                <div className="flex-shrink-0">
-                                    <button className="px-6 py-3 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
-                                        Share Kitchen
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* --- Tab Navigation --- */}
-                            <div className="flex items-center gap-8 mt-12">
-                                {[
-                                    { id: 'my_recipes', label: 'My Recipes' },
-                                    { id: 'saved', label: 'Saved Collection' },
-                                    { id: 'drafts', label: 'Drafts' }
-                                ].map(tab => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
-                                            ? 'text-[#17cf54]'
-                                            : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
-                                            }`}
-                                    >
-                                        {tab.label}
-                                        {activeTab === tab.id && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#17cf54] rounded-t-full" />
-                                        )}
-                                    </button>
-                                ))}
                             </div>
                         </div>
-                    </div>
-
-                    {/* --- Main Content Area --- */}
-                    <div className="max-w-7xl mx-auto px-6 py-8">
-
-                        {/* Search & Filters */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-8">
-                            <div className="relative w-full sm:w-96">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search className="text-[#63886f] dark:text-[#a0b3a6] w-5 h-5" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search your recipes..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="block w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-[#111813] dark:text-white placeholder-[#63886f] dark:placeholder-[#a0b3a6] focus:ring-2 focus:ring-[#17cf54] focus:border-transparent transition-shadow shadow-sm font-medium"
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <select className="px-4 py-2.5 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-sm font-medium text-[#111813] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#17cf54] cursor-pointer">
-                                    <option>Most Recent</option>
-                                    <option>Oldest First</option>
-                                    <option>A-Z</option>
-                                </select>
-
-                                <button
-                                    onClick={() => navigate('/add')}
-                                    className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity ml-auto"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">New Recipe</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* --- Recipe Grid (Replaced with RecipeCard) --- */}
-                        {filteredRecipes.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {filteredRecipes.map(recipe => (
-                                    <RecipeCard
-                                        key={recipe.id}
-                                        recipe={recipe}
-                                        onEdit={(id) => navigate(`/edit/${id}`)}
-                                        onToggleVisibility={toggleVisibility}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            // Empty State
-                            <div className="flex flex-col items-center justify-center py-20 bg-gray-50 dark:bg-[#192b20] rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
-                                <div className="w-16 h-16 bg-white dark:bg-black/20 rounded-full flex items-center justify-center mb-4 text-[#63886f] dark:text-[#a0b3a6]">
-                                    <Search className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">
-                                    {activeTab === 'saved' ? 'No saved recipes yet' : 'No recipes found in your kitchen'}
-                                </h3>
-                                <p className="text-[#63886f] dark:text-[#a0b3a6] text-center max-w-sm mb-6">
-                                    {activeTab === 'saved' ? 'Bookmark recipes you like to see them here!' : 'Start cooking and add your first masterpiece!'}
-                                </p>
-                                <button
-                                    onClick={() => navigate('/add')}
-                                    className="px-6 py-2.5 rounded-full bg-[#17cf54] text-white font-bold hover:opacity-90 transition-opacity"
-                                >
-                                    {activeTab === 'saved' ? 'Browse Recipes' : 'Create First Recipe'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Floating Action Button (Mobile) */}
-                    <div className="fixed bottom-8 right-8 z-30 md:hidden">
-                        <button
-                            onClick={() => navigate('/add')}
-                            className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-[#17cf54] text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                        >
-                            <Plus className="w-6 h-6" />
-                            <span className="font-bold text-base tracking-wide">New</span>
-                        </button>
                     </div>
                 </div>
             </div>
-        </Layout>
+        </div>
+
+                    {/* --- Main Content Area --- */ }
+    <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* --- Consolidated Toolbar --- */}
+        <div className="flex flex-col xl:flex-row gap-6 items-center justify-between mb-8 border-b border-gray-100 dark:border-gray-800 pb-4">
+
+            {/* Left Group: Tabs + Search */}
+            <div className="flex flex-col md:flex-row items-center gap-6 w-full xl:w-auto">
+                {/* Tabs */}
+                <div className="flex items-center gap-6">
+                    {[
+                        { id: 'my_recipes', label: 'My Recipes' },
+                        { id: 'saved', label: 'Saved' },
+                        { id: 'drafts', label: 'Drafts' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`text-sm font-bold tracking-wide uppercase transition-colors relative ${activeTab === tab.id
+                                ? 'text-[#17cf54]'
+                                : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
+                                }`}
+                        >
+                            {tab.label}
+                            {activeTab === tab.id && (
+                                <div className="absolute -bottom-[1.1rem] left-0 right-0 h-0.5 bg-[#17cf54] rounded-t-full" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Search (Moved here) */}
+                <div className="relative w-full md:w-80">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="text-[#63886f] dark:text-[#a0b3a6] w-4 h-4" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search recipes..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="block w-full pl-9 pr-4 py-2 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-sm text-[#111813] dark:text-white placeholder-[#63886f] dark:placeholder-[#a0b3a6] focus:ring-2 focus:ring-[#17cf54] focus:border-transparent transition-shadow shadow-sm font-medium"
+                    />
+                </div>
+            </div>
+
+            {/* Right Group: Actions */}
+            <div className="flex items-center gap-3 w-full xl:w-auto justify-end">
+                <select className="px-4 py-2 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-sm font-medium text-[#111813] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#17cf54] cursor-pointer">
+                    <option>Most Recent</option>
+                    <option>Oldest First</option>
+                    <option>A-Z</option>
+                </select>
+
+                {/* Share Button (Moved Here) */}
+                <button className="px-5 py-2 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-[#111813] dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-[#25382b] transition-colors">
+                    Share
+                </button>
+
+                <button
+                    onClick={() => navigate('/add')}
+                    className="hidden sm:flex items-center gap-2 px-5 py-2 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity"
+                >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">New Recipe</span>
+                </button>
+            </div>
+        </div>
+        {/* --- Recipe Grid (Replaced with RecipeCard) --- */}
+        {filteredRecipes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredRecipes.map(recipe => (
+                    <RecipeCard
+                        key={recipe.id}
+                        recipe={recipe}
+                        onEdit={(id) => navigate(`/edit/${id}`)}
+                        onToggleVisibility={toggleVisibility}
+                    />
+                ))}
+            </div>
+        ) : (
+            // Empty State
+            <div className="flex flex-col items-center justify-center py-20 bg-gray-50 dark:bg-[#192b20] rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+                <div className="w-16 h-16 bg-white dark:bg-black/20 rounded-full flex items-center justify-center mb-4 text-[#63886f] dark:text-[#a0b3a6]">
+                    <Search className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">
+                    {activeTab === 'saved' ? 'No saved recipes yet' : 'No recipes found in your kitchen'}
+                </h3>
+                <p className="text-[#63886f] dark:text-[#a0b3a6] text-center max-w-sm mb-6">
+                    {activeTab === 'saved' ? 'Bookmark recipes you like to see them here!' : 'Start cooking and add your first masterpiece!'}
+                </p>
+                <button
+                    onClick={() => navigate('/add')}
+                    className="px-6 py-2.5 rounded-full bg-[#17cf54] text-white font-bold hover:opacity-90 transition-opacity"
+                >
+                    {activeTab === 'saved' ? 'Browse Recipes' : 'Create First Recipe'}
+                </button>
+            </div>
+        )}
+    </div>
+
+    {/* Floating Action Button (Mobile) */ }
+    <div className="fixed bottom-8 right-8 z-30 md:hidden">
+        <button
+            onClick={() => navigate('/add')}
+            className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-[#17cf54] text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+        >
+            <Plus className="w-6 h-6" />
+            <span className="font-bold text-base tracking-wide">New</span>
+        </button>
+    </div>
+                </div >
+            </div >
+        </Layout >
     );
 }
