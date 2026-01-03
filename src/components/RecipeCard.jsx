@@ -78,21 +78,23 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                 </div>
 
                 {/* Top Right: Bookmark (Saved) */}
-                <div className="absolute top-3 right-3">
-                    <button
-                        onClick={handleSave}
-                        className={`p-2 rounded-lg transition-colors backdrop-blur-sm shadow-sm group/btn 
-                            ${isSaved
-                                ? 'bg-[#17cf54] text-white hover:bg-[#14b045]'
-                                : 'bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200'
-                            }`}
-                    >
-                        <Bookmark
-                            size={18}
-                            className={`transition-colors ${isSaved ? 'fill-white text-white' : ''}`}
-                        />
-                    </button>
-                </div>
+                {!isOwner && (
+                    <div className="absolute top-3 right-3">
+                        <button
+                            onClick={handleSave}
+                            className={`p-2 rounded-lg transition-colors backdrop-blur-sm shadow-sm group/btn 
+                                ${isSaved
+                                    ? 'bg-[#17cf54] text-white hover:bg-[#14b045]'
+                                    : 'bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200'
+                                }`}
+                        >
+                            <Bookmark
+                                size={18}
+                                className={`transition-colors ${isSaved ? 'fill-white text-white' : ''}`}
+                            />
+                        </button>
+                    </div>
+                )}
 
                 {/* Top Left: Visibility Badge Only */}
                 {(!hidePublicTag || !recipe.is_public) && (
