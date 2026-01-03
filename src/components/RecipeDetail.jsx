@@ -231,17 +231,19 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 <Printer className="w-3.5 h-3.5" />
                                 <span>print</span>
                             </button>
-                            <button
-                                onClick={() => toggleSave(recipe)}
-                                className={`flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium
-                                    ${isSaved
-                                        ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
-                                        : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                                    }`}
-                            >
-                                <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
-                                <span>{isSaved ? 'Saved' : 'Save'}</span>
-                            </button>
+                            {!isOwner && (
+                                <button
+                                    onClick={() => toggleSave(recipe)}
+                                    className={`flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium
+                                        ${isSaved
+                                            ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
+                                            : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                        }`}
+                                >
+                                    <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                                    <span>{isSaved ? 'Saved' : 'Save'}</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
