@@ -12,12 +12,16 @@ export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
     const { t, toggleLanguage } = useLanguage();
     const { theme, toggleTheme } = useTheme();
-    const { user, signOut } = useAuth();
+    const { user, profile, signOut } = useAuth();
     const { searchQuery, setSearchQuery } = useRecipes();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const myKitchenPath = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0]
+        ? `/${profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0]}`
+        : '/my-recipes';
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-display transition-colors duration-200">
@@ -48,7 +52,7 @@ export default function Layout({ children, fullWidth = false }) {
                             <button onClick={() => navigate('/')} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
                                 {t('nav.discover')}
                             </button>
-                            <button onClick={() => navigate('/my-recipes')} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <button onClick={() => navigate(myKitchenPath)} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
                                 {t('nav.myKitchen')}
                             </button>
                         </nav>
@@ -152,7 +156,7 @@ export default function Layout({ children, fullWidth = false }) {
                                 <Globe size={20} className="text-gray-400" /> {t('nav.discover')}
                             </button>
                             {user && (
-                                <button onClick={() => { navigate('/my-recipes'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
+                                <button onClick={() => { navigate(myKitchenPath); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
                                     <div className="text-gray-400"><ChefHat size={20} /></div> {t('nav.myKitchen')}
                                 </button>
                             )}

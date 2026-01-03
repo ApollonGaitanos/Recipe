@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Plus } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
@@ -9,22 +10,96 @@ import { useLanguage } from '../context/LanguageContext';
 
 export default function MyKitchen() {
     const { recipes, deleteRecipe, toggleVisibility, savedRecipes } = useRecipes();
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { t } = useLanguage();
     const navigate = useNavigate();
+    const { username } = useParams();
 
     const [activeTab, setActiveTab] = useState('my_recipes');
     const [searchQuery, setSearchQuery] = useState('');
+    const [visitorProfile, setVisitorProfile] = useState(null);
+    const [visitorRecipes, setVisitorRecipes] = useState([]);
+    const [loadingVisitor, setLoadingVisitor] = useState(false);
+
+    // Determine if we are viewing our own kitchen
+    const isOwner = !username || (user && (profile?.username === username || user.user_metadata?.username === username));
+
+    // Fetch Visitor Data
+    React.useEffect(() => {
+        if (isOwner || !username) return;
+
+        async function fetchVisitorData() {
+            setLoadingVisitor(true);
+            try {
+                // 1. Fetch Profile
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('username', username)
+                    .single();
+
+                if (profileError) throw profileError;
+                setVisitorProfile(profileData);
+
+                // 2. Fetch Public Recipes
+                const { data: recipeData, error: recipeError } = await supabase
+                    .from('recipes')
+                    .select(`*, profiles:user_id (username)`)
+                    .eq('user_id', profileData.id)
+                    .eq('is_public', true);
+
+                if (recipeError) throw recipeError;
+
+                // Map to App Recipe Format
+                const mapped = (recipeData || []).map(r => ({
+                    id: r.id,
+                    title: r.title,
+                    ingredients: r.ingredients || '',
+                    instructions: r.instructions || '',
+                    prepTime: r.prep_time || 0,
+                    cookTime: r.cook_time || 0,
+                    servings: r.servings || 2,
+                    tags: r.tags || [],
+                    is_public: true,
+                    user_id: r.user_id,
+                    author_username: r.profiles?.username || '',
+                    likes_count: r.likes_count || 0,
+                    image_url: r.image_url,
+                    description: r.description || '',
+                    createdAt: r.created_at
+                }));
+                setVisitorRecipes(mapped);
+
+            } catch (err) {
+                console.error("Error fetching public profile:", err);
+            } finally {
+                setLoadingVisitor(false);
+            }
+        }
+        fetchVisitorData();
+    }, [username, isOwner]);
+
 
     // --- Derived Data ---
-    const { profile } = useAuth(); // Need to destructure profile from useAuth
-    const displayUsername = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || "Chef";
-    const displayBio = profile?.bio || user?.user_metadata?.bio || "No bio yet";
-    const recipeCount = recipes.length;
+    const displayUsername = isOwner
+        ? (profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || "Chef")
+        : (visitorProfile?.username || username || "Chef");
+
+    const displayBio = isOwner
+        ? (profile?.bio || user?.user_metadata?.bio || "No bio yet")
+        : (visitorProfile?.bio || "No bio yet");
+
+    const currentRecipes = isOwner ? recipes : visitorRecipes;
+    const recipeCount = isOwner
+        ? (activeTab === 'saved' ? savedRecipes.length : recipes.length) // Simplify count logic?
+        : visitorRecipes.length; // Visitor only sees 'recipes' tab effectively
+
+
 
     const getRecipesForTab = () => {
+        if (!isOwner) return visitorRecipes; // Visitors only see public recipes
         if (activeTab === 'saved') return savedRecipes;
-        if (activeTab === 'drafts') return []; // Placeholder
+        if (activeTab === 'drafts') return [];
         return recipes;
     };
 
@@ -60,11 +135,13 @@ export default function MyKitchen() {
                         {/* --- Tab Navigation --- */}
                         <div className="flex items-center mt-12">
                             <div className="flex items-center gap-8">
-                                {[
+                                {(isOwner ? [
                                     { id: 'my_recipes', label: 'My Recipes' },
                                     { id: 'saved', label: 'Saved Collection' },
                                     { id: 'drafts', label: 'Drafts' }
-                                ].map(tab => (
+                                ] : [
+                                    { id: 'my_recipes', label: 'Recipes' }
+                                ]).map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
@@ -108,13 +185,15 @@ export default function MyKitchen() {
                                 <option>A-Z</option>
                             </select>
 
-                            <button
-                                onClick={() => navigate('/add')}
-                                className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity ml-auto"
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span className="hidden sm:inline">New Recipe</span>
-                            </button>
+                            {isOwner && (
+                                <button
+                                    onClick={() => navigate('/add')}
+                                    className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity ml-auto"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">New Recipe</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                     {/* --- Recipe Grid (Replaced with RecipeCard) --- */}
@@ -151,16 +230,18 @@ export default function MyKitchen() {
                     )}
                 </div>
 
-                {/* Floating Action Button (Mobile) */}
-                <div className="fixed bottom-8 right-8 z-30 md:hidden">
-                    <button
-                        onClick={() => navigate('/add')}
-                        className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-[#17cf54] text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                    >
-                        <Plus className="w-6 h-6" />
-                        <span className="font-bold text-base tracking-wide">New</span>
-                    </button>
-                </div>
+                {/* Floating Action Button (Mobile) - Owner Only */}
+                {isOwner && (
+                    <div className="fixed bottom-8 right-8 z-30 md:hidden">
+                        <button
+                            onClick={() => navigate('/add')}
+                            className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-[#17cf54] text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                        >
+                            <Plus className="w-6 h-6" />
+                            <span className="font-bold text-base tracking-wide">New</span>
+                        </button>
+                    </div>
+                )}
             </div>
         </Layout>
     );

@@ -278,11 +278,21 @@ function ProtectedRoute({ children }) {
 
 // --- MAIN ROUTER ---
 
+// Helper to redirect legacy /my-recipes to username
+function MyRecipesRedirect() {
+  const { user, profile } = useAuth();
+  const username = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0];
+  if (username) {
+    return <Navigate to={`/${username}`} replace />;
+  }
+  return <MyKitchen />;
+}
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<Feed isPrivate={false} />} />
-      <Route path="/my-recipes" element={<MyKitchen />} />
+      <Route path="/my-recipes" element={<MyRecipesRedirect />} />
       <Route path="/recipe/:id" element={<DetailRoute />} />
       <Route path="/add" element={<FormRoute />} />
       <Route path="/edit/:id" element={<FormRoute />} />
@@ -291,6 +301,7 @@ const router = createBrowserRouter(
           <AccountSettings />
         </ProtectedRoute>
       } />
+      <Route path="/:username" element={<MyKitchen />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </>
   ),
