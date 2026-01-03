@@ -230,12 +230,16 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     )}
 
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl relative">
-                        {recipe.title}
+                    <div className="flex flex-row items-start justify-between gap-4">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl">
+                            {recipe.title}
+                        </h1>
                         {recipe.originId && (
-                            <GitFork className="inline-block ml-3 mb-1 text-zinc-400" size={32} />
+                            <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-full text-zinc-500 dark:text-zinc-400 mt-2">
+                                <GitFork size={32} />
+                            </div>
                         )}
-                    </h1>
+                    </div>
 
                     {recipe.originId && (
                         <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/recipe/' + recipe.originId)}>
