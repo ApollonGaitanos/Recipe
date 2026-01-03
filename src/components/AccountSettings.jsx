@@ -20,8 +20,7 @@ const AccountSettings = () => {
 
     const [formData, setFormData] = useState({
         username: '',
-        bio: '',
-        dietary: []
+        bio: ''
     });
 
     const [isEditing, setIsEditing] = useState(false);
@@ -32,8 +31,7 @@ const AccountSettings = () => {
         if (user) {
             setFormData({
                 username: profile?.username || user.user_metadata?.username || '',
-                bio: user.user_metadata?.bio || '',
-                dietary: user.user_metadata?.dietary_preferences || []
+                bio: user.user_metadata?.bio || ''
             });
         }
     }, [user, profile]);
@@ -90,10 +88,9 @@ const AccountSettings = () => {
 
         setLoading(true);
         try {
-            // Update Auth Metadata (Bio, Dietary)
+            // Update Auth Metadata (Bio)
             const { error: metaError } = await updateProfile({
-                bio: formData.bio,
-                dietary_preferences: formData.dietary
+                bio: formData.bio
             });
             if (metaError) throw metaError;
 
@@ -128,16 +125,6 @@ const AccountSettings = () => {
         }
     };
 
-    const toggleDietary = (option) => {
-        setFormData(prev => {
-            const current = prev.dietary || [];
-            if (current.includes(option)) {
-                return { ...prev, dietary: current.filter(item => item !== option) };
-            } else {
-                return { ...prev, dietary: [...current, option] };
-            }
-        });
-    };
 
     const menuItems = [
         { id: "edit-profile", label: "Edit Profile", icon: UserIcon }
@@ -293,27 +280,7 @@ const AccountSettings = () => {
                                         )}
                                     </div>
 
-                                    {/* Dietary Preferences */}
-                                    {(!isEditing && (!formData.dietary || formData.dietary.length === 0)) ? null : (
-                                        <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
-                                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Dietary Preferences</h3>
-                                            <div className="flex flex-wrap gap-2">
-                                                {['Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Paleo'].map((option) => (
-                                                    <button
-                                                        key={option}
-                                                        disabled={!isEditing}
-                                                        onClick={() => toggleDietary(option)}
-                                                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${formData.dietary?.includes(option)
-                                                            ? 'bg-primary text-white shadow-md shadow-green-500/20 shadow-primary/20'
-                                                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary dark:hover:text-[#17cf54] dark:hover:border-[#17cf54]'
-                                                            } ${!isEditing && !formData.dietary?.includes(option) ? 'hidden' : ''} ${!isEditing ? 'cursor-default pointer-events-none' : ''}`}
-                                                    >
-                                                        {option}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+
 
                                     {/* Actions */}
                                     {isEditing && (
@@ -325,8 +292,7 @@ const AccountSettings = () => {
                                                     // Reset form to original user data
                                                     setFormData({
                                                         username: profile?.username || user.user_metadata?.username || '',
-                                                        bio: user.user_metadata?.bio || '',
-                                                        dietary: user.user_metadata?.dietary_preferences || []
+                                                        bio: user.user_metadata?.bio || ''
                                                     });
                                                 }}
                                             >
