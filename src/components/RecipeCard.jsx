@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, User, Award, Heart, Lock, Globe, Bookmark, GitFork } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext'; // Added useAuth
+import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
+import { formatTimeAgo } from '../utils/dateUtils';
 
 export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) { // Accepted onDelete prop
     const navigate = useNavigate();
@@ -12,6 +13,10 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
     const { t } = useLanguage();
     const { user } = useAuth(); // Get user
     const [liked, setLiked] = React.useState(false);
+
+    // Calculate time ago
+    const timeAgo = React.useMemo(() => formatTimeAgo(recipe.createdAt), [recipe.createdAt]);
+
     const [showUnsaveConfirm, setShowUnsaveConfirm] = React.useState(false);
 
     // Check if recipe is saved
@@ -171,7 +176,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                             {recipe.author_username || t('card.chef')}
                         </span>
                     </div>
-                    <span className="text-xs text-gray-400">2h {t('card.ago')}</span>
+                    <span className="text-xs text-gray-400">{timeAgo} {t('card.ago')}</span>
                 </div>
             </div>
             {/* Unsave Confirmation Modal */}
