@@ -1,5 +1,7 @@
+```javascript
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark, GitFork } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
@@ -12,7 +14,7 @@ import { parseRecipe } from '../utils/recipeParser';
 import TranslationModal from './TranslationModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes, toggleSave, isRecipeSaved } = useRecipes();
+    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes, toggleSave, isRecipeSaved, duplicateRecipe } = useRecipes();
     const { t, language } = useLanguage();
     const { user } = useAuth();
 
@@ -42,6 +44,18 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     React.useEffect(() => {
         setTranslatedRecipe(null);
     }, [id]);
+
+    const navigate = useNavigate();
+    const [originalSource, setOriginalSource] = useState(null);
+
+    React.useEffect(() => {
+        if (originalRecipe?.originId) {
+             supabase.from('recipes').select('title, author_username').eq('id', originalRecipe.originId).single()
+             .then(({ data }) => setOriginalSource(data));
+        }
+    }, [originalRecipe?.originId]);
+
+
 
     const recipe = translatedRecipe || originalRecipe;
 
@@ -73,7 +87,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         if (!contentRef.current) return;
         setIsDownloading(true);
         try {
-            await generateRecipePDF(contentRef.current, `${recipe.title}.pdf`);
+            await generateRecipePDF(contentRef.current, `${ recipe.title }.pdf`);
         } catch (error) {
             console.error('PDF Generation failed:', error);
         } finally {
@@ -188,8 +202,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 setActionModal({ isOpen: false, mode: null });
             }
         } catch (error) {
-            console.error(`AI ${mode} failed:`, error);
-            alert(`Failed: ${error.message}`);
+            console.error(`AI ${ mode } failed: `, error);
+            alert(`Failed: ${ error.message } `);
         } finally {
             setIsProcessing(false);
         }
@@ -224,6 +238,15 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         {recipe.title}
                     </h1>
 
+                    {recipe.originId && (
+                         <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`/ recipe / ${ recipe.originId } `)}>
+                            <GitFork size={14} />
+                            <span>Copy of <span className="font-semibold underline">{originalSource?.title || 'Original Recipe'}</span> by {originalSource?.author_username || 'Unknown'}</span>
+                         </div>
+                    )}
+
+
+
                     <div className="flex flex-wrap items-center gap-6 text-zinc-500 dark:text-zinc-400 text-sm md:text-base">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
@@ -242,7 +265,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <button
                                 onClick={() => isOwner && setIsVisModalOpen(true)}
                                 disabled={!isOwner}
-                                className={`flex items-center gap-2 text-sm font-medium transition-colors ${!isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer'}`}
+                                className={`flex items - center gap - 2 text - sm font - medium transition - colors ${ !isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer' } `}
                             >
                                 <span className="text-zinc-500 dark:text-zinc-400">{recipe.is_public ? 'Public' : 'Private'}</span>
                                 {recipe.is_public ? <Globe className="w-4 h-4 text-[#17cf54]" /> : <Lock className="w-4 h-4 text-amber-500" />}
@@ -261,13 +284,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             {!isOwner && (
                                 <button
                                     onClick={handleSave}
-                                    className={`flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium
-                                        ${isSaved
-                                            ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
-                                            : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                                        }`}
+                                    className={`flex items - center gap - 2 px - 5 py - 1.5 rounded - full border transition - colors text - sm font - medium
+                                        ${
+    isSaved
+        ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
+        : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+} `}
                                 >
-                                    <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                                    <Bookmark className={`w - 3.5 h - 3.5 ${ isSaved ? 'fill-current' : '' } `} />
                                     <span>{isSaved ? 'Saved' : 'Save'}</span>
                                 </button>
                             )}
@@ -288,7 +312,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         onClick={() => toggleLike(recipe.id)}
                         className="absolute bottom-6 right-6 p-4 rounded-full bg-white dark:bg-zinc-800 shadow-lg hover:scale-105 transition-transform group"
                     >
-                        <Heart className={`w-6 h-6 ${isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 group-hover:text-red-500"}`} />
+                        <Heart className={`w - 6 h - 6 ${ isLiked ? "fill-red-500 text-red-500" : "text-zinc-400 group-hover:text-red-500" } `} />
                     </button>
                 </div>
 
@@ -324,7 +348,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                                 if (typeof ingredient === 'object') {
                                                     const amt = ingredient.amount || '';
                                                     const name = ingredient.name || ingredient.item || '';
-                                                    return `${amt} ${name}`.trim();
+                                                    return `${ amt } ${ name } `.trim();
                                                 }
                                                 return String(ingredient);
                                             })()}
@@ -405,6 +429,22 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <Globe className="w-4 h-4" />
                                     Translate
                                 </button>
+
+                                {/* Make a Copy Button */}
+                                <button 
+                                    onClick={async () => {
+                                        if (confirm("Create a copy of this recipe?")) {
+                                            const newRecipe = await duplicateRecipe(recipe);
+                                            if (newRecipe) navigate(`/ recipe / ${ newRecipe.id } `);
+                                        }
+                                    }}
+                                    className="btn-secondary-small bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-gray-200 flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none"
+                                >
+                                    <GitFork className="w-4 h-4" />
+                                    Make a Copy
+                                </button>
+
+
                                 {isOwner && (
                                     <>
                                         <button className="btn-secondary text-sm px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2" onClick={onEdit}>
@@ -497,7 +537,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 onClose={() => setShowUnsaveConfirm(false)}
                 onConfirm={confirmUnsave}
                 title="Remove from Saved?"
-                description={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
+                description={`Are you sure you want to remove "${recipe.title}" by ${ recipe.author_username || 'the Chef' } from your saved recipes ? `}
                 confirmText="Remove"
                 isDanger={true}
             />

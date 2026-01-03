@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, User, Award, Heart, Lock, Globe, Bookmark } from 'lucide-react';
+import { Clock, User, Award, Heart, Lock, Globe, Bookmark, GitFork } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext'; // Added useAuth
@@ -88,9 +88,9 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                     </button>
                 </div>
 
-                {/* Top Right: Bookmark (Saved) */}
+                {/* Bottom Left: Bookmark (Saved) - Moved per request */}
                 {!isOwner && (
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute bottom-3 left-3">
                         <button
                             onClick={handleSave}
                             className={`p-2 rounded-lg transition-colors backdrop-blur-sm shadow-sm group/btn 
@@ -107,7 +107,17 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                     </div>
                 )}
 
-                {/* Top Left: Visibility Badge Only */}
+                {/* Top Right: Copy Indicator */}
+                {recipe.originId && (
+                    <div className="absolute top-3 right-3">
+                        <div className="p-1.5 rounded-full bg-black/40 text-white backdrop-blur-sm" title="This is a copy">
+                            <GitFork size={14} />
+                        </div>
+                    </div>
+                )}
+
+                {/* Top Left: Visibility Badge (Shifted slightly if needed, but absolute positioning handles overlap usually) */}
+                {/* Note: Public badge is top-left. Copied indicator is top-right. Bookmark is bottom-left. Like is bottom-right. All corners covered. */}
                 {(!hidePublicTag || !recipe.is_public) && (
                     <div className="absolute top-3 left-3">
                         <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm shadow-sm flex items-center gap-1 ${recipe.is_public

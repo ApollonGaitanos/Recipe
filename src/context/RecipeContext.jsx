@@ -36,7 +36,8 @@ export default function RecipeContext({ children }) {
         likes_count: dbRecipe.likes_count || 0,
         image_url: dbRecipe.image_url,
         description: dbRecipe.description || '',
-        createdAt: dbRecipe.created_at
+        createdAt: dbRecipe.created_at,
+        originId: dbRecipe.origin_id || null // Forking support
     });
 
     const toDbRecipe = (appRecipe, userId, username) => ({
@@ -48,7 +49,9 @@ export default function RecipeContext({ children }) {
         cook_time: appRecipe.cookTime,
         servings: appRecipe.servings,
         tags: appRecipe.tags || [],
+        tags: appRecipe.tags || [],
         is_public: appRecipe.is_public || false,
+        origin_id: appRecipe.originId || null // Forking support
         // image_url: appRecipe.image_url || null,
         // description: appRecipe.description || null, // Column missing in DB
         // author_username: username || null
@@ -369,6 +372,26 @@ export default function RecipeContext({ children }) {
         }
     };
 
+    const duplicateRecipe = async (originalRecipe) => {
+        if (!user || !originalRecipe) return;
+
+        const copyData = {
+            ...originalRecipe,
+            title: `${t('copyPrefix', 'Copy of')} ${originalRecipe.title}`,
+            originId: originalRecipe.id,
+            is_public: false, // Copies start private
+            // Reset metadata
+            id: undefined,
+            createdAt: undefined,
+            user_id: undefined,
+            author_username: undefined,
+            likes_count: 0
+        };
+
+        // Reuse addRecipe logic which handles DB insert and optimistic UI
+        return await addRecipe(copyData);
+    };
+
     const isRecipeSaved = (recipeId) => savedRecipeIds.has(recipeId);
 
     const checkIsLiked = (recipeId) => userLikes.has(recipeId);
@@ -385,7 +408,9 @@ export default function RecipeContext({ children }) {
             addRecipe,
             updateRecipe,
             deleteRecipe,
+            deleteRecipe,
             toggleVisibility,
+            duplicateRecipe,
             toggleSave,
             isRecipeSaved,
             toggleLike,
