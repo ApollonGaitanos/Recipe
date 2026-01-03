@@ -46,21 +46,22 @@ export default function MyKitchen() {
                     <div className="max-w-7xl mx-auto px-6 py-10 md:py-12">
                         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
 
-                            {/* Profile Info (No Icon) */}
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-4 w-full md:w-2/3">
                                 <div>
                                     <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
                                         {displayUsername}'s Kitchen
                                     </h1>
-                                    <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap max-w-2xl mt-2">
+                                    <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                         {displayBio}
                                     </p>
                                     <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
                                         <span><strong>{recipeCount}</strong> Recipes</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                <button className="self-start px-5 py-2.5 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
+                            <div className="flex-shrink-0">
+                                <button className="px-6 py-3 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                                     Share Kitchen
                                 </button>
                             </div>
