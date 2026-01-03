@@ -544,6 +544,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 title="Make a Copy?"
                 description="This will create a new private copy of this recipe in your kitchen. You can edit it however you like."
                 confirmText="Create Copy"
+                isDanger={false}
+                Icon={GitFork}
             />
 
             <VisibilityModal
