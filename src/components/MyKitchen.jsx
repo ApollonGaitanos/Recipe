@@ -43,9 +43,8 @@ export default function MyKitchen() {
 
                 <div className="bg-white dark:bg-[#192b20] border-b border-gray-200 dark:border-gray-800">
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
-                        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
-                            <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
-
+                        <div className="flex flex-col md:flex-row gap-8 items-start md:items-stretch justify-between">
+                            <div className="flex flex-col md:flex-row gap-8 items-start md:items-stretch justify-between">
                                 <div className="flex flex-col gap-4 w-full md:w-2/3">
                                     <div>
                                         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
@@ -57,11 +56,11 @@ export default function MyKitchen() {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                                <div className="flex flex-col items-end justify-between gap-4 flex-shrink-0">
                                     <button className="px-6 py-3 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                                         Share Kitchen
                                     </button>
-                                    <div className="text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                    <div className="text-sm font-medium text-[#63886f] dark:text-[#a0b3a6] pb-1">
                                         <strong>{recipeCount}</strong> Recipes
                                     </div>
                                 </div>
