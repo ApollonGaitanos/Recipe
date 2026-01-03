@@ -341,7 +341,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                                 if (typeof ingredient === 'object') {
                                                     const amt = ingredient.amount || '';
                                                     const name = ingredient.name || ingredient.item || '';
-                                                    return `${ amt } ${ name } `.trim();
+                                                    return (String(amt || '') + ' ' + String(name || '')).trim();
                                                 }
                                                 return String(ingredient);
                                             })()}
