@@ -13,6 +13,7 @@ import ConfirmationModal from './components/ConfirmModal';
 import MyKitchen from './components/MyKitchen';
 import AccountSettings from './components/AccountSettings';
 import ErrorBoundary from './components/ErrorBoundary'; // Moved up for usage
+import { RECIPE_CATEGORIES } from './constants/categories';
 
 // --- ROUTE COMPONENTS ---
 
@@ -40,14 +41,17 @@ function Feed({ isPrivate = false }) {
   const normalizeText = (text) => text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
   const normalizedQuery = normalizeText(searchQuery);
 
+
+
+  // ... (other imports remain)
+
+  // Inside Feed function:
   const categories = [
     { id: "All", label: t('filters.all') },
-    { id: "Breakfast", label: t('filters.breakfast') },
-    { id: "Vegan", label: t('filters.vegan') },
-    { id: "Quick & Easy", label: t('filters.quickEasy') },
-    { id: "Pasta", label: t('filters.pasta') },
-    { id: "Desserts", label: t('filters.desserts') },
-    { id: "Healthy", label: t('filters.healthy') }
+    ...RECIPE_CATEGORIES.map(cat => ({
+      id: cat.id,
+      label: t(cat.labelKey)
+    }))
   ];
 
   const filteredRecipes = displayRecipes.filter(r => {

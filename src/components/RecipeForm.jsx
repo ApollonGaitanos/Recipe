@@ -3,7 +3,8 @@ import { Save, X, Sparkles, Lock, Globe, Plus, Trash2, ArrowLeft } from 'lucide-
 import { useBlocker } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useRecipes } from '../context/RecipeContext';
-// import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
+import { RECIPE_CATEGORIES } from '../constants/categories';
 import MagicImportModal from './MagicImportModal';
 import VisibilityModal from './VisibilityModal';
 import TranslationModal from './TranslationModal';
@@ -14,7 +15,7 @@ import { parseRecipe } from '../utils/recipeParser';
 // Persistence is delegated to the onSave prop.
 export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const { recipes } = useRecipes(); // Only read recipes for initial state if editing
-    // const { t } = useLanguage();
+    const { t } = useLanguage();
     const [showMagicImport, setShowMagicImport] = useState(false);
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -439,6 +440,42 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
                                     rows={6}
                                 />
+                            </div>
+
+                            {/* Categories Section */}
+                            <div className="flex flex-col gap-3">
+                                <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
+                                    {t('tagsLabel') || "Categories"}
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {RECIPE_CATEGORIES.map(category => {
+                                        const currentTags = formData.tags ? formData.tags.split(',').map(t => t.trim()) : [];
+                                        const isActive = currentTags.some(t => t.toLowerCase() === category.id.toLowerCase());
+
+                                        return (
+                                            <button
+                                                key={category.id}
+                                                type="button" // Prevent form submission
+                                                onClick={() => {
+                                                    let newTags;
+                                                    if (isActive) {
+                                                        newTags = currentTags.filter(t => t.toLowerCase() !== category.id.toLowerCase());
+                                                    } else {
+                                                        newTags = [...currentTags, category.id];
+                                                    }
+                                                    setFormData(prev => ({ ...prev, tags: newTags.join(', ') }));
+                                                    markDirty();
+                                                }}
+                                                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${isActive
+                                                        ? 'bg-[#17cf54] text-white border-[#17cf54]'
+                                                        : 'bg-white dark:bg-[#1a2c20] text-[#63886f] dark:text-[#8ca395] border-[#dce5df] dark:border-[#2a4030] hover:border-[#17cf54]'
+                                                    }`}
+                                            >
+                                                {t(category.labelKey)}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             {/* Photo Upload (Moved below Description) */}

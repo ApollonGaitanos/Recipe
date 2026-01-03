@@ -164,7 +164,11 @@ const translations = {
             quickEasy: "Quick & Easy",
             pasta: "Pasta",
             desserts: "Desserts",
-            healthy: "Healthy"
+            healthy: "Healthy",
+            mainCourse: "Main Course",
+            salad: "Salad",
+            soup: "Soup",
+            appetizer: "Appetizer"
         }
     },
     el: {
@@ -321,7 +325,11 @@ const translations = {
             quickEasy: "Γρήγορα & Εύκολα",
             pasta: "Ζυμαρικά",
             desserts: "Γλυκά",
-            healthy: "Υγιεινά"
+            healthy: "Υγιεινά",
+            mainCourse: "Κυρίως Πιάτο",
+            salad: "Σαλάτα",
+            soup: "Σούπα",
+            appetizer: "Ορεκτικό"
         }
     }
 };
