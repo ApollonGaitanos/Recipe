@@ -40,11 +40,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         originalRecipe = publicRecipes.find(r => r.id === id);
     }
 
-    // Effect: Reset translation when navigating to a different recipe
-    React.useEffect(() => {
-        setTranslatedRecipe(null);
-    }, [id]);
-
     const navigate = useNavigate();
     const [originalSource, setOriginalSource] = useState(null);
 
