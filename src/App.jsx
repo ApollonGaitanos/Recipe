@@ -75,10 +75,7 @@ function Feed({ isPrivate = false }) {
   return (
     <Layout currentView={isPrivate ? 'myRecipes' : 'home'}>
 
-      {/* HERO SECTION */}
-      {featuredRecipe && searchQuery === "" && activeCategory === "All" && (
-        <Hero recipe={featuredRecipe} />
-      )}
+
 
       {/* FILTER BAR */}
       <div className="flex flex-wrap items-center gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
@@ -235,8 +232,7 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// --- HERO COMPONENT ---
-import Hero from './components/Hero';
+
 
 // --- MAIN ROUTER ---
 
