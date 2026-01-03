@@ -155,7 +155,9 @@ const translations = {
         feed: {
             loadMore: "Load More Recipes",
             viewAll: "View all",
-            freshTitle: "Fresh from the Kitchen"
+            freshTitle: "Fresh from the Kitchen",
+            showMore: "Show More",
+            showLess: "Show Less"
         },
         filters: {
             all: "All",
@@ -341,7 +343,9 @@ const translations = {
         feed: {
             loadMore: "Περισσότερες Συνταγές",
             viewAll: "Προβολή όλων",
-            freshTitle: "Φρέσκα από την Κουζίνα"
+            freshTitle: "Φρέσκα από την Κουζίνα",
+            showMore: "Περισσότερα",
+            showLess: "Λιγότερα"
         },
         filters: {
             all: "Όλα",

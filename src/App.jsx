@@ -24,8 +24,9 @@ function Feed({ isPrivate = false }) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState(null);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [visibleCount, setVisibleCount] = useState(12); // Pagination state
+  const [activeCategories, setActiveCategories] = useState([]); // Empty = All
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Redirect if accessing private while logged out
   useEffect(() => {
@@ -41,18 +42,23 @@ function Feed({ isPrivate = false }) {
   const normalizeText = (text) => text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
   const normalizedQuery = normalizeText(searchQuery);
 
+  const categories = RECIPE_CATEGORIES.map(cat => ({
+    id: cat.id,
+    label: t(cat.labelKey)
+  }));
 
+  // Categories to display (Top 6 + Expanded)
+  const visibleCategories = isExpanded ? categories : categories.slice(0, 6);
 
-  // ... (other imports remain)
-
-  // Inside Feed function:
-  const categories = [
-    { id: "All", label: t('filters.all') },
-    ...RECIPE_CATEGORIES.map(cat => ({
-      id: cat.id,
-      label: t(cat.labelKey)
-    }))
-  ];
+  const toggleCategory = (catId) => {
+    setActiveCategories(prev => {
+      if (prev.includes(catId)) {
+        return prev.filter(c => c !== catId);
+      } else {
+        return [...prev, catId];
+      }
+    });
+  };
 
   const filteredRecipes = displayRecipes.filter(r => {
     // 1. Search Query
@@ -61,8 +67,20 @@ function Feed({ isPrivate = false }) {
       normalizeText(r.ingredients).includes(normalizedQuery) ||
       (r.tags && r.tags.some(tag => normalizeText(tag).includes(normalizedQuery)));
 
-    // 2. Category Filter (Mock logic: Tag match or 'All')
-    const matchesCategory = activeCategory === "All" || (r.tags && r.tags.some(t => t.toLowerCase() === activeCategory.toLowerCase()));
+    // 2. Category Filter (Multi-select AND Logic)
+    // If no categories selected, show all.
+    // If categories selected, recipe MUST have ALL selected categories (AND logic) -> Or SHOULD IT BE OR?
+    // User asked to "select multiple", usually implies "Show me Breakfast OR Brunch" or "Vegetarian AND Dinner".
+    // Let's go with "AND" being more restrictive and useful for drilling down (e.g. Vegetarian + Dinner).
+    // If a user selects "Breakfast" and "Vegan", they want Vegan Breakfasts.
+
+    // HOWEVER, standard chip behavior in simple apps often varies. 
+    // Let's implement AND logic: Every selected category must be present in r.tags.
+
+    const matchesCategory = activeCategories.length === 0 ||
+      activeCategories.every(selectedCat =>
+        r.tags && r.tags.some(tag => tag.toLowerCase() === selectedCat.toLowerCase())
+      );
 
     return matchesSearch && matchesCategory;
   });
@@ -73,7 +91,7 @@ function Feed({ isPrivate = false }) {
   // Reset pagination when filter changes
   useEffect(() => {
     setVisibleCount(12);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategories, searchQuery]);
 
   const confirmDelete = async () => {
     if (deleteId) {
@@ -88,28 +106,39 @@ function Feed({ isPrivate = false }) {
   return (
     <Layout currentView={isPrivate ? 'myRecipes' : 'home'}>
 
-
-
       {/* FILTER BAR */}
-      <div className="flex flex-wrap items-center gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-        <button
-          className="px-4 py-2 rounded-full bg-black text-white text-sm font-medium flex items-center gap-2 hover:opacity-80 transition-opacity whitespace-nowrap"
-          onClick={() => setActiveCategory("All")}
-        >
-          <span className={activeCategory === "All" ? "" : "text-gray-400"}>{t('filters.all')}</span>
-        </button>
-        {categories.slice(1).map(cat => (
+      <div className="flex flex-col gap-3 mb-8">
+        <div className="flex flex-wrap items-center gap-3 transition-all duration-300 ease-in-out">
           <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${activeCategory === cat.id
+            className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all border ${activeCategories.length === 0
               ? 'bg-black text-white border-black'
               : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
               }`}
+            onClick={() => setActiveCategories([])}
           >
-            {cat.label}
+            <span>{t('filters.all')}</span>
           </button>
-        ))}
+
+          {visibleCategories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => toggleCategory(cat.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${activeCategories.includes(cat.id)
+                ? 'bg-black text-white border-black'
+                : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="px-4 py-2 text-sm font-bold text-primary hover:text-green-600 underline decoration-2 underline-offset-4 transition-colors ml-2"
+          >
+            {isExpanded ? t('feed.showLess') : t('feed.showMore')}
+          </button>
+        </div>
       </div>
 
       {/* GRID HEADER */}
