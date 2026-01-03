@@ -47,24 +47,20 @@ export default function MyKitchen() {
                         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
 
                             {/* Profile Info (No Icon) */}
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
-                                    {displayUsername}'s Kitchen
-                                </h1>
-                                <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap max-w-2xl">
-                                    {displayBio}
-                                </p>
-                                <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
-                                    <span><strong>{recipeCount}</strong> Recipes</span>
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
+                                        {displayUsername}'s Kitchen
+                                    </h1>
+                                    <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap max-w-2xl mt-2">
+                                        {displayBio}
+                                    </p>
+                                    <div className="flex items-center gap-6 mt-2 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                        <span><strong>{recipeCount}</strong> Recipes</span>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex gap-3">
-                                <button className="px-5 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    Edit Profile
-                                </button>
-                                <button className="px-5 py-2.5 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
+                                <button className="self-start px-5 py-2.5 rounded-full bg-[#17cf54] text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
                                     Share Kitchen
                                 </button>
                             </div>
