@@ -45,8 +45,11 @@ export default function MyKitchen() {
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif">
-                                    {displayUsername}'s Kitchen
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif flex items-baseline gap-3">
+                                    <span>{displayUsername}'s Kitchen</span>
+                                    <span className="text-lg md:text-xl font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                        {recipeCount} Recipes
+                                    </span>
                                 </h1>
                                 <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                     {displayBio}
@@ -54,8 +57,8 @@ export default function MyKitchen() {
                             </div>
                         </div>
 
-                        {/* --- Tab Navigation & Stats --- */}
-                        <div className="flex items-end justify-between mt-12">
+                        {/* --- Tab Navigation --- */}
+                        <div className="flex items-center mt-12">
                             <div className="flex items-center gap-8">
                                 {[
                                     { id: 'my_recipes', label: 'My Recipes' },
@@ -76,9 +79,6 @@ export default function MyKitchen() {
                                         )}
                                     </button>
                                 ))}
-                            </div>
-                            <div className="pb-4 text-sm font-medium text-[#63886f] dark:text-[#a0b3a6]">
-                                <strong>{recipeCount}</strong> Recipes
                             </div>
                         </div>
                     </div>
