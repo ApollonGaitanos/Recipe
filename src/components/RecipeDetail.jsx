@@ -234,7 +234,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </h1>
 
                     {recipe.originId && (
-                         <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`/ recipe / ${ recipe.originId } `)}>
+                         <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/recipe/' + recipe.originId)}>
                             <GitFork size={14} />
                             <span>Copy of <span className="font-semibold underline">{originalSource?.title || 'Original Recipe'}</span> by {originalSource?.author_username || 'Unknown'}</span>
                          </div>
