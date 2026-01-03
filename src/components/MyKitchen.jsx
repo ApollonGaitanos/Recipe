@@ -8,7 +8,7 @@ import RecipeCard from './RecipeCard';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function MyKitchen() {
-    const { recipes, deleteRecipe, toggleVisibility } = useRecipes();
+    const { recipes, deleteRecipe, toggleVisibility, savedRecipes } = useRecipes();
     const { user } = useAuth();
     const { t } = useLanguage();
     const navigate = useNavigate();
@@ -22,8 +22,14 @@ export default function MyKitchen() {
     const displayBio = profile?.bio || user?.user_metadata?.bio || "No bio yet";
     const recipeCount = recipes.length;
 
+    const getRecipesForTab = () => {
+        if (activeTab === 'saved') return savedRecipes;
+        if (activeTab === 'drafts') return []; // Placeholder
+        return recipes;
+    };
+
     // Filter Logic
-    const filteredRecipes = recipes.filter(recipe => {
+    const filteredRecipes = getRecipesForTab().filter(recipe => {
         const query = searchQuery.toLowerCase();
         return (
             recipe.title.toLowerCase().includes(query) ||
@@ -142,15 +148,17 @@ export default function MyKitchen() {
                             <div className="w-16 h-16 bg-white dark:bg-black/20 rounded-full flex items-center justify-center mb-4 text-[#63886f] dark:text-[#a0b3a6]">
                                 <Search className="w-8 h-8" />
                             </div>
-                            <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">No recipes found in your kitchen</h3>
+                            <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">
+                                {activeTab === 'saved' ? 'No saved recipes yet' : 'No recipes found in your kitchen'}
+                            </h3>
                             <p className="text-[#63886f] dark:text-[#a0b3a6] text-center max-w-sm mb-6">
-                                Start cooking and add your first masterpiece!
+                                {activeTab === 'saved' ? 'Bookmark recipes you like to see them here!' : 'Start cooking and add your first masterpiece!'}
                             </p>
                             <button
                                 onClick={() => navigate('/add')}
                                 className="px-6 py-2.5 rounded-full bg-[#17cf54] text-white font-bold hover:opacity-90 transition-opacity"
                             >
-                                Create First Recipe
+                                {activeTab === 'saved' ? 'Browse Recipes' : 'Create First Recipe'}
                             </button>
                         </div>
                     )}

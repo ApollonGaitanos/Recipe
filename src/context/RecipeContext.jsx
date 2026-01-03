@@ -15,6 +15,8 @@ export default function RecipeContext({ children }) {
     const [recipes, setRecipes] = useState([]); // My Recipes
     const [publicRecipes, setPublicRecipes] = useState([]); // Public Feed
     const [userLikes, setUserLikes] = useState(new Set()); // Set of liked recipe IDs
+    const [savedRecipes, setSavedRecipes] = useState([]); // Saved Recipes
+    const [savedRecipeIds, setSavedRecipeIds] = useState(new Set()); // Set of saved recipe IDs
     const [searchQuery, setSearchQuery] = useState(""); // Global Search
     const [loading, setLoading] = useState(true);
 
@@ -71,6 +73,39 @@ export default function RecipeContext({ children }) {
         }
     };
 
+    const fetchSavedRecipes = async () => {
+        if (!user) {
+            setSavedRecipes([]);
+            setSavedRecipeIds(new Set());
+            return;
+        }
+        try {
+            const { data, error } = await supabase
+                .from('saved_recipes')
+                .select('recipe_id, recipes(*, profiles(username))')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (data) {
+                // Determine if we need to flatten the structure.
+                // Supabase joins can return nested objects.
+                // saved_recipes -> recipe_id, recipes -> { ... }
+                // We want the recipe object.
+                const recipes = data
+                    .map(item => item.recipes)
+                    .filter(Boolean) // Ensure recipe exists (not deleted)
+                    .map(toAppRecipe);
+
+                setSavedRecipes(recipes);
+                setSavedRecipeIds(new Set(recipes.map(r => r.id)));
+            }
+        } catch (err) {
+            console.error("Error fetching saved recipes:", err);
+        }
+    };
+
     const fetchRecipes = async () => {
         if (!user) {
             setRecipes([]);
@@ -108,9 +143,12 @@ export default function RecipeContext({ children }) {
         if (user) {
             fetchRecipes();
             fetchUserLikes();
+            fetchSavedRecipes();
         } else {
             setRecipes([]);
             setUserLikes(new Set());
+            setSavedRecipes([]);
+            setSavedRecipeIds(new Set());
         }
         setLoading(false);
 
@@ -129,6 +167,8 @@ export default function RecipeContext({ children }) {
                     fetchPublicRecipes();
                     if (user) fetchRecipes();
                 }
+                // Refresh saved recipes as well if a recipe is updated/deleted
+                if (user) fetchSavedRecipes();
             })
             .subscribe();
 
@@ -259,6 +299,7 @@ export default function RecipeContext({ children }) {
 
         setRecipes(prev => prev.map(updateCount));
         setPublicRecipes(prev => prev.map(updateCount));
+        setSavedRecipes(prev => prev.map(updateCount)); // Update in saved list too
 
         try {
             if (isLiked) {
@@ -285,8 +326,50 @@ export default function RecipeContext({ children }) {
             };
             setRecipes(prev => prev.map(revertCount));
             setPublicRecipes(prev => prev.map(revertCount));
+            setSavedRecipes(prev => prev.map(revertCount));
         }
     };
+
+    const toggleSave = async (recipe) => {
+        if (!user || !recipe) return;
+        const recipeId = recipe.id;
+
+        const isSaved = savedRecipeIds.has(recipeId);
+
+        // Optimistic Update
+        setSavedRecipeIds(prev => {
+            const next = new Set(prev);
+            if (isSaved) next.delete(recipeId);
+            else next.add(recipeId);
+            return next;
+        });
+
+        if (isSaved) {
+            setSavedRecipes(prev => prev.filter(r => r.id !== recipeId));
+        } else {
+            setSavedRecipes(prev => [recipe, ...prev]);
+        }
+
+        try {
+            if (isSaved) {
+                await supabase.from('saved_recipes').delete().eq('user_id', user.id).eq('recipe_id', recipeId);
+            } else {
+                await supabase.from('saved_recipes').insert([{ user_id: user.id, recipe_id: recipeId }]);
+            }
+        } catch (err) {
+            console.error("Toggle save failed:", err);
+            // Revert
+            setSavedRecipeIds(prev => {
+                const next = new Set(prev);
+                if (isSaved) next.add(recipeId);
+                else next.delete(recipeId);
+                return next;
+            });
+            fetchSavedRecipes(); // Force refetch to ensure consistency
+        }
+    };
+
+    const isRecipeSaved = (recipeId) => savedRecipeIds.has(recipeId);
 
     const checkIsLiked = (recipeId) => userLikes.has(recipeId);
 
@@ -298,10 +381,13 @@ export default function RecipeContext({ children }) {
         <RecipeContextData.Provider value={{
             recipes,
             publicRecipes,
+            savedRecipes,
             addRecipe,
             updateRecipe,
             deleteRecipe,
             toggleVisibility,
+            toggleSave,
+            isRecipeSaved,
             toggleLike,
             checkIsLiked,
             hasUserLiked,

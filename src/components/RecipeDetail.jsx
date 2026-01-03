@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
@@ -12,7 +12,7 @@ import { parseRecipe } from '../utils/recipeParser';
 import TranslationModal from './TranslationModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes } = useRecipes();
+    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes, toggleSave, isRecipeSaved } = useRecipes();
     const { t, language } = useLanguage();
     const { user } = useAuth();
 
@@ -27,6 +27,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
     // Sync Like Status
     const isLiked = checkIsLiked(id);
+    const isSaved = isRecipeSaved(id);
 
     const contentRef = useRef(null);
 
@@ -229,6 +230,17 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <button onClick={handleDownload} disabled={isDownloading} className="flex items-center gap-2 px-5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 <Printer className="w-3.5 h-3.5" />
                                 <span>print</span>
+                            </button>
+                            <button
+                                onClick={() => toggleSave(recipe)}
+                                className={`flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium
+                                    ${isSaved
+                                        ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] hover:bg-[#17cf54]/20'
+                                        : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                    }`}
+                            >
+                                <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                                <span>{isSaved ? 'Saved' : 'Save'}</span>
                             </button>
                         </div>
                     </div>

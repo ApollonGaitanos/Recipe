@@ -1,16 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, User, Award, Heart, Lock, Globe } from 'lucide-react';
+import { Clock, User, Award, Heart, Lock, Globe, Bookmark } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext'; // Added useAuth
 
 export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) { // Accepted onDelete prop
     const navigate = useNavigate();
-    const { toggleLike, hasUserLiked } = useRecipes();
+    const { toggleLike, hasUserLiked, toggleSave, isRecipeSaved } = useRecipes();
     const { t } = useLanguage();
     const { user } = useAuth(); // Get user
     const [liked, setLiked] = React.useState(false);
+
+    // Check if recipe is saved
+    const isSaved = isRecipeSaved ? isRecipeSaved(recipe.id) : false;
 
     React.useEffect(() => {
         hasUserLiked(recipe.id).then(setLiked);
@@ -20,6 +23,11 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
         e.stopPropagation();
         toggleLike(recipe.id);
         setLiked(!liked);
+    };
+
+    const handleSave = (e) => {
+        e.stopPropagation();
+        toggleSave(recipe);
     };
 
     const isOwner = user && user.id === recipe.user_id;
@@ -46,6 +54,23 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                         <Heart
                             size={18}
                             className={`transition-colors ${liked ? 'fill-red-500 text-red-500' : 'group-hover/btn:text-red-500'}`}
+                        />
+                    </button>
+                </div>
+
+                {/* Top Right: Bookmark (Saved) */}
+                <div className="absolute top-3 right-3">
+                    <button
+                        onClick={handleSave}
+                        className={`p-2 rounded-lg transition-colors backdrop-blur-sm shadow-sm group/btn 
+                            ${isSaved
+                                ? 'bg-[#17cf54] text-white hover:bg-[#14b045]'
+                                : 'bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200'
+                            }`}
+                    >
+                        <Bookmark
+                            size={18}
+                            className={`transition-colors ${isSaved ? 'fill-white text-white' : ''}`}
                         />
                     </button>
                 </div>
