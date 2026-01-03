@@ -530,7 +530,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 onClose={() => setShowUnsaveConfirm(false)}
                 onConfirm={confirmUnsave}
                 title="Remove from Saved?"
-                description={`Are you sure you want to remove "${recipe.title}" by ${ recipe.author_username || 'the Chef' } from your saved recipes ? `}
+                description={'Are you sure you want to remove "' + recipe.title + '" by ' + (recipe.author_username || 'the Chef') + ' from your saved recipes?'}
                 confirmText="Remove"
                 isDanger={true}
             />
