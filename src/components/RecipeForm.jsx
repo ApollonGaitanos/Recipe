@@ -337,243 +337,238 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             </header>
 
             <main className="max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="flex flex-col gap-10">
 
-                    {/* --- Sidebar (Left Column) --- */}
-                    <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
-
-                        {/* Title Input */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
-                            <input
-                                className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors"
-                                type="text"
-                                value={formData.title}
-                                onChange={(e) => {
-                                    setFormData(prev => ({ ...prev, title: e.target.value }));
-                                    markDirty();
-                                }}
-                                placeholder="e.g. Grandma's Spanakopita"
-                            />
-                        </div>
-
-                        {/* Details Card */}
-                        <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 shadow-sm">
-                            <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
-                                <Sparkles className="text-[#17cf54]" size={20} />
-                                Details
-                            </h3>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                            type="number"
-                                            min="0"
-                                            value={formData.prepTime}
-                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                            onChange={(e) => {
-                                                setFormData(prev => ({ ...prev, prepTime: e.target.value }));
-                                                markDirty();
-                                            }}
-                                            placeholder="15"
-                                        />
-                                        <span className="text-sm">min</span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            className="w-16 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                            type="number"
-                                            min="0"
-                                            value={formData.cookTime}
-                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                            onChange={(e) => {
-                                                setFormData(prev => ({ ...prev, cookTime: e.target.value }));
-                                                markDirty();
-                                            }}
-                                            placeholder="45"
-                                        />
-                                        <span className="text-sm">min</span>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col gap-1 col-span-2">
-                                    <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
-                                    <input
-                                        className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                        type="number"
-                                        min="0"
-                                        value={formData.servings}
-                                        onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
-                                        onChange={(e) => {
-                                            setFormData(prev => ({ ...prev, servings: e.target.value }));
-                                            markDirty();
-                                        }}
-                                        placeholder="4"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Photo Upload */}
-                        <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
-                            <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                                <Sparkles size={32} />
-                            </div>
-                            <p className="font-bold text-lg">Add Cover Photo</p>
-                            <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
-                        </div>
-
-                        {/* Description */}
-                        <div className="flex flex-col gap-3">
-                            <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
-                            <textarea
-                                value={formData.description || ''}
-                                onChange={(e) => {
-                                    setFormData(prev => ({ ...prev, description: e.target.value }));
-                                    markDirty();
-                                }}
-                                placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
-                                className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
-                                rows={4}
-                            />
-                        </div>
-
+                    {/* --- Title Input (Full Width) --- */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
+                        <input
+                            className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl md:text-5xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors font-serif"
+                            type="text"
+                            value={formData.title}
+                            onChange={(e) => {
+                                setFormData(prev => ({ ...prev, title: e.target.value }));
+                                markDirty();
+                            }}
+                            placeholder="e.g. Grandma's Spanakopita"
+                        />
                     </div>
 
-                    {/* --- Main Content (Right Column) --- */}
-                    <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                        {/* Ingredients Section */}
-                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-2xl font-bold text-[#111813] dark:text-[#e0e6e2]">Ingredients</h3>
-                            </div>
+                        {/* --- Left Column (Ingredients, Description, Photo) --- */}
+                        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
 
-                            <div className="flex flex-col gap-4">
-                                <div className="hidden sm:flex gap-4 px-2 pb-2 border-b border-[#dce5df] dark:border-[#2a4030] text-xs font-bold uppercase text-[#63886f] dark:text-[#8ca395] tracking-wider">
-                                    <span className="w-8"></span>
-                                    <span className="w-24">Amount</span>
-                                    <span className="flex-1">Ingredient</span>
-                                    <span className="w-8"></span>
+                            {/* Ingredients Section (Moved from Right) */}
+                            <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-[#111813] dark:text-[#e0e6e2] flex items-center gap-2">
+                                        Ingredients
+                                    </h3>
                                 </div>
 
-                                {ingredientsList.map((ing, i) => (
-                                    <div key={ing.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
-                                        <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
-                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
-                                        </div>
-                                        <input
-                                            className="w-full sm:w-24 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                            placeholder="e.g. 200g"
-                                            value={ing.amount}
-                                            onChange={e => {
-                                                const newList = [...ingredientsList];
-                                                newList[i].amount = e.target.value;
-                                                setIngredientsList(newList);
-                                                markDirty();
-                                            }}
-                                        />
-                                        <input
-                                            className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
-                                            placeholder="e.g. Flour"
-                                            value={ing.item}
-                                            onChange={e => {
-                                                const newList = [...ingredientsList];
-                                                newList[i].item = e.target.value;
-                                                setIngredientsList(newList);
-                                                markDirty();
-                                            }}
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                setIngredientsList(ingredientsList.filter(item => item.id !== ing.id));
-                                                markDirty();
-                                            }}
-                                            className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                <div className="flex flex-col gap-4">
+                                    <div className="hidden sm:flex gap-4 px-2 pb-2 border-b border-[#dce5df] dark:border-[#2a4030] text-xs font-bold uppercase text-[#63886f] dark:text-[#8ca395] tracking-wider">
+                                        <span className="w-8"></span>
+                                        <span className="w-20">Amount</span>
+                                        <span className="flex-1">Ingredient</span>
+                                        <span className="w-8"></span>
                                     </div>
-                                ))}
-                            </div>
 
-                            <button
-                                onClick={() => {
-                                    setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
-                                    markDirty();
-                                }}
-                                className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
-                            >
-                                <Plus size={18} /> Add Ingredient
-                            </button>
-                        </section>
-
-                        {/* Method Section */}
-                        <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
-                            <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
-
-                            <div className="flex flex-col gap-6">
-                                {instructionsList.map((step, i) => (
-                                    <div key={step.id} className="group flex gap-4">
-                                        <div className="flex flex-col items-center gap-2 pt-2">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
-                                                {i + 1}
+                                    {ingredientsList.map((ing, i) => (
+                                        <div key={ing.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
+                                            <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
+                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
                                             </div>
-                                            <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
-                                        </div>
-                                        <div className="flex-1 pb-4">
-                                            <textarea
-                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
-                                                placeholder={`Describe step ${i + 1}...`}
-                                                value={step.text}
+                                            <input
+                                                className="w-full sm:w-20 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                placeholder="200g"
+                                                value={ing.amount}
                                                 onChange={e => {
-                                                    const newList = [...instructionsList];
-                                                    newList[i].text = e.target.value;
-                                                    setInstructionsList(newList);
+                                                    const newList = [...ingredientsList];
+                                                    newList[i].amount = e.target.value;
+                                                    setIngredientsList(newList);
                                                     markDirty();
                                                 }}
-                                            ></textarea>
-                                            <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => {
-                                                        setInstructionsList(instructionsList.filter(s => s.id !== step.id));
-                                                        markDirty();
-                                                    }}
-                                                    className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
-                                                >
-                                                    <Trash2 size={14} /> Remove Step
-                                                </button>
-                                            </div>
+                                            />
+                                            <input
+                                                className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                placeholder="Flour"
+                                                value={ing.item}
+                                                onChange={e => {
+                                                    const newList = [...ingredientsList];
+                                                    newList[i].item = e.target.value;
+                                                    setIngredientsList(newList);
+                                                    markDirty();
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    setIngredientsList(ingredientsList.filter(item => item.id !== ing.id));
+                                                    markDirty();
+                                                }}
+                                                className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
+                                        markDirty();
+                                    }}
+                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                                >
+                                    <Plus size={18} /> Add Ingredient
+                                </button>
+                            </section>
+
+                            {/* Description (Moved above Photo) */}
+                            <div className="flex flex-col gap-3">
+                                <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Story & Description</label>
+                                <textarea
+                                    value={formData.description || ''}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, description: e.target.value }));
+                                        markDirty();
+                                    }}
+                                    placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
+                                    className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
+                                    rows={6}
+                                />
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
-                                    markDirty();
-                                }}
-                                className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
-                            >
-                                <Plus size={18} /> Add Step
-                            </button>
-                        </section>
+                            {/* Photo Upload (Moved below Description) */}
+                            <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
+                                <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                                    <Sparkles size={32} />
+                                </div>
+                                <p className="font-bold text-lg">Add Cover Photo</p>
+                                <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
+                            </div>
 
-                        {/* Chef's Notes (Moved above/beside but based on reference order, it was bottom or side) */}
-                        {/* Re-checking reference: Chef's notes was yellow box at bottom of main content in reference code snippet I saw earlier? 
-                            Actually, in the code.html head dump, Chef's Notes (Story & Description) was in the sidebar! 
-                            Line 108 of head dump: <label ... for="description">Story & Description</label> inside the col-span-5 div.
-                            So I moved it to sidebar above.
-                            
-                            Yellow box in previous version was "Chef's Notes". The reference has "Story & Description" in sidebar.
-                            I will stick to the reference layout: "Story & Description" in sidebar.
-                        */}
+                        </div>
 
+                        {/* --- Right Column (Details, Method) --- */}
+                        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+
+                            {/* Details Card (Moved from Left) */}
+                            <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 lg:p-8 shadow-sm">
+                                <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
+                                    <Sparkles className="text-[#17cf54]" size={20} />
+                                    Details
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                type="number"
+                                                min="0"
+                                                value={formData.prepTime}
+                                                onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                                onChange={(e) => {
+                                                    setFormData(prev => ({ ...prev, prepTime: e.target.value }));
+                                                    markDirty();
+                                                }}
+                                                placeholder="15"
+                                            />
+                                            <span className="text-sm">min</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                type="number"
+                                                min="0"
+                                                value={formData.cookTime}
+                                                onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                                onChange={(e) => {
+                                                    setFormData(prev => ({ ...prev, cookTime: e.target.value }));
+                                                    markDirty();
+                                                }}
+                                                placeholder="45"
+                                            />
+                                            <span className="text-sm">min</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
+                                        <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
+                                        <input
+                                            className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            type="number"
+                                            min="0"
+                                            value={formData.servings}
+                                            onKeyDown={(e) => ['-', '+', 'e', 'E', '.'].includes(e.key) && e.preventDefault()}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, servings: e.target.value }));
+                                                markDirty();
+                                            }}
+                                            placeholder="4"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Method Section (Stays in Right Column) */}
+                            <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                                <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
+
+                                <div className="flex flex-col gap-6">
+                                    {instructionsList.map((step, i) => (
+                                        <div key={step.id} className="group flex gap-4">
+                                            <div className="flex flex-col items-center gap-2 pt-2">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
+                                                    {i + 1}
+                                                </div>
+                                                <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
+                                            </div>
+                                            <div className="flex-1 pb-4">
+                                                <textarea
+                                                    className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
+                                                    placeholder={`Describe step ${i + 1}...`}
+                                                    value={step.text}
+                                                    onChange={e => {
+                                                        const newList = [...instructionsList];
+                                                        newList[i].text = e.target.value;
+                                                        setInstructionsList(newList);
+                                                        markDirty();
+                                                    }}
+                                                ></textarea>
+                                                <div className="mt-2 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => {
+                                                            setInstructionsList(instructionsList.filter(s => s.id !== step.id));
+                                                            markDirty();
+                                                        }}
+                                                        className="flex items-center gap-1 text-xs font-medium text-[#63886f] hover:text-red-500 transition-colors"
+                                                    >
+                                                        <Trash2 size={14} /> Remove Step
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
+                                        markDirty();
+                                    }}
+                                    className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                                >
+                                    <Plus size={18} /> Add Step
+                                </button>
+                            </section>
+
+                        </div>
                     </div>
                 </div>
             </main>
