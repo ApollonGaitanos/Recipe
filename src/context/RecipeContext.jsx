@@ -379,7 +379,7 @@ export default function RecipeContext({ children }) {
 
         const copyData = {
             ...originalRecipe,
-            title: `${t('copyPrefix', 'Copy of')} ${originalRecipe.title}`,
+            title: originalRecipe.title,
             originId: originalRecipe.id,
             is_public: false, // Copies start private
             // Reset metadata

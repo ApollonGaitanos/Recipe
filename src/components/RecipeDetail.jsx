@@ -230,8 +230,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     )}
 
 
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-zinc-900 dark:text-white leading-tight max-w-4xl relative">
                         {recipe.title}
+                        {recipe.originId && (
+                            <GitFork className="inline-block ml-3 mb-1 text-zinc-400" size={32} />
+                        )}
                     </h1>
 
                     {recipe.originId && (
