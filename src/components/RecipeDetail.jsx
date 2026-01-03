@@ -47,8 +47,18 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     if (!recipe) return null;
 
     const isOwner = React.useMemo(() => {
-        if (!user || !user.id || !recipe || !recipe.user_id) return false;
-        return user.id === recipe.user_id;
+        if (!user || !recipe) return false;
+
+        // 1. ID Check
+        const idMatch = user.id && recipe.user_id && String(user.id).trim() === String(recipe.user_id).trim();
+        if (idMatch) return true;
+
+        // 2. Username Check
+        const currentUsername = user.user_metadata?.username || user.email?.split('@')[0];
+        const recipeUsername = recipe.author_username;
+        if (currentUsername && recipeUsername && currentUsername === recipeUsername) return true;
+
+        return false;
     }, [user, recipe]);
 
 
