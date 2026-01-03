@@ -95,9 +95,7 @@ export default function Layout({ children, fullWidth = false }) {
                                     </div>
                                 </button>
 
-                                <button onClick={() => setShowLogoutModal(true)} className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors" title="Sign Out">
-                                    <LogOut size={20} />
-                                </button>
+
                             </div>
                         ) : (
                             <button
