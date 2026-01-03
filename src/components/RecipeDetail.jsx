@@ -259,11 +259,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 {t('detail.by')} {recipe.author_username || 'Chef'}
                             </span>
                         </div>
-                        <div className="flex items-center gap-1 text-amber-500">
-                            <Star className="w-4 h-4 fill-current" />
-                            <span className="font-bold text-zinc-900 dark:text-zinc-200">4.9</span>
-                            <span className="text-zinc-400">(120 reviews)</span>
-                        </div>
+
                         <div className="ml-auto flex items-center gap-4">
                             <button
                                 onClick={() => isOwner && setIsVisModalOpen(true)}
