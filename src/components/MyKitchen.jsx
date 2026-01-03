@@ -19,7 +19,12 @@ export default function MyKitchen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [visitorProfile, setVisitorProfile] = useState(null);
     const [visitorRecipes, setVisitorRecipes] = useState([]);
+    const [activeTab, setActiveTab] = useState('my_recipes');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [visitorProfile, setVisitorProfile] = useState(null);
+    const [visitorRecipes, setVisitorRecipes] = useState([]);
     const [loadingVisitor, setLoadingVisitor] = useState(false);
+    const [showCopied, setShowCopied] = useState(false); // Toast state
 
     // Determine if we are viewing our own kitchen
     const isOwner = !username || (user && (profile?.username === username || user.user_metadata?.username === username));
@@ -125,18 +130,43 @@ export default function MyKitchen() {
                                     <span className="text-lg md:text-xl font-medium text-[#63886f] dark:text-[#a0b3a6]">
                                         ({recipeCount} Recipes)
                                     </span>
-                                    <button
-                                        onClick={() => {
-                                            const url = window.location.origin + '/' + (isOwner ? (profile?.username || user?.user_metadata?.username) : (visitorProfile?.username || username));
-                                            navigator.clipboard.writeText(url).then(() => {
-                                                alert('Profile link copied to clipboard!');
-                                            });
-                                        }}
-                                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#63886f] dark:text-[#a0b3a6] transition-colors"
-                                        title="Share Kitchen"
-                                    >
-                                        <Share2 size={24} />
-                                    </button>
+                                    <div className="relative flex items-center">
+                                        <button
+                                            onClick={async () => {
+                                                const url = window.location.origin + '/' + (isOwner ? (profile?.username || user?.user_metadata?.username) : (visitorProfile?.username || username));
+
+                                                // 1. Try Native Share (Mobile)
+                                                if (navigator.share) {
+                                                    try {
+                                                        await navigator.share({
+                                                            title: `${displayUsername}'s Kitchen`,
+                                                            text: `Check out ${displayUsername}'s recipes on Recipe App!`,
+                                                            url: url
+                                                        });
+                                                        return;
+                                                    } catch (err) {
+                                                        console.log('Share canceled or failed', err);
+                                                        // Continue to clipboard fallback if it wasn't just a cancel
+                                                    }
+                                                }
+
+                                                // 2. Fallback to Clipboard (Desktop)
+                                                navigator.clipboard.writeText(url).then(() => {
+                                                    setShowCopied(true);
+                                                    setTimeout(() => setShowCopied(false), 2000);
+                                                });
+                                            }}
+                                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#63886f] dark:text-[#a0b3a6] transition-colors"
+                                            title="Share Kitchen"
+                                        >
+                                            <Share2 size={24} />
+                                        </button>
+
+                                        {/* Copied Toast / Tooltip */}
+                                        <div className={`absolute left-full ml-2 px-3 py-1 bg-black text-white text-xs font-bold rounded-lg transition-all duration-200 ${showCopied ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}>
+                                            Link Copied!
+                                        </div>
+                                    </div>
                                 </h1>
                                 <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                     {displayBio}
