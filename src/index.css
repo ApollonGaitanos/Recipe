@@ -1,17 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Theme: Roasted */
-  --primary: #D62828;      /* Chili Red */
-  --accent: #F77F00;       /* Burnt Orange */
-  --tech: #7209B7;         /* Berry Violet */
+  /* Light Theme: Ancient Greek */
+  --primary: #E0A43A;
+  /* Honey (Attic) - CTA */
+  --accent: #8C3A2B;
+  /* Wine (Mild) - Links */
+  --tech: #66023C;
+  /* Purple - AI */
 }
 
 .dark {
-  /* Dark Theme: Night Kitchen */
-  --primary: #FF6B6B;      /* Ember Red */
-  --accent: #FF9F1C;       /* Apricot Glow */
-  --tech: #9D4EDD;         /* Neon Berry */
+  /* Dark Theme: Ancient Greek */
+  --primary: #D9A441;
+  /* Honey (Amber) */
+  --accent: #6F2C22;
+  /* Wine (Dark) */
+  --tech: #9D4EDD;
+  /* Neon Berry */
+
+  /* Fallback vars if needed */
+  --background-dark: #1E1E1C;
 }
 
 @theme {
@@ -25,18 +34,25 @@
   --color-tech: var(--tech);
 
   /* Backgrounds */
-  --color-background-light: #FDF0D5; /* Vanilla Bean */
-  --color-background-dark: #140F0D;  /* Espresso */
-  --color-surface-dark: #261C19;     /* Cocoa */
-  --color-card-dark: #261C19;
+  /* Backgrounds */
+  --color-background-light: #CBB89D;
+  /* Gaia */
+  --color-background-dark: #1E1E1C;
+  /* Charcoal Deep */
+  --color-surface-dark: #4F5F4A;
+  /* Olive Night */
+  --color-card-dark: #4F5F4A;
 
-  /* Text Overrides (softening the harsh blacks/whites) */
-  --color-zinc-900: #332725;         /* Dark Roast */
-  --color-gray-900: #332725;
-  
-  --color-zinc-100: #E6DCD3;         /* Oat Milk */
+  /* Text Overrides */
+  --color-zinc-900: #2F2F2C;
+  /* Charcoal Soft */
+  --color-gray-900: #2F2F2C;
+
+  --color-zinc-100: #E6DCD3;
+  /* Papyrus Soft */
   --color-gray-100: #E6DCD3;
-  --color-white: #FFFFFF;            /* Keeping white pure for cards */
+  --color-white: #FFFFFF;
+  /* Keeping white pure for cards */
 
   /* Border Radius Overrides matching previous config */
   --radius-lg: 0.5rem;
@@ -60,11 +76,11 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-full font-bold transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+    @apply px-6 py-3 bg-[var(--color-primary)] hover:opacity-90 text-zinc-900 rounded-full font-bold transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
   }
 
   .btn-primary-small {
-    @apply px-4 py-2 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-full font-bold text-sm transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+    @apply px-4 py-2 bg-[var(--color-primary)] hover:opacity-90 text-zinc-900 rounded-full font-bold text-sm transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
   }
 
   .btn-secondary {

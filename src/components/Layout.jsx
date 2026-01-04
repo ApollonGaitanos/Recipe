@@ -28,8 +28,8 @@ export default function Layout({ children, fullWidth = false }) {
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
             <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
 
-            {/* HEADER */}
-            <header className="sticky top-0 z-40 w-full bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-white/5 py-3 px-4 md:px-8 shadow-sm">
+            {/* HEADER - Honey Background in Light Mode */}
+            <header className="sticky top-0 z-40 w-full bg-primary dark:bg-surface-dark border-b border-primary/10 dark:border-white/5 py-3 px-4 md:px-8 shadow-sm">
                 <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
 
                     {/* LEFT: Logo & Nav */}
@@ -39,7 +39,7 @@ export default function Layout({ children, fullWidth = false }) {
                             onClick={() => navigate('/')}
                             className="flex items-center gap-2 cursor-pointer group"
                         >
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-gray-900">
                                 <ChefHat size={18} strokeWidth={2.5} />
                             </div>
                             <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors">
@@ -49,10 +49,10 @@ export default function Layout({ children, fullWidth = false }) {
 
                         {/* Desktop Nav */}
                         <nav className="hidden md:flex items-center gap-6">
-                            <button onClick={() => navigate('/')} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <button onClick={() => navigate('/')} className="text-sm font-bold text-gray-900 dark:text-gray-300 hover:text-accent transition-colors">
                                 {t('nav.discover')}
                             </button>
-                            <button onClick={() => navigate(myKitchenPath)} className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <button onClick={() => navigate(myKitchenPath)} className="text-sm font-bold text-gray-900 dark:text-gray-300 hover:text-accent transition-colors">
                                 {t('nav.myKitchen')}
                             </button>
                         </nav>
