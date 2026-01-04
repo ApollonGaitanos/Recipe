@@ -116,9 +116,10 @@ export default function MyKitchen() {
 
     return (
         <Layout currentView="myRecipes" fullWidth>
-            <div className="min-h-screen bg-[#f6f8f6] dark:bg-[#112116] text-[#111813] dark:text-white font-sans transition-colors duration-200">
+            <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-sans transition-colors duration-200">
 
-                <div className="bg-white dark:bg-[#192b20] border-b border-gray-200 dark:border-gray-800">
+                {/* Profile Header */}
+                <div className="bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5">
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
