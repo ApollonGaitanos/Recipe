@@ -119,7 +119,7 @@ export default function MyKitchen() {
             <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-sans transition-colors duration-200">
 
                 {/* Profile Header */}
-                <div className="bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-white/5">
+                <div className="bg-background-light dark:bg-surface-dark border-b border-gray-200 dark:border-white/5">
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
