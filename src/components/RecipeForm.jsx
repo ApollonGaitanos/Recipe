@@ -270,10 +270,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
 
     return (
-        <div className="fixed inset-0 z-50 bg-[#f6f8f6] dark:bg-[#112116] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+        <div className="fixed inset-0 z-50 bg-background-light dark:bg-background-dark overflow-y-auto animate-in slide-in-from-bottom duration-300">
 
             {/* --- Top Navigation (Reference Match) --- */}
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#dce5df] dark:border-[#2a4030] bg-white/95 dark:bg-[#1a2c20]/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 dark:border-white/5 bg-white/95 dark:bg-surface-dark/95 backdrop-blur-sm px-6 py-4 lg:px-10 animate-in fade-in slide-in-from-top-2 duration-500">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onCancel} // Triggers navigation, checking blocker
@@ -467,8 +467,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                     markDirty();
                                                 }}
                                                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${isActive
-                                                        ? 'bg-[#17cf54] text-white border-[#17cf54]'
-                                                        : 'bg-white dark:bg-[#1a2c20] text-[#63886f] dark:text-[#8ca395] border-[#dce5df] dark:border-[#2a4030] hover:border-[#17cf54]'
+                                                    ? 'bg-[#17cf54] text-white border-[#17cf54]'
+                                                    : 'bg-white dark:bg-[#1a2c20] text-[#63886f] dark:text-[#8ca395] border-[#dce5df] dark:border-[#2a4030] hover:border-[#17cf54]'
                                                     }`}
                                             >
                                                 {t(category.labelKey)}

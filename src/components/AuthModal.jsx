@@ -86,7 +86,7 @@ export default function AuthModal({ isOpen, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
             <div
-                className="relative flex w-full max-w-4xl bg-white dark:bg-[#111813] rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+                className="relative flex w-full max-w-4xl bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}
@@ -132,8 +132,8 @@ export default function AuthModal({ isOpen, onClose }) {
                     <div className="flex border-b border-gray-100 dark:border-white/10 mb-8">
                         <button
                             className={`pb-3 pr-6 text-sm font-medium transition-colors relative ${isLogin
-                                    ? 'text-gray-900 dark:text-white'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                ? 'text-gray-900 dark:text-white'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                 }`}
                             onClick={() => setIsLogin(true)}
                         >
@@ -144,8 +144,8 @@ export default function AuthModal({ isOpen, onClose }) {
                         </button>
                         <button
                             className={`pb-3 px-6 text-sm font-medium transition-colors relative ${!isLogin
-                                    ? 'text-gray-900 dark:text-white'
-                                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                ? 'text-gray-900 dark:text-white'
+                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                 }`}
                             onClick={() => setIsLogin(false)}
                         >
@@ -216,8 +216,8 @@ export default function AuthModal({ isOpen, onClose }) {
                                     <div
                                         key={step}
                                         className={`flex-1 rounded-full transition-colors duration-300 ${strength >= step
-                                                ? (strength < 3 ? 'bg-red-500' : strength < 4 ? 'bg-orange-500' : 'bg-[#17cf54]')
-                                                : 'bg-gray-200 dark:bg-white/10'
+                                            ? (strength < 3 ? 'bg-red-500' : strength < 4 ? 'bg-orange-500' : 'bg-[#17cf54]')
+                                            : 'bg-gray-200 dark:bg-white/10'
                                             }`}
                                     />
                                 ))}
