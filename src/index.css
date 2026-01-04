@@ -59,7 +59,13 @@
   }
 
   body {
-    @apply bg-background text-foreground font-serif text-[17px] leading-[1.65] antialiased;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* UI Elements use Sans-Serif (Inter) */
@@ -80,7 +86,9 @@
   h4,
   h5,
   h6 {
-    @apply font-sans font-bold tracking-tight;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
 }
 
@@ -114,5 +122,6 @@
 
 /* Custom Utilities */
 .btn-primary {
-  @apply bg-primary text-white font-bold rounded-full transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20;
+  @apply bg-primary text-white rounded-full transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20;
+  font-weight: 700;
 }
