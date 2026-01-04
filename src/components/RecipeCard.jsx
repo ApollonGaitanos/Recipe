@@ -100,7 +100,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                             onClick={handleSave}
                             className={`p-2 rounded-lg transition-colors backdrop-blur-sm shadow-sm group/btn 
                                 ${isSaved
-                                    ? 'bg-[#17cf54] text-white hover:bg-[#14b045]'
+                                    ? 'bg-primary text-white hover:opacity-90'
                                     : 'bg-white/90 dark:bg-black/60 hover:bg-white text-gray-700 dark:text-gray-200'
                                 }`}
                         >

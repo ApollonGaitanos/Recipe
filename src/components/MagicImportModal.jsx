@@ -158,7 +158,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
-                        {mode === 'create' ? <ChefHat size={20} className="text-[#17cf54]" /> : <Sparkles size={20} className="text-[#17cf54]" />}
+                        {mode === 'create' ? <ChefHat size={20} className="text-primary" /> : <Sparkles size={20} className="text-primary" />}
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
                             {mode === 'create' ? 'AI Chef' : 'Magic Import'}
                         </h3>
@@ -179,7 +179,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     <button
                         onClick={() => { setMode('import'); setError(null); }}
                         className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'import'
-                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                            ? 'border-primary text-gray-900 dark:text-gray-200'
                             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
@@ -189,7 +189,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     <button
                         onClick={() => { setMode('create'); setError(null); }}
                         className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'create'
-                            ? 'border-[#17cf54] text-[#111813] dark:text-[#e0e6e2]'
+                            ? 'border-primary text-gray-900 dark:text-gray-200'
                             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
@@ -223,7 +223,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                                 value={inputValue}
                                 onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
                                 placeholder={mode === 'create' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
-                                className={`w-full h-40 rounded-xl border p-4 text-base text-[#111813] dark:text-[#e0e6e2] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#17cf54] focus:border-transparent resize-none transition-all ${error
+                                className={`w-full h-40 rounded-xl border p-4 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all ${error
                                     ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
                                     : 'border-[#dce5df] dark:border-[#2a4030]'
                                     } bg-white dark:bg-[#112116]`}
@@ -248,7 +248,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                             {!previewUrl ? (
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-4 border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#112116] hover:border-[#17cf54]/50 transition-all font-medium"
+                                    className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
                                 >
                                     <ImageIcon size={18} />
                                     Add Image (Optional)
@@ -273,9 +273,9 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                     <button
                         onClick={handleParse}
                         disabled={isParsing || (!inputValue && !selectedImage)}
-                        className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-green-500/20 transition-all ${isParsing || (!inputValue && !selectedImage)
+                        className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-primary/20 transition-all ${isParsing || (!inputValue && !selectedImage)
                             ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
-                            : 'bg-[#17cf54] hover:bg-[#15bd4d] hover:-translate-y-0.5'
+                            : 'bg-primary hover:opacity-90 hover:-translate-y-0.5'
                             }`}
                     >
                         {isParsing ? (

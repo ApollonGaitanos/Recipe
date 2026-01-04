@@ -18,7 +18,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message, titl
                     <X size={20} />
                 </button>
 
-                <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
+                <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-primary/10 text-primary'}`}>
                     <DisplayIcon size={32} />
                 </div>
 
@@ -35,7 +35,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message, titl
                         </button>
                     )}
                     <button
-                        className={`btn-primary px-4 py-2 rounded-lg font-bold transition-colors text-white ${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-[#17cf54] hover:bg-[#15bd4d] shadow-[#17cf54]/20'}`}
+                        className={`btn-primary px-4 py-2 rounded-lg font-bold transition-colors text-white ${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-primary hover:opacity-90 shadow-primary/20'}`}
                         onClick={onConfirm}
                     >
                         {confirmText || t('delete')}

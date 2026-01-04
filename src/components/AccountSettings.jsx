@@ -153,7 +153,7 @@ const AccountSettings = () => {
                                                 key={item.id}
                                                 onClick={() => setActiveTab(item.id)}
                                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${isActive
-                                                    ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-[#17cf54]'
+                                                    ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
                                                     }`}
                                             >
@@ -213,7 +213,7 @@ const AccountSettings = () => {
                                                     : usernameStatus === 'unavailable'
                                                         ? 'px-4 py-3 rounded-xl border border-red-500 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-red-200'
                                                         : usernameStatus === 'available'
-                                                            ? 'px-4 py-3 rounded-xl border border-green-500 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-green-200'
+                                                            ? 'px-4 py-3 rounded-xl border border-primary bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary/20'
                                                             : 'px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                     }`}
                                                 placeholder="username"
@@ -222,7 +222,7 @@ const AccountSettings = () => {
                                             {isEditing && (
                                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                                                     {usernameStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
-                                                    {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                                                    {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-primary" />}
                                                     {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
                                                 </div>
                                             )}
@@ -237,7 +237,7 @@ const AccountSettings = () => {
                                                     </span>
                                                 )}
                                                 {usernameStatus === 'available' && (
-                                                    <span className="text-green-600 font-medium">
+                                                    <span className="text-primary font-medium">
                                                         ✓ Username is available
                                                     </span>
                                                 )}
@@ -301,9 +301,9 @@ const AccountSettings = () => {
                                             <button
                                                 onClick={handleSave}
                                                 disabled={loading || usernameStatus === 'unavailable'}
-                                                className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all ${loading || usernameStatus === 'unavailable'
+                                                className={`px-8 py-2.5 rounded-full font-bold text-white shadow-lg shadow-primary/20 flex items-center gap-2 transition-all ${loading || usernameStatus === 'unavailable'
                                                     ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                                    : 'bg-primary hover:bg-green-600 hover:-translate-y-0.5'
+                                                    : 'bg-primary hover:opacity-90 hover:-translate-y-0.5'
                                                     }`}
                                             >
                                                 {loading ? (

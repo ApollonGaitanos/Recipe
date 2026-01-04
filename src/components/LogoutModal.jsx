@@ -32,7 +32,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
                 </button>
 
                 {/* Icon */}
-                <div className="w-16 h-16 bg-green-50 dark:bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <LogOut size={28} className="text-primary ml-1" />
                 </div>
 
@@ -49,7 +49,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
                 <div className="flex flex-col gap-3">
                     <button
                         onClick={onClose}
-                        className="w-full py-3 bg-primary hover:bg-green-600 text-white font-bold rounded-full transition-colors shadow-lg shadow-green-500/20"
+                        className="w-full py-3 bg-primary hover:opacity-90 text-white font-bold rounded-full transition-colors shadow-lg shadow-primary/20"
                     >
                         Cancel
                     </button>
