@@ -215,7 +215,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const displayDescription = recipe.description || (typeof recipe.instructions === 'string' ? recipe.instructions : recipe.instructions.join(' ')).substring(0, 160) + "...";
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#112116] pt-4 pb-20 fade-in text-zinc-900 dark:text-zinc-100 font-sans">
+        <div className="min-h-screen bg-white dark:bg-[#112116] pt-2 pb-20 fade-in text-zinc-900 dark:text-zinc-100 font-sans">
             <div className="container mx-auto px-4 md:px-8 max-w-7xl space-y-12">
 
                 <div className="space-y-6 w-full">
