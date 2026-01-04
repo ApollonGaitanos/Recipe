@@ -19,10 +19,7 @@ export default function MyKitchen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [visitorProfile, setVisitorProfile] = useState(null);
     const [visitorRecipes, setVisitorRecipes] = useState([]);
-    const [activeTab, setActiveTab] = useState('my_recipes');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [visitorProfile, setVisitorProfile] = useState(null);
-    const [visitorRecipes, setVisitorRecipes] = useState([]);
+
     const [loadingVisitor, setLoadingVisitor] = useState(false);
     const [showCopied, setShowCopied] = useState(false); // Toast state
 
