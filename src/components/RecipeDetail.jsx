@@ -44,6 +44,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const [originalSource, setOriginalSource] = useState(null);
     const [showCopyConfirm, setShowCopyConfirm] = useState(false);
     const [showMissingOriginModal, setShowMissingOriginModal] = useState(false);
+    const [showDeadLinkModal, setShowDeadLinkModal] = useState(false);
 
     React.useEffect(() => {
         if (originalRecipe?.originId) {
@@ -261,7 +262,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 }
                                 // 3. Truly dead link (Old copy, no metadata):
                                 else {
-                                    alert("The original recipe is no longer available.");
+                                    setShowDeadLinkModal(true);
                                 }
                             }}
                         >
@@ -585,6 +586,17 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 title="Original Recipe Unavailable"
                 description={"The original recipe is either private or has been deleted. Would you like to visit " + (recipe.originAuthor || "the author") + "'s kitchen instead?"}
                 confirmText="Visit Kitchen"
+                isDanger={false}
+                Icon={Info}
+            />
+
+            <ConfirmModal
+                isOpen={showDeadLinkModal}
+                onClose={() => setShowDeadLinkModal(false)}
+                onConfirm={() => setShowDeadLinkModal(false)}
+                title="Recipe Unavailable"
+                description="The original recipe source is no longer available and the author is unknown."
+                confirmText="Close"
                 isDanger={false}
                 Icon={Info}
             />
