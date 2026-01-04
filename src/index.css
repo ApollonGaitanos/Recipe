@@ -90,6 +90,9 @@
 
   --color-primary: var(--color-primary);
 
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+
   --color-background-light: var(--color-background-light);
   --color-background-dark: var(--color-background-dark);
 
