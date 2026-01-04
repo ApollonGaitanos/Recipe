@@ -54,9 +54,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
 
 
+    // recipe definition moved, result used in hooks
     const recipe = translatedRecipe || originalRecipe;
 
-    if (!recipe) return null;
+    // if (!recipe) return null; // MOVED DOWN
+
 
     const isOwner = React.useMemo(() => {
         if (!user || !recipe) return false;
@@ -71,7 +73,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         if (currentUsername && recipeUsername && currentUsername === recipeUsername) return true;
 
         return false;
+        return false;
     }, [user, recipe]);
+
+    if (!recipe) return null;
 
 
 
@@ -246,13 +251,17 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         <div
                             className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors"
                             onClick={() => {
-                                // If the original recipe fetch failed (or returns null), but we have the author name:
-                                // Show confirmation modal before redirecting.
-                                if (!originalSource && recipe.originAuthor) {
-                                    setShowMissingOriginModal(true);
-                                } else {
-                                    // Otherwise, try to go to the recipe (standard behavior)
+                                // 1. If original recipe is healthy and found:
+                                if (originalSource) {
                                     navigate('/recipe/' + recipe.originId);
+                                }
+                                // 2. If original is missing but we know the author (Legacy or New logic):
+                                else if (recipe.originAuthor) {
+                                    setShowMissingOriginModal(true);
+                                }
+                                // 3. Truly dead link (Old copy, no metadata):
+                                else {
+                                    alert("The original recipe is no longer available.");
                                 }
                             }}
                         >
