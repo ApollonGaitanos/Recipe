@@ -130,7 +130,7 @@ export default function MyKitchen() {
                                     <div className="relative flex items-center">
                                         <button
                                             onClick={async () => {
-                                                const url = window.location.origin + '/' + (isOwner ? (profile?.username || user?.user_metadata?.username) : (visitorProfile?.username || username));
+                                                const url = window.location.href;
 
                                                 // 1. Try Native Share (Mobile)
                                                 if (navigator.share) {
