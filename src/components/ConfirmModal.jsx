@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { AlertTriangle, X } from 'lucide-react';
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, message, title, description, confirmText, isDanger = true, Icon }) {
+export default function ConfirmModal({ isOpen, onClose, onConfirm, message, title, description, confirmText, isDanger = true, Icon, showCancel = true }) {
     const { t } = useLanguage();
 
     if (!isOpen) return null;
@@ -28,10 +28,12 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message, titl
                     {description || t('deleteWarning') || 'This action cannot be undone.'}
                 </p>
 
-                <div className="modal-actions flex gap-3 justify-end">
-                    <button className="btn-secondary px-4 py-2 rounded-lg font-medium transition-colors" onClick={onClose}>
-                        {t('cancel')}
-                    </button>
+                <div className="modal-actions flex gap-3 justify-center w-full">
+                    {showCancel && (
+                        <button className="btn-secondary px-4 py-2 rounded-lg font-medium transition-colors" onClick={onClose}>
+                            {t('cancel')}
+                        </button>
+                    )}
                     <button
                         className={`btn-primary px-4 py-2 rounded-lg font-bold transition-colors text-white ${isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-[#17cf54] hover:bg-[#15bd4d] shadow-[#17cf54]/20'}`}
                         onClick={onConfirm}

@@ -599,6 +599,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 confirmText="Close"
                 isDanger={false}
                 Icon={Info}
+                showCancel={false}
             />
 
             <VisibilityModal
