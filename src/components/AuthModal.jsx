@@ -107,7 +107,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                     <div className="relative mt-auto p-12 z-10">
-                        <p className="text-xs font-bold tracking-[0.2em] mb-3 text-primary uppercase">
+                        <p className="text-xs font-bold tracking-[0.2em] mb-3 text-highlight uppercase">
                             {t('auth.editorial')}
                         </p>
                         <h2 className="text-3xl font-serif leading-tight">
@@ -277,7 +277,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
                     {/* Footer Links */}
                     <div className="mt-8 text-center text-xs text-gray-400">
-                        By continuing, you agree to our <a href="#" className="underline hover:text-primary">Terms of Service</a> and <a href="#" className="underline hover:text-primary">Privacy Policy</a>.
+                        By continuing, you agree to our <a href="#" className="underline hover:text-highlight">Terms of Service</a> and <a href="#" className="underline hover:text-highlight">Privacy Policy</a>.
                     </div>
                 </div>
             </div>

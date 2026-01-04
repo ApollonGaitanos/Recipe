@@ -250,7 +250,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                     {recipe.originId && (
                         <div
-                            className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors"
+                            className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-highlight transition-colors"
                             onClick={() => {
                                 // 1. If original recipe is healthy and found:
                                 if (originalSource) {
@@ -292,7 +292,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 className={'flex items-center gap-2 text-sm font-medium transition-colors ' + (!isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer')}
                             >
                                 <span className="text-zinc-500 dark:text-zinc-400">{recipe.is_public ? 'Public' : 'Private'}</span>
-                                {recipe.is_public ? <Globe className="w-4 h-4 text-primary" /> : <Lock className="w-4 h-4 text-amber-500" />}
+                                {recipe.is_public ? <Globe className="w-4 h-4 text-highlight" /> : <Lock className="w-4 h-4 text-amber-500" />}
                             </button>
 
                             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 mx-1" />
@@ -310,7 +310,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     onClick={handleSave}
                                     className={'flex items-center gap-2 px-5 py-1.5 rounded-full border transition-colors text-sm font-medium ' +
                                         (isSaved
-                                            ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                                            ? 'border-primary bg-primary/10 text-highlight hover:bg-primary/20'
                                             : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300')}
                                 >
                                     <Bookmark className={'w-3.5 h-3.5 ' + (isSaved ? 'fill-current' : '')} />
@@ -379,7 +379,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 ))}
                             </ul>
 
-                            <button className="w-full mt-8 py-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary font-semibold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
+                            <button className="w-full mt-8 py-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-highlight font-semibold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
                                 <ShoppingBag className="w-4 h-4" />
                                 Add to Shopping List
                             </button>
@@ -433,7 +433,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 </div>
                             </div>
                             <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-highlight">
                                     <Activity className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -485,7 +485,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         <div className="space-y-10 relative border-l-2 border-zinc-100 dark:border-zinc-800 ml-3 md:ml-4 pl-8 md:pl-10 pb-10">
                             {(Array.isArray(recipe.instructions) ? recipe.instructions : (typeof recipe.instructions === 'string' ? recipe.instructions.split('\n').filter(Boolean) : [])).map((step, index) => (
                                 <div key={index} className="relative">
-                                    <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-primary flex items-center justify-center text-primary font-bold z-10">
+                                    <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-primary flex items-center justify-center text-highlight font-bold z-10">
                                         {index + 1}
                                     </div>
                                     <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Step {index + 1}</h4>
@@ -527,7 +527,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                         </span>
                                     </div>
                                 </div>
-                                <h4 className="font-bold text-lg text-zinc-900 dark:text-white leading-tight group-hover:text-primary transition-colors">
+                                <h4 className="font-bold text-lg text-zinc-900 dark:text-white leading-tight group-hover:text-highlight transition-colors">
                                     {i === 1 ? "Summer Grilled Chicken Salad" : i === 2 ? "Creamy Garlic Pasta" : "Rustic Vegetable Soup"}
                                 </h4>
                                 <div className="flex items-center gap-2 text-zinc-500 text-sm mt-2">

@@ -6,6 +6,8 @@
   /* Honey (Attic) - CTA */
   --accent: #8C3A2B;
   /* Wine (Mild) - Links */
+  --highlight: #8C3A2B;
+  /* Wine (Mild) - Text Highlights (Yellow Request) */
   --tech: #66023C;
   /* Purple - AI */
 }
@@ -16,6 +18,8 @@
   /* Honey (Amber) */
   --accent: #6F2C22;
   /* Wine (Dark) */
+  --highlight: #D9A441;
+  /* Honey (Amber) - Maintaining Status Quo in Dark Mode as requested */
   --tech: #9D4EDD;
   /* Neon Berry */
 
@@ -31,6 +35,7 @@
   /* Semantic Colors mapped to Variables */
   --color-primary: var(--primary);
   --color-accent: var(--accent);
+  --color-highlight: var(--highlight);
   --color-tech: var(--tech);
 
   /* Backgrounds */

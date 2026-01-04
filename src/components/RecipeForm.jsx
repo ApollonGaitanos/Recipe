@@ -277,7 +277,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onCancel} // Triggers navigation, checking blocker
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+                        className="flex items-center gap-2 text-highlight hover:text-highlight/80 transition-colors"
                     >
                         <ArrowLeft size={24} />
                     </button>
@@ -292,7 +292,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowMagicImport(true)}
-                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 text-sm font-bold text-primary hover:bg-primary/10 transition-colors mr-1"
+                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 text-sm font-bold text-highlight hover:bg-primary/10 transition-colors mr-1"
                     >
                         <Sparkles size={20} />
                         <span className="hidden md:inline">Magic Import</span>
@@ -421,7 +421,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
                                         markDirty();
                                     }}
-                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
                                 >
                                     <Plus size={18} /> Add Ingredient
                                 </button>
@@ -480,8 +480,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                             {/* Photo Upload (Moved below Description) */}
                             <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
-                                <div className="bg-primary/10 text-primary p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                                    <Sparkles size={32} />
+                                <div className="bg-primary/10 text-highlight p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                                    <Sparkles className="text-highlight" size={32} />
                                 </div>
                                 <p className="font-bold text-lg">Add Cover Photo</p>
                                 <p className="text-sm text-[#63886f] dark:text-[#8ca395] mt-1">Drag and drop or click to upload</p>
@@ -495,7 +495,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             {/* Details Card (Moved from Left) */}
                             <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 lg:p-8 shadow-sm">
                                 <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
-                                    <Sparkles className="text-primary" size={20} />
+                                    <Sparkles className="text-highlight" size={20} />
                                     Details
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -561,7 +561,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     {instructionsList.map((step, i) => (
                                         <div key={step.id} className="group flex gap-4">
                                             <div className="flex flex-col items-center gap-2 pt-2">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary dark:bg-primary/20">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-highlight dark:bg-primary/20">
                                                     {i + 1}
                                                 </div>
                                                 <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
@@ -599,7 +599,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
                                         markDirty();
                                     }}
-                                    className="mt-2 flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
+                                    className="mt-2 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
                                 >
                                     <Plus size={18} /> Add Step
                                 </button>

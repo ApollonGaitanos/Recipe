@@ -158,7 +158,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
-                        {mode === 'create' ? <ChefHat size={20} className="text-primary" /> : <Sparkles size={20} className="text-primary" />}
+                        {mode === 'create' ? <ChefHat size={20} className="text-highlight" /> : <Sparkles size={20} className="text-highlight" />}
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
                             {mode === 'create' ? 'AI Chef' : 'Magic Import'}
                         </h3>

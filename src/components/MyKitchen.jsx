@@ -185,7 +185,7 @@ export default function MyKitchen() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
-                                            ? 'text-primary'
+                                            ? 'text-highlight'
                                             : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
                                             }`}
                                     >

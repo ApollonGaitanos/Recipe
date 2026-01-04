@@ -153,7 +153,7 @@ const AccountSettings = () => {
                                                 key={item.id}
                                                 onClick={() => setActiveTab(item.id)}
                                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${isActive
-                                                    ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                    ? 'bg-primary/10 text-highlight dark:bg-primary/20 dark:text-highlight'
                                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
                                                     }`}
                                             >
@@ -222,7 +222,7 @@ const AccountSettings = () => {
                                             {isEditing && (
                                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                                                     {usernameStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
-                                                    {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                                                    {usernameStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-highlight" />}
                                                     {usernameStatus === 'unavailable' && <XCircle className="w-5 h-5 text-red-500" />}
                                                 </div>
                                             )}
@@ -237,7 +237,7 @@ const AccountSettings = () => {
                                                     </span>
                                                 )}
                                                 {usernameStatus === 'available' && (
-                                                    <span className="text-primary font-medium">
+                                                    <span className="text-highlight font-medium">
                                                         ✓ Username is available
                                                     </span>
                                                 )}

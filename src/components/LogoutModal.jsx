@@ -33,7 +33,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
 
                 {/* Icon */}
                 <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <LogOut size={28} className="text-primary ml-1" />
+                    <LogOut size={28} className="text-highlight ml-1" />
                 </div>
 
                 {/* Text Content */}

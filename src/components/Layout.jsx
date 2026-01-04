@@ -42,7 +42,7 @@ export default function Layout({ children, fullWidth = false }) {
                             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-gray-900">
                                 <ChefHat size={18} strokeWidth={2.5} />
                             </div>
-                            <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                            <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-highlight transition-colors">
                                 {t('appTitle')}
                             </h1>
                         </div>
@@ -61,7 +61,7 @@ export default function Layout({ children, fullWidth = false }) {
                     {/* CENTER: Search Bar (Desktop) */}
                     <div className="hidden md:flex flex-1 max-w-2xl mx-6">
                         <div className="relative w-full group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-highlight transition-colors">
                                 <Search size={18} />
                             </div>
                             <input
@@ -91,10 +91,10 @@ export default function Layout({ children, fullWidth = false }) {
                                     onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
                                     className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
                                 >
-                                    <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors">
+                                    <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-highlight transition-colors">
                                         {((useAuth().profile?.username) || (user?.user_metadata?.username) || user?.email?.split('@')[0])}
                                     </span>
-                                    <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                    <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-highlight group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                                         <UserIcon className="w-5 h-5" />
                                     </div>
                                 </button>
@@ -199,10 +199,10 @@ export default function Layout({ children, fullWidth = false }) {
 
                     {/* Links */}
                     <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
-                        <button className="hover:text-primary transition-colors">{t('nav.about')}</button>
-                        <button className="hover:text-primary transition-colors">{t('nav.community')}</button>
-                        <button className="hover:text-primary transition-colors">{t('nav.submitRecipe')}</button>
-                        <button className="hover:text-primary transition-colors">{t('nav.privacy')}</button>
+                        <button className="hover:text-highlight transition-colors">{t('nav.about')}</button>
+                        <button className="hover:text-highlight transition-colors">{t('nav.community')}</button>
+                        <button className="hover:text-highlight transition-colors">{t('nav.submitRecipe')}</button>
+                        <button className="hover:text-highlight transition-colors">{t('nav.privacy')}</button>
                     </div>
 
                     {/* Copyright */}

@@ -88,7 +88,7 @@ export default function MigrationBanner() {
                     disabled={loading}
                     style={{
                         background: 'white',
-                        color: 'var(--color-primary)',
+                        color: 'var(--color-highlight)',
                         border: 'none',
                         padding: '8px 16px',
                         borderRadius: '20px',

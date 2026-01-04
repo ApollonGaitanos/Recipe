@@ -18,7 +18,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message, titl
                     <X size={20} />
                 </button>
 
-                <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-primary/10 text-primary'}`}>
+                <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-primary/10 text-highlight'}`}>
                     <DisplayIcon size={32} />
                 </div>
 

@@ -134,7 +134,7 @@ function Feed({ isPrivate = false }) {
 
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="px-4 py-2 text-sm font-bold text-primary hover:text-green-600 underline decoration-2 underline-offset-4 transition-colors ml-2"
+            className="px-4 py-2 text-sm font-bold text-highlight hover:text-highlight/80 underline decoration-2 underline-offset-4 transition-colors ml-2"
           >
             {isExpanded ? t('feed.showLess') : t('feed.showMore')}
           </button>

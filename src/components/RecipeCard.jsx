@@ -140,7 +140,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
             <div className="flex flex-col gap-2">
                 {/* Tags */}
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-highlight">
                         {recipe.tags && recipe.tags.length > 0 ? recipe.tags[0] : 'DINNER'}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">•</span>
@@ -149,7 +149,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                     </span>
                 </div>
 
-                <h3 className="font-serif font-bold text-xl text-gray-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="font-serif font-bold text-xl text-gray-900 dark:text-white leading-tight line-clamp-2 group-hover:text-highlight transition-colors">
                     {recipe.title}
                 </h3>
 
