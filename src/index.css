@@ -1,15 +1,42 @@
 @import "tailwindcss";
 
+:root {
+  /* Light Theme: Roasted */
+  --primary: #D62828;      /* Chili Red */
+  --accent: #F77F00;       /* Burnt Orange */
+  --tech: #7209B7;         /* Berry Violet */
+}
+
+.dark {
+  /* Dark Theme: Night Kitchen */
+  --primary: #FF6B6B;      /* Ember Red */
+  --accent: #FF9F1C;       /* Apricot Glow */
+  --tech: #9D4EDD;         /* Neon Berry */
+}
+
 @theme {
   --font-display: "Manrope", "sans-serif";
   --font-serif: "Playfair Display", "serif";
   --font-body: "Manrope", "sans-serif";
 
-  --color-primary: #17cf54;
-  --color-background-light: #f6f8f6;
-  --color-background-dark: #112116;
-  --color-surface-dark: #1a2c20;
-  --color-card-dark: #1F2E25;
+  /* Semantic Colors mapped to Variables */
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-tech: var(--tech);
+
+  /* Backgrounds */
+  --color-background-light: #FDF0D5; /* Vanilla Bean */
+  --color-background-dark: #140F0D;  /* Espresso */
+  --color-surface-dark: #261C19;     /* Cocoa */
+  --color-card-dark: #261C19;
+
+  /* Text Overrides (softening the harsh blacks/whites) */
+  --color-zinc-900: #332725;         /* Dark Roast */
+  --color-gray-900: #332725;
+  
+  --color-zinc-100: #E6DCD3;         /* Oat Milk */
+  --color-gray-100: #E6DCD3;
+  --color-white: #FFFFFF;            /* Keeping white pure for cards */
 
   /* Border Radius Overrides matching previous config */
   --radius-lg: 0.5rem;
