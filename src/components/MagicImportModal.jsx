@@ -153,7 +153,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-[600px] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-[600px] bg-white dark:bg-surface-dark rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
