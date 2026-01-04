@@ -39,7 +39,9 @@ export default function RecipeContext({ children }) {
         image_url: dbRecipe.image_url,
         description: dbRecipe.description || '',
         createdAt: dbRecipe.created_at,
-        originId: dbRecipe.origin_id || null // Forking support
+        originId: dbRecipe.origin_id || null, // Forking support
+        originTitle: dbRecipe.origin_title || null,
+        originAuthor: dbRecipe.origin_author_username || null
     });
 
     const toDbRecipe = (appRecipe, userId, username) => ({
@@ -53,7 +55,9 @@ export default function RecipeContext({ children }) {
         tags: appRecipe.tags || [],
         // tags: appRecipe.tags || [], // Removed duplicate
         is_public: appRecipe.is_public || false,
-        origin_id: appRecipe.originId || null // Forking support
+        origin_id: appRecipe.originId || null, // Forking support
+        origin_title: appRecipe.originTitle || null,
+        origin_author_username: appRecipe.originAuthor || null
         // image_url: appRecipe.image_url || null,
         // description: appRecipe.description || null, // Column missing in DB
         // author_username: username || null
@@ -381,6 +385,8 @@ export default function RecipeContext({ children }) {
             ...originalRecipe,
             title: originalRecipe.title,
             originId: originalRecipe.id,
+            originTitle: originalRecipe.title,
+            originAuthor: originalRecipe.author_username,
             is_public: false, // Copies start private
             // Reset metadata
             id: undefined,

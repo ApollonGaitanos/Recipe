@@ -242,9 +242,25 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </div>
 
                     {recipe.originId && (
-                        <div className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/recipe/' + recipe.originId)}>
+                        <div
+                            className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors"
+                            onClick={() => {
+                                // If the original recipe fetch failed (or returns null), but we have the author name:
+                                // Redirect to the author's profile.
+                                if (!originalSource && recipe.originAuthor) {
+                                    navigate('/' + recipe.originAuthor);
+                                } else {
+                                    // Otherwise, try to go to the recipe (standard behavior)
+                                    navigate('/recipe/' + recipe.originId);
+                                }
+                            }}
+                        >
                             <GitFork size={14} />
-                            <span>Copy of <span className="font-semibold underline">{originalSource?.title || 'Original Recipe'}</span> by {originalSource?.author_username || 'Unknown'}</span>
+                            <span>
+                                Copy of <span className="font-semibold underline">
+                                    {originalSource?.title || recipe.originTitle || 'Original Recipe'}
+                                </span> by {originalSource?.author_username || recipe.originAuthor || 'Unknown'}
+                            </span>
                         </div>
                     )}
 
