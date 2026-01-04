@@ -43,6 +43,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const navigate = useNavigate();
     const [originalSource, setOriginalSource] = useState(null);
     const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+    const [showMissingOriginModal, setShowMissingOriginModal] = useState(false);
 
     React.useEffect(() => {
         if (originalRecipe?.originId) {
@@ -246,9 +247,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer hover:text-primary transition-colors"
                             onClick={() => {
                                 // If the original recipe fetch failed (or returns null), but we have the author name:
-                                // Redirect to the author's profile.
+                                // Show confirmation modal before redirecting.
                                 if (!originalSource && recipe.originAuthor) {
-                                    navigate('/' + recipe.originAuthor);
+                                    setShowMissingOriginModal(true);
                                 } else {
                                     // Otherwise, try to go to the recipe (standard behavior)
                                     navigate('/recipe/' + recipe.originId);
@@ -563,6 +564,20 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 confirmText="Create Copy"
                 isDanger={false}
                 Icon={GitFork}
+            />
+
+            <ConfirmModal
+                isOpen={showMissingOriginModal}
+                onClose={() => setShowMissingOriginModal(false)}
+                onConfirm={() => {
+                    setShowMissingOriginModal(false);
+                    navigate('/' + recipe.originAuthor);
+                }}
+                title="Original Recipe Unavailable"
+                description={"The original recipe is either private or has been deleted. Would you like to visit " + (recipe.originAuthor || "the author") + "'s kitchen instead?"}
+                confirmText="Visit Kitchen"
+                isDanger={false}
+                Icon={Info}
             />
 
             <VisibilityModal
