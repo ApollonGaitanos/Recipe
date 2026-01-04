@@ -152,7 +152,7 @@ function Feed({ isPrivate = false }) {
           {user && (
             <button
               onClick={() => navigate('/add')}
-              className="flex items-center justify-center gap-2 px-4 py-2 min-w-[140px] rounded-full bg-primary text-white text-sm font-bold shadow-sm hover:bg-green-600 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 min-w-[140px] rounded-full bg-primary text-white text-sm font-bold shadow-sm hover:opacity-90 transition-colors"
             >
               <Plus size={18} /> <span className="hidden sm:inline">{t('addRecipe')}</span>
             </button>
@@ -186,7 +186,7 @@ function Feed({ isPrivate = false }) {
           {user && (
             <button
               onClick={() => navigate('/add')}
-              className="px-6 py-2 rounded-full bg-primary text-white font-bold hover:bg-green-600 transition-colors"
+              className="px-6 py-2 rounded-full bg-primary text-white font-bold hover:opacity-90 transition-colors"
             >
               Add Your First Recipe
             </button>

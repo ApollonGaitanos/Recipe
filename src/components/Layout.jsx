@@ -104,7 +104,7 @@ export default function Layout({ children, fullWidth = false }) {
                         ) : (
                             <button
                                 onClick={() => setShowAuthModal(true)}
-                                className="ml-2 px-4 py-2 min-w-[110px] flex justify-center rounded-full bg-primary text-white text-sm font-bold hover:bg-green-600 transition-colors shadow-sm"
+                                className="ml-2 px-4 py-2 min-w-[110px] flex justify-center rounded-full bg-primary text-white text-sm font-bold hover:opacity-90 transition-colors shadow-sm"
                             >
                                 {t('nav.login')}
                             </button>
