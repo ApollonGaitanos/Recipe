@@ -122,6 +122,19 @@
 
 /* Custom Utilities */
 .btn-primary {
-  @apply bg-primary text-white rounded-full transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px var(--color-primary), 0 4px 6px -4px var(--color-primary);
   font-weight: 700;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
 }
