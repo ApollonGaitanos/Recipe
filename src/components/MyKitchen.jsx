@@ -119,13 +119,13 @@ export default function MyKitchen() {
             <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-sans transition-colors duration-200">
 
                 {/* Profile Header */}
-                <div className="bg-background-light dark:bg-surface-dark border-b border-gray-200 dark:border-white/5">
+                <div className="bg-primary dark:bg-surface-dark border-b border-primary/10 dark:border-white/5">
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif flex items-center flex-wrap gap-3">
                                     <span>{displayUsername}'s Kitchen</span>
-                                    <span className="text-lg md:text-xl font-medium text-[#63886f] dark:text-[#a0b3a6]">
+                                    <span className="text-lg md:text-xl font-medium text-[#2F2F2C] dark:text-[#a0b3a6]">
                                         ({recipeCount} Recipes)
                                     </span>
                                     <div className="relative flex items-center">
@@ -165,7 +165,7 @@ export default function MyKitchen() {
                                         </div>
                                     </div>
                                 </h1>
-                                <p className="text-[#63886f] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
+                                <p className="text-[#2F2F2C] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                     {displayBio}
                                 </p>
                             </div>
@@ -186,12 +186,12 @@ export default function MyKitchen() {
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
                                             ? 'text-highlight'
-                                            : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
+                                            : 'text-[#2F2F2C]/70 dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
                                             }`}
                                     >
                                         {tab.label}
                                         {activeTab === tab.id && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-highlight rounded-t-full" />
                                         )}
                                     </button>
                                 ))}
