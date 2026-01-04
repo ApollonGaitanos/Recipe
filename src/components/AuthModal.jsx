@@ -107,7 +107,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                     <div className="relative mt-auto p-12 z-10">
-                        <p className="text-xs font-bold tracking-[0.2em] mb-3 text-[#17cf54] uppercase">
+                        <p className="text-xs font-bold tracking-[0.2em] mb-3 text-primary uppercase">
                             {t('auth.editorial')}
                         </p>
                         <h2 className="text-3xl font-serif leading-tight">
@@ -139,7 +139,7 @@ export default function AuthModal({ isOpen, onClose }) {
                         >
                             {t('auth.login')}
                             {isLogin && (
-                                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#17cf54]" />
+                                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                             )}
                         </button>
                         <button
@@ -151,7 +151,7 @@ export default function AuthModal({ isOpen, onClose }) {
                         >
                             {t('auth.signup')}
                             {!isLogin && (
-                                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#17cf54]" />
+                                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-primary" />
                             )}
                         </button>
                     </div>
@@ -172,7 +172,7 @@ export default function AuthModal({ isOpen, onClose }) {
                                     placeholder={t('auth.usernamePlaceholder')}
                                     value={username}
                                     onChange={e => setUsername(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-[#17cf54] focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-primary focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
                                     required
                                 />
                             </div>
@@ -185,7 +185,7 @@ export default function AuthModal({ isOpen, onClose }) {
                                 placeholder={t('auth.emailPlaceholder')}
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-[#17cf54] focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
+                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-primary focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
                                 required
                             />
                         </div>
@@ -197,7 +197,7 @@ export default function AuthModal({ isOpen, onClose }) {
                                 placeholder={t('auth.passwordPlaceholder')}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-[#17cf54] focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
+                                className="w-full pl-10 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent focus:bg-white focus:border-primary focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400"
                                 required
                             />
                             <button
@@ -216,7 +216,7 @@ export default function AuthModal({ isOpen, onClose }) {
                                     <div
                                         key={step}
                                         className={`flex-1 rounded-full transition-colors duration-300 ${strength >= step
-                                            ? (strength < 3 ? 'bg-red-500' : strength < 4 ? 'bg-orange-500' : 'bg-[#17cf54]')
+                                            ? (strength < 3 ? 'bg-red-500' : strength < 4 ? 'bg-orange-500' : 'bg-primary')
                                             : 'bg-gray-200 dark:bg-white/10'
                                             }`}
                                     />
@@ -232,8 +232,8 @@ export default function AuthModal({ isOpen, onClose }) {
                                     placeholder={t('auth.confirmPasswordPlaceholder')}
                                     value={confirmPassword}
                                     onChange={e => setConfirmPassword(e.target.value)}
-                                    className={`w-full pl-10 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border focus:bg-white focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 ${confirmPassword && !passwordsMatch ? 'border-red-500 focus:border-red-500' : 'border-transparent focus:border-[#17cf54]'
-                                        }`}
+                                    className={`w-full pl-10 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border focus:bg-white focus:ring-0 dark:focus:bg-white/10 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 ${confirmPassword && !passwordsMatch ? 'border-red-500 focus:border-red-500' : 'border-transparent focus:border-primary'}`
+                                    }
                                     required
                                 />
                             </div>
@@ -242,7 +242,7 @@ export default function AuthModal({ isOpen, onClose }) {
                         <button
                             type="submit"
                             disabled={!canSubmit}
-                            className="w-full py-3.5 rounded-xl bg-[#17cf54] hover:bg-[#14b84b] text-white font-bold transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2 shadow-lg shadow-green-500/20"
+                            className="w-full py-3.5 rounded-xl bg-primary hover:opacity-90 text-white font-bold transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2 shadow-lg shadow-primary/20"
                         >
                             {loading ? t('auth.processing') : (isLogin ? t('auth.login') : t('auth.signup'))}
                         </button>
@@ -277,7 +277,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
                     {/* Footer Links */}
                     <div className="mt-8 text-center text-xs text-gray-400">
-                        By continuing, you agree to our <a href="#" className="underline hover:text-[#17cf54]">Terms of Service</a> and <a href="#" className="underline hover:text-[#17cf54]">Privacy Policy</a>.
+                        By continuing, you agree to our <a href="#" className="underline hover:text-primary">Terms of Service</a> and <a href="#" className="underline hover:text-primary">Privacy Policy</a>.
                     </div>
                 </div>
             </div>

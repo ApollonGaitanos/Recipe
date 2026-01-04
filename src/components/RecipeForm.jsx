@@ -344,7 +344,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Recipe Title</label>
                         <input
-                            className="w-full bg-transparent border-0 border-b-2 border-[#dce5df] dark:border-[#2a4030] focus:border-[#17cf54] dark:focus:border-[#17cf54] focus:ring-0 px-0 py-2 text-3xl md:text-5xl font-bold placeholder:text-[#63886f]/40 dark:placeholder:text-[#8ca395]/40 transition-colors font-serif"
+                            className="w-full bg-transparent border-0 border-b-2 border-gray-200 dark:border-white/5 focus:border-primary dark:focus:border-primary focus:ring-0 px-0 py-2 text-3xl md:text-5xl font-bold placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors font-serif"
                             type="text"
                             value={formData.title}
                             onChange={(e) => {
@@ -382,7 +382,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
                                             </div>
                                             <input
-                                                className="w-full sm:w-20 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                className="w-full sm:w-20 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary"
                                                 placeholder="200g"
                                                 value={ing.amount}
                                                 onChange={e => {
@@ -393,7 +393,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                 }}
                                             />
                                             <input
-                                                className="flex-1 rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] px-3 py-2.5 text-sm focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                className="flex-1 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary"
                                                 placeholder="Flour"
                                                 value={ing.item}
                                                 onChange={e => {
@@ -437,7 +437,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         markDirty();
                                     }}
                                     placeholder="Share the story behind this recipe, flavor notes, or why it's special..."
-                                    className="w-full rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-4 text-base focus:border-[#17cf54] focus:ring-1 focus:ring-[#17cf54] dark:focus:ring-[#17cf54] placeholder:text-[#63886f]/60 dark:placeholder:text-[#8ca395]/60 resize-none"
+                                    className="w-full rounded-xl border border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark p-4 text-base focus:border-primary focus:ring-1 focus:ring-primary dark:focus:ring-primary placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                                     rows={6}
                                 />
                             </div>
@@ -467,8 +467,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                                     markDirty();
                                                 }}
                                                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${isActive
-                                                    ? 'bg-[#17cf54] text-white border-[#17cf54]'
-                                                    : 'bg-white dark:bg-[#1a2c20] text-[#63886f] dark:text-[#8ca395] border-[#dce5df] dark:border-[#2a4030] hover:border-[#17cf54]'
+                                                    ? 'bg-primary text-white border-primary'
+                                                    : 'bg-white dark:bg-surface-dark text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/5 hover:border-primary'
                                                     }`}
                                             >
                                                 {t(category.labelKey)}
@@ -479,8 +479,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             </div>
 
                             {/* Photo Upload (Moved below Description) */}
-                            <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] hover:border-[#17cf54]/50 hover:bg-[#17cf54]/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
-                                <div className="bg-[#17cf54]/10 text-[#17cf54] p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                            <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 dark:border-white/5 bg-white dark:bg-surface-dark hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-6">
+                                <div className="bg-primary/10 text-primary p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
                                     <Sparkles size={32} />
                                 </div>
                                 <p className="font-bold text-lg">Add Cover Photo</p>
@@ -495,7 +495,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             {/* Details Card (Moved from Left) */}
                             <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 lg:p-8 shadow-sm">
                                 <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
-                                    <Sparkles className="text-[#17cf54]" size={20} />
+                                    <Sparkles className="text-primary" size={20} />
                                     Details
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -503,7 +503,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Prep Time</span>
                                         <div className="flex items-center gap-2">
                                             <input
-                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark p-2 text-center font-bold focus:border-primary focus:ring-primary"
                                                 type="number"
                                                 min="0"
                                                 value={formData.prepTime}
@@ -521,7 +521,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Cook Time</span>
                                         <div className="flex items-center gap-2">
                                             <input
-                                                className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                                className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark p-2 text-center font-bold focus:border-primary focus:ring-primary"
                                                 type="number"
                                                 min="0"
                                                 value={formData.cookTime}
@@ -538,7 +538,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
                                         <span className="text-xs font-medium text-[#63886f] dark:text-[#8ca395] uppercase">Servings</span>
                                         <input
-                                            className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-2 text-center font-bold focus:border-[#17cf54] focus:ring-[#17cf54]"
+                                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark p-2 text-center font-bold focus:border-primary focus:ring-primary"
                                             type="number"
                                             min="0"
                                             value={formData.servings}
@@ -561,14 +561,14 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     {instructionsList.map((step, i) => (
                                         <div key={step.id} className="group flex gap-4">
                                             <div className="flex flex-col items-center gap-2 pt-2">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#17cf54]/10 text-sm font-bold text-[#17cf54] dark:bg-[#17cf54]/20">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary dark:bg-primary/20">
                                                     {i + 1}
                                                 </div>
                                                 <div className="h-full w-0.5 bg-[#dce5df] dark:bg-[#2a4030] group-last:hidden"></div>
                                             </div>
                                             <div className="flex-1 pb-4">
                                                 <textarea
-                                                    className="w-full rounded-lg border border-[#dce5df] dark:border-[#2a4030] bg-[#f6f8f6] dark:bg-[#112116] p-4 text-base focus:border-[#17cf54] focus:ring-[#17cf54] placeholder:text-[#63886f]/50 dark:placeholder:text-[#8ca395]/50 min-h-[100px]"
+                                                    className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark p-4 text-base focus:border-primary focus:ring-primary placeholder:text-gray-400 dark:placeholder:text-gray-500 min-h-[100px]"
                                                     placeholder={`Describe step ${i + 1}...`}
                                                     value={step.text}
                                                     onChange={e => {

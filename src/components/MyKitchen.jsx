@@ -185,13 +185,13 @@ export default function MyKitchen() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
-                                            ? 'text-[#17cf54]'
+                                            ? 'text-primary'
                                             : 'text-[#63886f] dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
                                             }`}
                                     >
                                         {tab.label}
                                         {activeTab === tab.id && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#17cf54] rounded-t-full" />
+                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
                                         )}
                                     </button>
                                 ))}
@@ -213,12 +213,12 @@ export default function MyKitchen() {
                                 placeholder="Search your recipes..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="block w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-[#111813] dark:text-white placeholder-[#63886f] dark:placeholder-[#a0b3a6] focus:ring-2 focus:ring-[#17cf54] focus:border-transparent transition-shadow shadow-sm font-medium"
+                                className="block w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow shadow-sm font-medium"
                             />
                         </div>
 
                         <div className="flex items-center gap-3 w-full sm:w-auto">
-                            <select className="px-4 py-2.5 rounded-full bg-white dark:bg-[#192b20] border border-gray-200 dark:border-gray-800 text-sm font-medium text-[#111813] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#17cf54] cursor-pointer">
+                            <select className="px-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer">
                                 <option>Most Recent</option>
                                 <option>Oldest First</option>
                                 <option>A-Z</option>
@@ -261,7 +261,7 @@ export default function MyKitchen() {
                             </p>
                             <button
                                 onClick={() => navigate('/add')}
-                                className="px-6 py-2.5 rounded-full bg-[#17cf54] text-white font-bold hover:opacity-90 transition-opacity"
+                                className="px-6 py-2.5 rounded-full bg-primary text-white font-bold hover:opacity-90 transition-opacity"
                             >
                                 {activeTab === 'saved' ? 'Browse Recipes' : 'Create First Recipe'}
                             </button>
@@ -274,7 +274,7 @@ export default function MyKitchen() {
                     <div className="fixed bottom-8 right-8 z-30 md:hidden">
                         <button
                             onClick={() => navigate('/add')}
-                            className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-[#17cf54] text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                            className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                         >
                             <Plus className="w-6 h-6" />
                             <span className="font-bold text-base tracking-wide">New</span>
