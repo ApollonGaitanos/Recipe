@@ -1,140 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  /* Light Theme: Roasted */
+  --primary: #D62828;      /* Chili Red */
+  --accent: #F77F00;       /* Burnt Orange */
+  --tech: #7209B7;         /* Berry Violet */
+}
 
-@layer base {
-  :root {
-    /* 
-      Theme: Ancient Greek / Gastronomic 
-      Light: Gaia (BG), Olive (Surface), Wine (Highlight), Honey (CTA), Charcoal (Text)
-    */
-    --color-background-light: #CBB89D;
-    /* Γαία Θερμή */
-    --color-background-dark: #1E1E1C;
-    /* Άνθρακας Βαθύς */
-
-    /* Surface / Headers (Olive) */
-    --color-surface-light: #6E7F5B;
-    /* Ελαία Σκιά */
-    --color-surface-dark: #4F5F4A;
-    /* Ελαία Νυχτερινή */
-
-    /* Primary CTA (Honey - "One only") */
-    --color-primary-light: #E0A43A;
-    /* Μέλι Αττικόν */
-    --color-primary-dark: #D9A441;
-    /* Μέλι Κεχριμπάρι */
-
-    /* Highlights / Accent (Wine) */
-    --color-accent: #8C3A2B;
-    /* Οἶνος Ήπιος */
-    --color-accent-dark: #6F2C22;
-    /* Οἶνος Σκοτεινός */
-
-    /* Text */
-    --color-text-light: #2F2F2C;
-    /* Άνθρακας Μαλακός */
-    --color-text-dark: #E6E2D8;
-    /* Πάπυρος Απαλός */
-
-    /* Defaults mapped to semantic roles */
-    --color-primary: var(--color-primary-light);
-    --color-background: var(--color-background-light);
-    --color-foreground: var(--color-text-light);
-
-    --color-card: var(--color-surface-light);
-    --color-card-foreground: #ffffff;
-    /* Olive usually needs light text */
-  }
-
-  .dark {
-    --color-primary: var(--color-primary-dark);
-    --color-background: var(--color-background-dark);
-    --color-foreground: var(--color-text-dark);
-
-    --color-card: var(--color-surface-dark);
-    --color-card-foreground: var(--color-text-dark);
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-serif);
-    font-size: 17px;
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* UI Elements use Sans-Serif (Inter) */
-  button,
-  input,
-  select,
-  textarea,
-  label,
-  nav,
-  .font-sans {
-    font-family: 'Inter', sans-serif;
-  }
-
-  /* Headings use Sans-Serif (Inter) per spec */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-  }
+.dark {
+  /* Dark Theme: Night Kitchen */
+  --primary: #FF6B6B;      /* Ember Red */
+  --accent: #FF9F1C;       /* Apricot Glow */
+  --tech: #9D4EDD;         /* Neon Berry */
 }
 
 @theme {
-  --font-serif: "Libre Baskerville", serif;
-  --font-sans: "Inter", sans-serif;
+  --font-display: "Manrope", "sans-serif";
+  --font-serif: "Playfair Display", "serif";
+  --font-body: "Manrope", "sans-serif";
 
-  --color-primary: var(--color-primary);
+  /* Semantic Colors mapped to Variables */
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-tech: var(--tech);
 
-  --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
+  /* Backgrounds */
+  --color-background-light: #FDF0D5; /* Vanilla Bean */
+  --color-background-dark: #140F0D;  /* Espresso */
+  --color-surface-dark: #261C19;     /* Cocoa */
+  --color-card-dark: #261C19;
 
-  --color-background-light: var(--color-background-light);
-  --color-background-dark: var(--color-background-dark);
+  /* Text Overrides (softening the harsh blacks/whites) */
+  --color-zinc-900: #332725;         /* Dark Roast */
+  --color-gray-900: #332725;
+  
+  --color-zinc-100: #E6DCD3;         /* Oat Milk */
+  --color-gray-100: #E6DCD3;
+  --color-white: #FFFFFF;            /* Keeping white pure for cards */
 
-  --color-surface-light: var(--color-surface-light);
-  --color-surface-dark: var(--color-surface-dark);
-
-  --color-card-dark: var(--color-surface-dark);
-  /* for backward compat if needed */
-
-  /* Accent alias */
-  --color-accent: var(--color-accent);
-
-  /* Override generic colors to match theme text */
-  --color-zinc-900: var(--color-text-light);
-  --color-gray-900: var(--color-text-light);
-  --color-zinc-100: var(--color-text-dark);
-  --color-gray-100: var(--color-text-dark);
+  /* Border Radius Overrides matching previous config */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
 }
+
+/* Force class-based dark mode strategy */
+@variant dark (&:where(.dark, .dark *));
 
 /* Custom Utilities */
-.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-  border-radius: 9999px;
-  transition: all 0.2s;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  box-shadow: 0 10px 15px -3px var(--color-primary), 0 4px 6px -4px var(--color-primary);
-  font-weight: 700;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-.btn-primary:hover {
-  opacity: 0.9;
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.btn-primary:active {
-  transform: scale(0.95);
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-full font-bold transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+  }
+
+  .btn-primary-small {
+    @apply px-4 py-2 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-full font-bold text-sm transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full font-bold transition-all shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+  }
+
+
+
+  .btn-secondary-small {
+    @apply px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full font-bold text-sm transition-all shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2 cursor-pointer;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300;
+  }
+
+  .modal-overlay.active {
+    @apply opacity-100 pointer-events-auto;
+  }
+
+  .modal-content {
+    @apply bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 w-full max-w-md m-4 transform scale-95 opacity-0 transition-all duration-300 shadow-2xl border border-zinc-100 dark:border-zinc-800 relative;
+  }
+
+  .modal-content.active {
+    @apply scale-100 opacity-100;
+  }
+
+  .modal-close {
+    @apply absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors;
+  }
+
+  .modal-icon-container {
+    @apply w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 text-red-500 mb-6 flex items-center justify-center mx-auto text-3xl;
+  }
+
+  .modal-title {
+    @apply text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2 font-serif;
+  }
+
+  .modal-description {
+    @apply text-center text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed;
+  }
+
+  .modal-actions {
+    @apply flex items-center gap-3 justify-center;
+  }
+
+  .danger-btn-modern {
+    @apply bg-red-500 hover:bg-red-600 text-white shadow-red-200 dark:shadow-none;
+  }
 }
