@@ -119,13 +119,13 @@ export default function MyKitchen() {
             <div className="min-h-screen bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-sans transition-colors duration-200">
 
                 {/* Profile Header */}
-                <div className="bg-[#6E7F5B] dark:bg-surface-dark border-b border-primary/10 dark:border-white/5">
+                <div className="bg-[#8C3A2B] dark:bg-surface-dark border-b border-primary/10 dark:border-white/5">
                     <div className="max-w-7xl mx-auto px-6 pt-6 md:pt-8 pb-0">
                         <div className="flex flex-col gap-4 w-full">
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#111813] dark:text-white font-serif flex items-center flex-wrap gap-3">
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white dark:text-white font-serif flex items-center flex-wrap gap-3">
                                     <span>{displayUsername}'s Kitchen</span>
-                                    <span className="text-lg md:text-xl font-medium text-[#2F2F2C] dark:text-[#a0b3a6]">
+                                    <span className="text-lg md:text-xl font-medium text-white/80 dark:text-[#a0b3a6]">
                                         ({recipeCount} Recipes)
                                     </span>
                                     <div className="relative flex items-center">
@@ -153,7 +153,7 @@ export default function MyKitchen() {
                                                     setTimeout(() => setShowCopied(false), 2000);
                                                 });
                                             }}
-                                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#63886f] dark:text-[#a0b3a6] transition-colors"
+                                            className="p-2 rounded-full hover:bg-white/10 dark:hover:bg-white/10 text-white/80 dark:text-[#a0b3a6] transition-colors"
                                             title="Share Kitchen"
                                         >
                                             <Share2 size={24} />
@@ -165,7 +165,7 @@ export default function MyKitchen() {
                                         </div>
                                     </div>
                                 </h1>
-                                <p className="text-[#2F2F2C] dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
+                                <p className="text-white/90 dark:text-[#a0b3a6] text-base md:text-lg break-words whitespace-pre-wrap mt-2">
                                     {displayBio}
                                 </p>
                             </div>
@@ -185,13 +185,13 @@ export default function MyKitchen() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`relative pb-4 text-sm font-bold tracking-wide uppercase transition-colors ${activeTab === tab.id
-                                            ? 'text-highlight'
-                                            : 'text-[#2F2F2C]/70 dark:text-[#a0b3a6] hover:text-[#111813] dark:hover:text-white'
+                                            ? 'text-white'
+                                            : 'text-white/60 dark:text-[#a0b3a6] hover:text-white dark:hover:text-white'
                                             }`}
                                     >
                                         {tab.label}
                                         {activeTab === tab.id && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-highlight rounded-t-full" />
+                                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-t-full" />
                                         )}
                                     </button>
                                 ))}
