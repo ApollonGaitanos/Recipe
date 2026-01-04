@@ -277,7 +277,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onCancel} // Triggers navigation, checking blocker
-                        className="flex items-center gap-2 text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
                     >
                         <ArrowLeft size={24} />
                     </button>
@@ -292,7 +292,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowMagicImport(true)}
-                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#17cf54]/30 bg-[#17cf54]/5 px-4 text-sm font-bold text-[#17cf54] hover:bg-[#17cf54]/10 transition-colors mr-1"
+                        className="flex h-10 items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 text-sm font-bold text-primary hover:bg-primary/10 transition-colors mr-1"
                     >
                         <Sparkles size={20} />
                         <span className="hidden md:inline">Magic Import</span>
@@ -328,7 +328,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     <button
                         onClick={handleSaveLocal} // Direct save call
                         disabled={isSaving}
-                        className="flex h-10 items-center justify-center rounded-lg bg-[#17cf54] px-6 text-sm font-bold text-white shadow-sm hover:bg-[#17cf54]/90 transition-colors focus:ring-2 focus:ring-[#17cf54] focus:ring-offset-2 dark:focus:ring-offset-[#112116]"
+                        className="flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-white shadow-sm hover:opacity-90 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark"
                     >
                         {isSaving ? 'Saving...' : 'Save Recipe'}
                     </button>
@@ -421,7 +421,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         setIngredientsList([...ingredientsList, { id: Date.now(), amount: '', item: '' }]);
                                         markDirty();
                                     }}
-                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                                 >
                                     <Plus size={18} /> Add Ingredient
                                 </button>
@@ -599,7 +599,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                         setInstructionsList([...instructionsList, { id: Date.now(), text: '' }]);
                                         markDirty();
                                     }}
-                                    className="mt-2 flex items-center gap-2 text-sm font-bold text-[#17cf54] hover:text-[#17cf54]/80 transition-colors"
+                                    className="mt-2 flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
                                 >
                                     <Plus size={18} /> Add Step
                                 </button>
