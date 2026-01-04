@@ -137,7 +137,6 @@ export default function MyKitchen() {
                                                     try {
                                                         await navigator.share({
                                                             title: `${displayUsername}'s Kitchen`,
-                                                            text: `Check out ${displayUsername}'s recipes on Recipe App!`,
                                                             url: url
                                                         });
                                                         return;
