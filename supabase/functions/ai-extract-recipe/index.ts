@@ -49,21 +49,21 @@ serve(async (req) => {
             };
 
             const cleanContent = (html: string) => {
-                // 1. Remove Scripts, Styles, SVG (Noise)
-                let clean = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                // "Legacy" cleaning was too aggressive (stripping tags).
+                // New Strategy: Remove ONLY binary/code noise. Keep HTML structure for the AI.
+
+                let clean = html
+                    // 1. Remove Scripts, Styles, SVG (Noise)
+                    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
                     .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "")
                     .replace(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gim, "")
+                    .replace(/<video\b[^>]*>([\s\S]*?)<\/video>/gim, "")
+                    .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gim, "")
                     .replace(/<!--[\s\S]*?-->/g, ""); // Remove comments
 
-                // 2. Structural Tags -> Newlines (Preserve layout)
-                clean = clean.replace(/<\/(div|p|h\d|li|br|tr|section|article)>/gim, "\n");
-
-                // 3. Strip remaining tags
-                clean = clean.replace(/<[^>]+>/g, " ");
-
-                // 4. Collapse whitespace (Max 2 newlines)
-                return clean.replace(/[ \t]+/g, " ") // Collapse spaces/tabs
-                    .replace(/\n\s*\n\s*\n+/g, "\n\n") // Max 2 newlines
+                // 2. Collapse whitespace (Max 2 newlines) to save tokens but keep structure
+                return clean.replace(/[ \t]+/g, " ")
+                    .replace(/\n\s*\n\s*\n+/g, "\n\n")
                     .trim();
             };
 
