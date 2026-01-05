@@ -257,15 +257,21 @@ IMPORTANT:
         // - Image: Must use Gemini models (Visual support)
 
         const TEXT_MODELS = [
-            'gemma-3-27b-it',             // High RPD Limit (14.4k)
-            'gemma-3-12b-it',             // High RPD Limit (14.4k)
-            'gemini-1.5-flash',
-            'gemini-1.5-pro'
+            'gemma-3-27b-it',             // Try Instruct version first (standard)
+            'gemma-3-27b',                // Exact match from list
+            'gemma-3-12b-it',             // Try Instruct version first
+            'gemma-3-12b',                // Exact match from list
+            'gemini-3-flash',             // New High Performance
+            'gemini-2.5-flash',           // Stable High Performance
+            'gemini-2.5-flash-lite'       // Cost effective fallback
         ];
 
         const VISUAL_MODELS = [
-            'gemini-1.5-flash',
-            'gemini-1.5-pro'
+            'gemini-3-flash',            // Best Vision Performance
+            'gemini-2.5-flash',
+            'gemini-2.5-flash-lite',
+            'gemma-3-27b-it',            // Experimental Multimodal support
+            'gemma-3-12b-it'
         ];
 
         const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
