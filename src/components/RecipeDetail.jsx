@@ -668,6 +668,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 isProcessing={isProcessing}
                 isPermanent={false}
             />
+
+            <AIErrorModal
+                isOpen={!!aiError}
+                onClose={() => setAiError(null)}
+                error={aiError}
+            />
         </div>
     );
 }

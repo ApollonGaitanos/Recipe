@@ -15,7 +15,7 @@ export default function AIErrorModal({ isOpen, onClose, error }) {
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-[#1a2c20] w-full max-w-md rounded-2xl shadow-xl border border-red-100 dark:border-red-900/30 overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-2">
