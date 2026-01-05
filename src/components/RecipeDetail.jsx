@@ -135,9 +135,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                 if (cachedData) {
                     // BAD CACHE CHECK: If cached title is identical to original, it's a "Ghost Translation".
-                    // FIX: Delete it immediately so it doesn't persist.
+                    // This check is LANGUAGE AGNOSTIC. It catches cases where AI returned the original text (Greek->Greek, En->En) instead of translating.
                     if (cachedData.title === recipe.title) {
-                        console.warn("Detected BAD CACHE (English stored as " + targetLang + "). Deleting from DB...");
+                        console.warn("Detected BAD CACHE (Identical to original). Deleting from DB...");
                         await supabase.from('recipe_translations')
                             .delete()
                             .eq('recipe_id', id)
