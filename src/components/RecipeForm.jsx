@@ -634,7 +634,16 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                             {/* Method Section (Stays in Right Column) */}
                             <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 lg:p-8 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
-                                <h3 className="text-2xl font-bold mb-6 text-[#111813] dark:text-[#e0e6e2]">Method</h3>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-2xl font-bold text-[#111813] dark:text-[#e0e6e2]">Method</h3>
+                                    <button
+                                        onClick={() => setActionModal({ isOpen: true, mode: 'improve' })}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors text-xs font-bold"
+                                    >
+                                        <Sparkles size={14} />
+                                        Enhance with AI
+                                    </button>
+                                </div>
 
                                 <div className="flex flex-col gap-6">
                                     {instructionsList.map((step, i) => (

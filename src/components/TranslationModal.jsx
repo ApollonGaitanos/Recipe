@@ -107,18 +107,18 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                     ) : (
                         <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
                             <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
+                                <span className="text-lg">👩‍🍳</span>
+                                <span className="font-medium text-sm">Adds pro tips & visual cues</span>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
+                                <span className="text-lg">🔍</span>
+                                <span className="font-medium text-sm">Explains 'Why' without changing steps</span>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
                                 <span className="text-lg">✨</span>
-                                <span className="font-medium text-sm">Fixes typos and formatting</span>
+                                <span className="font-medium text-sm">Makes instructions clearer & easier</span>
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
-                                <span className="text-lg">📊</span>
-                                <span className="font-medium text-sm">Standardizes measurements</span>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
-                                <span className="text-lg">📝</span>
-                                <span className="font-medium text-sm">Clarifies instructions</span>
-                            </div>
-                            <p className="text-center text-xs text-gray-400 mt-2">This will update your current recipe.</p>
+                            <p className="text-center text-xs text-gray-400 mt-2">The AI Sous Chef will improve your recipe description and steps.</p>
                         </div>
                     )}
                 </div>
