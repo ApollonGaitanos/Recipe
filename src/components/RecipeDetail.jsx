@@ -187,7 +187,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 }
 
                 // 4. Update View (Temporary Local State)
-                // Ensure ingredients/instructions are arrays for display
+                // Ensure ingredients/instructions/tools are arrays for display
                 const standardizedResult = {
                     ...result,
                     ingredients: Array.isArray(result.ingredients)
@@ -195,7 +195,10 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         : (typeof result.ingredients === 'string' ? result.ingredients.split('\n') : []),
                     instructions: Array.isArray(result.instructions)
                         ? result.instructions
-                        : (typeof result.instructions === 'string' ? result.instructions.split('\n') : [])
+                        : (typeof result.instructions === 'string' ? result.instructions.split('\n') : []),
+                    tools: Array.isArray(result.tools)
+                        ? result.tools
+                        : (typeof result.tools === 'string' ? result.tools.split('\n') : [])
                 };
 
                 setTranslatedRecipe({
@@ -351,6 +354,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     {/* Left Sidebar: Ingredients */}
                     <div className="md:col-span-4 space-y-8 md:sticky md:top-24">
                         <div className="bg-zinc-50 dark:bg-[#0D1811] rounded-3xl p-8 border border-zinc-100 dark:border-zinc-800">
+                            {/* Ingredients Header */}
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold font-serif">{t('ingredientsSection')}</h3>
                                 <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700">
@@ -384,6 +388,26 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                 Add to Shopping List
                             </button>
                         </div>
+
+                        {/* Tools Section */}
+                        {recipe.tools && recipe.tools.length > 0 && (
+                            <div className="bg-zinc-50 dark:bg-[#0D1811] rounded-3xl p-8 border border-zinc-100 dark:border-zinc-800 list-disc">
+                                <h3 className="text-xl font-bold font-serif mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
+                                    <span className="text-highlight">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+                                    </span>
+                                    Tools
+                                </h3>
+                                <ul className="space-y-3">
+                                    {(Array.isArray(recipe.tools) ? recipe.tools : String(recipe.tools).split('\n')).map((tool, idx) => (
+                                        <li key={idx} className="flex items-start gap-3">
+                                            <span className="text-highlight mt-1.5 w-1.5 h-1.5 bg-highlight rounded-full block flex-shrink-0"></span>
+                                            <span className="text-zinc-700 dark:text-zinc-300 leading-snug">{tool}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
                         {/* Nutrition Card */}
                         <div className="bg-white dark:bg-[#0D1811] rounded-3xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm">

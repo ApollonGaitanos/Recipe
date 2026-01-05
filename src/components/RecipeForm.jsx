@@ -54,14 +54,17 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         });
     };
 
-    // Helper to parse instructions string into array
-    const parseInstructions = (str) => {
-        if (!str) return [{ id: Date.now(), text: '' }];
-        return str.split('\n').map((line, i) => ({ id: i, text: line.trim() }));
+    // Helper to parse tools array/string into internal list
+    const parseTools = (data) => {
+        if (!data) return [{ id: Date.now(), text: '' }];
+        if (Array.isArray(data)) return data.map((t, i) => ({ id: Date.now() + i, text: t }));
+        if (typeof data === 'string') return data.split('\n').map((line, i) => ({ id: i, text: line.trim() }));
+        return [{ id: Date.now(), text: '' }];
     };
 
     const [ingredientsList, setIngredientsList] = useState([]);
     const [instructionsList, setInstructionsList] = useState([]);
+    const [toolsList, setToolsList] = useState([]);
 
     // --- BLOCKER LOGIC ---
     // Block navigation if form is dirty and not currently saving
@@ -78,11 +81,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 });
                 setIngredientsList(parseIngredients(recipe.ingredients));
                 setInstructionsList(parseInstructions(recipe.instructions));
+                setToolsList(parseTools(recipe.tools));
             }
         } else if (!recipeId) {
             // New Recipe Defaults
             setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
             setInstructionsList([{ id: Date.now(), text: '' }]);
+            setToolsList([{ id: Date.now(), text: '' }]);
         }
     }, [recipeId, recipes]);
 
@@ -101,10 +106,15 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             .filter(str => str.length > 0)
             .join('\n');
 
+        const toolsArray = toolsList
+            .map(t => t.text.trim())
+            .filter(t => t.length > 0);
+
         const recipeData = {
             ...formData,
             ingredients: ingredientsStr,
             instructions: instructionsStr,
+            tools: toolsArray,
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(t => t),
             prepTime: Number(formData.prepTime) || 0,
             cookTime: Number(formData.cookTime) || 0,
@@ -131,6 +141,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             title: t.title,
                             ingredients: t.ingredients,
                             instructions: t.instructions,
+                            tools: t.tools, // Save tools in translation too if schema supports it (User didn't ask explicitly but good practice)
                             tags: t.tags
                         }))
                     );
@@ -158,6 +169,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             prepTime: data.prepTime || prev.prepTime,
             cookTime: data.cookTime || prev.cookTime,
             servings: data.servings || prev.servings,
+            description: data.description || prev.description
         }));
         markDirty();
 
@@ -201,6 +213,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
 
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
+        if (data.tools) setToolsList(parseTools(data.tools));
+        if (data.tags && Array.isArray(data.tags)) {
+            setFormData(prev => ({ ...prev, tags: data.tags.join(', ') }));
+        }
     };
 
     // AI Enhance/Translate Logic
@@ -213,7 +229,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             const currentRecipeState = {
                 ...formData,
                 ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
-                instructions: instructionsList.map(step => step.text).join('\n')
+                instructions: instructionsList.map(step => step.text).join('\n'),
+                tools: toolsList.map(t => t.text).filter(t => t)
             };
 
             const inputPayload = {
@@ -238,6 +255,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         title: formData.title,
                         ingredients: ingredientsList.map(ing => ({ amount: ing.amount, name: ing.item })),
                         instructions: instructionsList.map(i => i.text), // Array of strings
+                        tools: toolsList.map(t => t.text),
                         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
                     };
 
@@ -247,6 +265,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         title: result.title,
                         ingredients: result.ingredients, // Already structured
                         instructions: result.instructions, // Array of strings (from backend)
+                        tools: result.tools,
                         tags: result.tags
                     };
 
@@ -357,10 +376,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                        {/* --- Left Column (Ingredients, Description, Photo) --- */}
+                        {/* --- Left Column (Ingredients, Tools, Description, Photo) --- */}
                         <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
 
-                            {/* Ingredients Section (Moved from Right) */}
+                            {/* Ingredients Section */}
                             <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-[#111813] dark:text-[#e0e6e2] flex items-center gap-2">
@@ -424,6 +443,55 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                     className="mt-6 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
                                 >
                                     <Plus size={18} /> Add Ingredient
+                                </button>
+                            </section>
+
+                            {/* Tools Section (New) */}
+                            <section className="bg-white dark:bg-[#1a2c20] rounded-xl p-6 shadow-sm border border-[#dce5df] dark:border-[#2a4030]">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-[#111813] dark:text-[#e0e6e2] flex items-center gap-2">
+                                        Tools & Equipment
+                                    </h3>
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    {toolsList.map((tool, i) => (
+                                        <div key={tool.id} className="group flex flex-col sm:flex-row gap-3 sm:items-center">
+                                            <div className="hidden sm:flex w-8 justify-center text-[#63886f]/40 cursor-move hover:text-[#63886f]">
+                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+                                            </div>
+                                            <input
+                                                className="flex-1 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary"
+                                                placeholder="e.g. Large Skillet"
+                                                value={tool.text}
+                                                onChange={e => {
+                                                    const newList = [...toolsList];
+                                                    newList[i].text = e.target.value;
+                                                    setToolsList(newList);
+                                                    markDirty();
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    setToolsList(toolsList.filter(item => item.id !== tool.id));
+                                                    markDirty();
+                                                }}
+                                                className="hidden group-hover:flex w-8 justify-center text-[#63886f]/60 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setToolsList([...toolsList, { id: Date.now(), text: '' }]);
+                                        markDirty();
+                                    }}
+                                    className="mt-6 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
+                                >
+                                    <Plus size={18} /> Add Tool
                                 </button>
                             </section>
 
@@ -491,6 +559,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                         {/* --- Right Column (Details, Method) --- */}
                         <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-10">
+
 
                             {/* Details Card (Moved from Left) */}
                             <div className="rounded-xl border border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20] p-6 lg:p-8 shadow-sm">

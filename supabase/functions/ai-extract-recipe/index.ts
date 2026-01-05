@@ -101,10 +101,12 @@ serve(async (req) => {
 Return the output in this strict JSON structure:
 {
   "title": "Recipe Title",
+  "description": "A brief, appetizing summary of the dish.",
   "prepTime": 15,
   "cookTime": 30,
   "servings": 4,
   "tags": ["tag1", "tag2"],
+  "tools": ["Tool 1", "Tool 2"],
   "ingredients": [
     { "amount": "200g", "name": "Flour" }
   ],
@@ -116,8 +118,10 @@ Return the output in this strict JSON structure:
 }
 - "detectedLanguage": The ISO 639-1 code (e.g. "en", "el", "fr") of the language the recipe is written in.
 - "title": String.
+- "description": String. 2-3 sentences describing the dish, its flavor profile, or origin.
 - "prepTime", "cookTime", "servings": Integer numbers only (in minutes). Calculate totals if ranges are given. Attempt to infer from text if missing.
 - "tags": Array of strings (e.g. ["dinner", "italian", "healthy"]).
+- "tools": Array of strings (e.g. ["Large pot", "Whisk", "Oven"]). List specific equipment needed.
 - "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name. The UNIT itself must be in the target language (e.g. "tbsp" -> "κ.σ.", "g" -> "γρ").
 - "instructions": Array of strings. Each string is ONE step. NO numbering.
 - SPLIT instructions into distinct steps.
@@ -132,14 +136,15 @@ Your goal is to create the MOST POPULAR and WIDELY USED version of the requested
 RULES:
 1. **POPULARITY FIRST**: Default to the version most people know and cook.
 2. **RICH DETAIL**: Be specific with ingredients (e.g., "San Marzano Tomatoes") and explain *why* in steps.
-3. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
+3. **COMPLETE DATA**: Fill in ALL fields, including tools and description.
+4. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
 
 EXAMPLE:
 Input: "Spaghetti Carbonara"
-Output: { "title": "Spaghetti Carbonara", "ingredients": [{"amount": "200g", "name": "Guanciale"}], "instructions": ["Cook guanciale until crispy..."] }
+Output: { "title": "Spaghetti Carbonara", "description": "A classic Roman pasta dish...", "tools": ["Large Pot"], "ingredients": [{"amount": "200g", "name": "Guanciale"}], "instructions": ["Cook guanciale until crispy..."] }
 
 Input: "Σπαγγέτι Καρμπονάρα"
-Output: { "title": "Σπαγγέτι Καρμπονάρα", "ingredients": [{"amount": "200γρ", "name": "Γκουαντσιάλε"}], "instructions": ["Μαγειρέψτε το γκουαντσιάλε..."] }
+Output: { "title": "Σπαγγέτι Καρμπονάρα", "description": "Μια κλασική ρωμαϊκή συνταγή...", "tools": ["Μεγάλη κατσαρόλα"], "ingredients": [{"amount": "200γρ", "name": "Γκουαντσιάλε"}], "instructions": ["Μαγειρέψτε το γκουαντσιάλε..."] }
 
 ${jsonStructure}`;
                 break;
@@ -147,22 +152,23 @@ ${jsonStructure}`;
             case 'improve':
                 temperature = 0.3;
                 systemPrompt = `You are a EXPERT COPYWRITER for recipes.
-Your goal is to REWRITE THE INSTRUCTIONS to be clearer, easier to follow, and more detailed.
+Your goal is to REWRITE THE INSTRUCTIONS to be clearer, easier to follow, and more detailed. Also improve the description.
 
 CRITICAL RULES:
 1. **DO NOT CHANGE INGREDIENTS**: Keep the ingredient list EXACTLY as is.
 2. **CLARIFY STEPS**: Rewrite the instructions to be more explanatory. Add "why".
-3. **LANGUAGE**: Detect the language of the input recipe. The Output MUST be in the SAME language.
+3. **ADD METADATA**: Ensure tools and description are populated/improved.
+4. **LANGUAGE**: Detect the language of the input recipe. The Output MUST be in the SAME language.
    - If Input is Greek -> Output Greek.
    - If Input is English -> Output English.
    - DO NOT TRANSLATE.
 
 EXAMPLE:
 Input: { "instructions": ["mix flour and water"] }
-Output: { "instructions": ["In a large bowl, mix the flour and water until combined."] }
+Output: { "instructions": ["In a large bowl, mix the flour and water until combined."], "tools": ["Large Bowl"] }
 
 Input: { "instructions": ["ανακατεύουμε αλεύρι και νερό"] }
-Output: { "instructions": ["Σε ένα μεγάλο μπολ, ανακατεύουμε το αλεύρι με το νερό μέχρι να ομογενοποιηθούν."] }
+Output: { "instructions": ["Σε ένα μεγάλο μπολ, ανακατεύουμε το αλεύρι με το νερό μέχρι να ομογενοποιηθούν."], "tools": ["Μεγάλο μπολ"] }
 
 ${jsonStructure}`;
                 break;
@@ -173,10 +179,10 @@ ${jsonStructure}`;
                 systemPrompt = `You are a PROFESSIONAL TRANSLATOR. Your task is to translate the JSON content into **${langName}**.
 
 INSTRUCTIONS:
-1. Translate the 'title' value.
+1. Translate the 'title' and 'description'.
 2. Translate ALL 'ingredients' values ('amount' and 'name').
 3. Translate ALL 'instructions' strings.
-4. Translate ALL 'tags'.
+4. Translate ALL 'tags' and 'tools'.
 5. Convert measurements to metric (grams/ml) if translating to Greek/European languages.
 6. DO NOT translate the JSON keys (keep "ingredients", "instructions", etc. strictly as is).
 
@@ -196,14 +202,15 @@ Your job is to read the input and structure it into a perfect recipe JSON.
 RULES:
 1. **CONTENT INTEGRITY**: Extract the recipe EXACTLY as provided. Do NOT change the style, tone, or core instructions.
 2. **SMART REPAIR**: If the input is unstructured or missing minor details (e.g., temperature), FORMAT and INFER logical fixes.
-3. **LANGUAGE**: 
+3. **COMPLETE METADATA**: Extract or infer tools, description, and tags if not explicitly listed.
+4. **LANGUAGE**: 
    - Detect the language of the input.
    - The Output MUST be in the SAME language.
    - DO NOT TRANSLATE (even if it is a different language like French or German).
 
 EXAMPLE:
 Input URL/Text: "Just mix 2 cups flour and 1 cup water, bake at 350 for 20 mins."
-Output: { "ingredients": [{"amount": "2 cups", "name": "flour"}, {"amount": "1 cup", "name": "water"}], "instructions": ["Preheat oven to 350°F.", "Mix flour and water.", "Bake for 20 minutes."] }
+Output: { "ingredients": [{"amount": "2 cups", "name": "flour"}, {"amount": "1 cup", "name": "water"}], "instructions": ["Preheat oven to 350°F.", "Mix flour and water.", "Bake for 20 minutes."], "tools": ["Oven", "Bowl"], "description": "A simple flour and water mixture." }
 
 ${jsonStructure}
 
@@ -396,6 +403,8 @@ IMPORTANT:
             cookTime: parseInt(recipeData.cookTime) || 0,
             servings: parseInt(recipeData.servings) || 0,
             tags: recipeData.tags || '',
+            tools: recipeData.tools || [], // New Field
+            description: recipeData.description || '', // New Field
             detectedLanguage: recipeData.detectedLanguage || 'en'
         }), {
             headers: {
