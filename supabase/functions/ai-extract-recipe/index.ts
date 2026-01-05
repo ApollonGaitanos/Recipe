@@ -214,16 +214,46 @@ ${jsonStructure}`;
                 // Persona: Technical Translator
                 temperature = 0.1; // Strict
                 const langName = targetLanguage === 'el' ? 'Greek' : (targetLanguage === 'en' ? 'English' : targetLanguage);
+                console.log(`[DEBUG] Translation Request. Target Code: ${targetLanguage}, Lang Name: ${langName}`);
+
+                const translateStructure = `
+Return the output in this strict JSON structure:
+{
+  "title": "[TRANSLATED TITLE IN ${langName.toUpperCase()}]",
+  "description": "[TRANSLATED DESCRIPTION IN ${langName.toUpperCase()}]",
+  "prepTime": 15,
+  "cookTime": 30,
+  "servings": 4,
+  "tags": ["[TRANSLATED TAG 1]", "[TRANSLATED TAG 2]"],
+  "tools": ["[TRANSLATED TOOL 1]", "[TRANSLATED TOOL 2]"],
+  "ingredients": [
+    { "amount": "200g", "name": "[TRANSLATED INGREDIENT NAME]" }
+  ],
+  "instructions": [
+    "[TRANSLATED STEP 1]",
+    "[TRANSLATED STEP 2]"
+  ],
+  "detectedLanguage": "${targetLanguage}" 
+}
+- "detectedLanguage": "${targetLanguage}"
+- "title": String (in ${langName}).
+- "description": String (in ${langName}).
+- "ingredients": Array. "name" MUST be in ${langName}. Units MUST be localized.
+- "instructions": Array of strings. MUST be in ${langName}.
+`;
+
                 systemPrompt = `You are a TECHNICAL TRANSLATOR.
 Your task is to translate the JSON content into **${langName}** with strict 1:1 mapping.
 
 LOGIC:
-1. **STRICT TRANSLATION**: Translate Title, Description, Ingredient Names, Tools, Instructions, and Tags.
-2. **UNIT CONVERSION**: If formatting for Greek/European output, convert 'cups'/'oz' to 'grams'/'ml' where appropriate.
-3. **NO RE-INTERPRETATION**: Do not change the cooking method or add steps. Just translate.
-4. **KEYS IMMUTABLE**: Keep JSON keys exactly as is.
+1. **MANDATORY**: The content of the values (title, ingredients, instructions) MUST be in **${langName}**.
+2. **STRICT TRANSLATION**: Translate Title, Description, Ingredient Names, Tools, Instructions, and Tags.
+3. **UNIT CONVERSION**: If formatting for Greek/European output, convert 'cups'/'oz' to 'grams'/'ml' where appropriate.
+4. **NO RE-INTERPRETATION**: Do not change the cooking method or add steps. Just translate.
+5. **KEYS IMMUTABLE**: Keep JSON keys exactly as is (e.g. "title": "...") but translate the value.
+6. **ANTI-ECHO**: Do NOT return the input text as is. You MUST translate it.
 
-${jsonStructure}`;
+${translateStructure}`;
                 break;
 
             case 'extract':
@@ -282,11 +312,12 @@ ${jsonStructure}`;
         // - Image: Must use Gemini models (Visual support)
 
         const TEXT_MODELS = [
-            'gemini-3-flash',             // Priority 1: Latest Speed/Intel
-            'gemini-2.5-flash',           // Priority 2: Stable
-            'gemma-3-27b-it',             // Priority 3: High Intel Open Model
-            'gemma-3-12b-it',             // Priority 4: Fast Open Model
-            'gemini-2.5-flash-lite'       // Priority 5: Fallback
+            'gemini-2.5-flash',           // Priority 1: Standard Production
+            'gemini-2.0-flash',           // Priority 2: Legacy Stable
+            'gemini-2.5-flash-lite',      // Priority 3: Efficient
+            'gemini-2.0-flash-lite',      // Priority 4: Legacy Efficient
+            'gemma-2-27b-it',             // Priority 5: High Intel Open Model (Backup)
+            'gemma-2-9b-it'               // Priority 6: Fast Open Model (last resort)
         ];
 
         const VISUAL_MODELS = [
@@ -319,7 +350,7 @@ ${jsonStructure}`;
                     const status = response.status;
                     const errorText = await response.text();
 
-                    console.warn(`[Model Choice] ${model} failed. Status: ${status}. Error: ${errorText.substring(0, 150)}...`);
+                    console.warn(`[Model Choice] ${model} failed. Status: ${status}. Error: ${errorText.substring(0, 200)}`); // Increased log length
 
                     // Specific handling for 404 (Model not found/deprecated)
                     if (status === 404) {
