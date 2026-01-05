@@ -135,8 +135,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                 if (cachedData) {
                     // BAD CACHE CHECK: If cached title is identical to original, it's a "Ghost Translation".
-                    // This check is LANGUAGE AGNOSTIC. It catches cases where AI returned the original text (Greek->Greek, En->En) instead of translating.
-                    if (cachedData.title === recipe.title) {
+                    // FIX: Delete it immediately so it doesn't persist.
+                    // Normalize strings (trim) to catch subtle differences.
+                    const cachedTitle = (cachedData.title || '').trim();
+                    const currentTitle = (recipe.title || '').trim();
+
+                    if (cachedTitle === currentTitle) {
                         console.warn("Detected BAD CACHE (Identical to original). Deleting from DB...");
                         await supabase.from('recipe_translations')
                             .delete()
@@ -184,11 +188,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 // 3. Save to DB (Cache It)
                 if (mode === 'translate' && targetLang) {
                     // PREVENT BAD SAVE: Don't save if it's identical to original (AI failed/refused).
-                    // This prevents "poisoning" the cache with English text stored as 'it'.
-                    const isIdentical = result.title === recipe.title;
+                    const resultTitle = (result.title || '').trim();
+                    const originalTitle = (recipe.title || '').trim();
+                    const isIdentical = resultTitle === originalTitle;
 
                     if (isIdentical) {
                         console.warn("AI returned identical text. Skipping DB save to prevent cache poisoning.");
+                        // Trigger Error Modal to explain why it looks unchanged
+                        throw new Error("The AI returned the recipe in the original language. Please try again or choose a different language.");
                     } else {
                         const { error: insertError } = await supabase
                             .from('recipe_translations')
