@@ -74,7 +74,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         if (currentUsername && recipeUsername && currentUsername === recipeUsername) return true;
 
         return false;
-        return false;
     }, [user, recipe]);
 
     if (!recipe) return null;

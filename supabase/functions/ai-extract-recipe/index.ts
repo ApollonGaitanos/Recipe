@@ -49,32 +49,51 @@ serve(async (req) => {
             };
 
             const cleanContent = (html: string) => {
+                // 1. Remove Scripts, Styles, SVG (Noise)
                 let clean = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
                     .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "")
-                    .replace(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gim, "") // excessive noise
-                    .replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                return clean.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+                    .replace(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gim, "")
+                    .replace(/<!--[\s\S]*?-->/g, ""); // Remove comments
+
+                // 2. Structural Tags -> Newlines (Preserve layout)
+                clean = clean.replace(/<\/(div|p|h\d|li|br|tr|section|article)>/gim, "\n");
+
+                // 3. Strip remaining tags
+                clean = clean.replace(/<[^>]+>/g, " ");
+
+                // 4. Collapse whitespace (Max 2 newlines)
+                return clean.replace(/[ \t]+/g, " ") // Collapse spaces/tabs
+                    .replace(/\n\s*\n\s*\n+/g, "\n\n") // Max 2 newlines
+                    .trim();
             };
 
             try {
                 // 1. Direct Fetch
                 console.log("Attempting Direct Fetch...");
                 const urlResp = await fetch(url, { headers: standardHeaders });
-                if (!urlResp.ok && urlResp.status !== 403) throw new Error(`Direct fetch failed: ${urlResp.status}`);
-                // If 403, it's likely a block, so throw to trigger catch immediately
-                if (urlResp.status === 403) throw new Error("Blocked by WAF (403)");
 
-                processingText = cleanContent(await urlResp.text());
+                // 403/401/503 usually means blocked -> Throw to trigger proxy
+                if (!urlResp.ok) {
+                    throw new Error(`Direct fetch failed with status: ${urlResp.status}`);
+                }
+
+                const rawText = await urlResp.text();
+                if (rawText.length < 500) throw new Error("Direct fetch returned too little content (likely bot block).");
+
+                processingText = cleanContent(rawText);
 
             } catch (directError) {
                 console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins...`);
 
                 try {
                     // 2. AllOrigins Proxy (Fallback A)
+                    // Note: AllOrigins returns JSON with "contents"
                     const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-                    if (!proxyResp.ok) throw new Error("AllOrigins failed");
+                    if (!proxyResp.ok) throw new Error(`AllOrigins status: ${proxyResp.status}`);
+
                     const proxyData = await proxyResp.json();
-                    if (!proxyData.contents) throw new Error("No content from AllOrigins");
+                    if (!proxyData.contents) throw new Error("No 'contents' field from AllOrigins");
+                    if (proxyData.contents.length < 500) throw new Error("AllOrigins returned too little content.");
 
                     processingText = cleanContent(proxyData.contents);
 
@@ -82,14 +101,17 @@ serve(async (req) => {
                     console.warn(`AllOrigins failed (${proxyError.message}). Trying CorsProxy...`);
 
                     try {
-                        // 3. CorsProxy.io (Fallback B - different IP pool)
+                        // 3. CorsProxy.io (Fallback B)
                         const cpResp = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { headers: standardHeaders });
-                        if (!cpResp.ok) throw new Error("CorsProxy failed");
+                        if (!cpResp.ok) throw new Error(`CorsProxy status: ${cpResp.status}`);
 
-                        processingText = cleanContent(await cpResp.text());
+                        const rawCpText = await cpResp.text();
+                        if (rawCpText.length < 500) throw new Error("CorsProxy returned too little content.");
+
+                        processingText = cleanContent(rawCpText);
 
                     } catch (finalError) {
-                        console.error(`All fetch methods failed. Last error: ${finalError.message}`);
+                        console.error(`ALL fetch methods failed. Last error: ${finalError.message}`);
                         // processingText remains empty, triggering the validation error below
                     }
                 }
@@ -107,7 +129,7 @@ serve(async (req) => {
         // 5. Validation: Ensure we have content to send to AI
         if (url && (!processingText || processingText.trim().length < 50)) {
             console.warn(`URL Fetch failed for ${url}. Extracted text length: ${processingText?.length || 0}`);
-            throw new Error('Could not retrieve content from this URL. The website might be using security protection (like Cloudflare) or is empty. Please try manually copying and pasting the recipe text.');
+            throw new Error('Could not retrieve meaningful content from this URL. Please try manually copying and pasting the recipe text.');
         }
 
         // 6. Construct Prompt based on MODE (default: extract)
@@ -264,7 +286,7 @@ IMPORTANT:
             contents: [{ parts }],
             generationConfig: {
                 temperature: temperature,
-                maxOutputTokens: 4096,
+                maxOutputTokens: 8000, // Increased for larger recipes
                 responseMimeType: "application/json"
             }
         };
@@ -275,21 +297,16 @@ IMPORTANT:
         // - Image: Must use Gemini models (Visual support)
 
         const TEXT_MODELS = [
-            'gemma-3-27b-it',             // Try Instruct version first (standard)
-            'gemma-3-27b',                // Exact match from list
-            'gemma-3-12b-it',             // Try Instruct version first
-            'gemma-3-12b',                // Exact match from list
-            'gemini-3-flash',             // New High Performance
-            'gemini-2.5-flash',           // Stable High Performance
-            'gemini-2.5-flash-lite'       // Cost effective fallback
+            'gemma-3-27b-it',             // Priority 1: High Intelligence
+            'gemma-3-12b-it',             // Priority 2: Fast Instruct
+            'gemini-3-flash',             // Priority 3: Google Top Class
+            'gemini-2.5-flash-lite'       // Priority 4: Cost Effective
         ];
 
         const VISUAL_MODELS = [
-            'gemini-3-flash',            // Best Vision Performance
-            'gemini-2.5-flash',
-            'gemini-2.5-flash-lite',
-            'gemma-3-27b-it',            // Experimental Multimodal support
-            'gemma-3-12b-it'
+            'gemini-3-flash',             // Priority 1: Best Vision
+            'gemini-2.5-flash',           // Priority 2: Stable Vision
+            'gemma-3-27b-it'              // Fallback: Multimodal (Experimental)
         ];
 
         const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
@@ -300,7 +317,7 @@ IMPORTANT:
 
         for (const model of availableModels) {
             try {
-                console.log(`Attempting model: ${model}...`);
+                console.log(`Trying model: ${model}...`);
                 const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
                 const response = await fetch(CURRENT_API_URL, {
@@ -316,35 +333,39 @@ IMPORTANT:
                     const status = response.status;
                     const errorText = await response.text();
 
-                    // If Quota (429) or Not Found (404), continue to next model
-                    if (status === 429 || status === 404) {
-                        console.warn(`Model ${model} failed (${status}). Trying next... Error: ${errorText.substring(0, 200)}`);
-                        lastError = new Error(`Model ${model} failed (${status}): ${errorText}`);
+                    console.warn(`[Model Choice] ${model} failed. Status: ${status}. Error: ${errorText.substring(0, 150)}...`);
+
+                    // Specific handling for 404 (Model not found/deprecated)
+                    if (status === 404) {
+                        lastError = new Error(`Model ${model} not found (404)`);
+                        continue;
+                    }
+                    // Specific handling for 429 (Quota)
+                    if (status === 429) {
+                        lastError = new Error(`Model ${model} quota exceeded (429)`);
                         continue;
                     }
 
-                    // Other errors (500, 400 bad request) might be fatal, but let's try others just in case it's model specific
-                    console.warn(`Model ${model} encountered error ${status}. Retrying...`);
-                    lastError = new Error(`Model ${model} failed (${status}): ${errorText}`);
+                    lastError = new Error(`Model ${model} error (${status}): ${errorText}`);
                     continue;
                 }
 
                 const data = await response.json();
 
-                // Validate content existence before declaring success
+                // Validate content existence
                 if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    console.warn(`Model ${model} returned empty content. Trying next...`);
+                    console.warn(`[Model Choice] ${model} returned empty/invalid structure.`);
                     lastError = new Error(`Model ${model} returned invalid structure.`);
                     continue;
                 }
 
                 responseData = data;
                 successfulModel = model;
-                console.log(`Success! Using model: ${model}`);
+                console.log(`✅ Success! Using model: ${model}`);
                 break; // Exit loop on success
 
             } catch (err) {
-                console.error(`Unexpected error with ${model}:`, err.message);
+                console.error(`Unexpected network/system error with ${model}:`, err.message);
                 lastError = err;
                 // Continue to next model
             }
