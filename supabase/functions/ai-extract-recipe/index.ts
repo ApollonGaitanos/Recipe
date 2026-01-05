@@ -49,11 +49,12 @@ serve(async (req) => {
             };
 
             const cleanContent = (html: string) => {
-                // "Legacy" cleaning was too aggressive (stripping tags).
-                // New Strategy: Remove ONLY binary/code noise. Keep HTML structure for the AI.
+                // 1. Extract JSON-LD (Schema.org Recipe Data) - CRITICAL for SPAs/Modern Sites
+                const jsonLdMatches = html.match(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gim);
+                const jsonLdContent = jsonLdMatches ? jsonLdMatches.join("\n\n") : "";
 
+                // 2. Remove Scripts, Styles, SVG (Noise)
                 let clean = html
-                    // 1. Remove Scripts, Styles, SVG (Noise)
                     .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
                     .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "")
                     .replace(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gim, "")
@@ -61,10 +62,13 @@ serve(async (req) => {
                     .replace(/<iframe\b[^>]*>([\s\S]*?)<\/iframe>/gim, "")
                     .replace(/<!--[\s\S]*?-->/g, ""); // Remove comments
 
-                // 2. Collapse whitespace (Max 2 newlines) to save tokens but keep structure
-                return clean.replace(/[ \t]+/g, " ")
+                // 3. Collapse whitespace (Max 2 newlines)
+                clean = clean.replace(/[ \t]+/g, " ")
                     .replace(/\n\s*\n\s*\n+/g, "\n\n")
                     .trim();
+
+                // 4. Return Combined Content (JSON-LD First)
+                return `--- REQUESTED METADATA (JSON-LD) ---\n${jsonLdContent}\n\n--- PAGE CONTENT ---\n${clean}`;
             };
 
             try {
