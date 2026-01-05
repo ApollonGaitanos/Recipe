@@ -10,6 +10,7 @@ import VisibilityModal from './VisibilityModal';
 import TranslationModal from './TranslationModal';
 import ConfirmModal from './ConfirmModal';
 import { parseRecipe } from '../utils/recipeParser';
+import AIErrorModal from './AIErrorModal';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
