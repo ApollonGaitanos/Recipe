@@ -134,16 +134,21 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     .single();
 
                 if (cachedData) {
-                    console.log("Using cached translation for:", targetLang);
-                    setTranslatedRecipe({
-                        ...recipe,
-                        title: cachedData.title || recipe.title,
-                        ingredients: cachedData.ingredients || recipe.ingredients,
-                        instructions: cachedData.instructions || recipe.instructions,
-                    });
-                    setActionModal({ isOpen: false, mode: null });
-                    setIsProcessing(false);
-                    return;
+                    // BAD CACHE CHECK: If cached title is identical to original, it's likely a failed previous run.
+                    if (cachedData.title === recipe.title) {
+                        console.warn("Detected BAD CACHE (Identical to original). Ignoring cache to force AI retry.");
+                    } else {
+                        console.log("Using cached translation for:", targetLang);
+                        setTranslatedRecipe({
+                            ...recipe,
+                            title: cachedData.title || recipe.title,
+                            ingredients: cachedData.ingredients || recipe.ingredients,
+                            instructions: cachedData.instructions || recipe.instructions,
+                        });
+                        setActionModal({ isOpen: false, mode: null });
+                        setIsProcessing(false);
+                        return;
+                    }
                 }
             } catch (err) {
                 // Ignore 406/No rows found
@@ -171,18 +176,25 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
             if (result) {
                 // 3. Save to DB (Cache It)
+                // 3. Save to DB (Cache It)
                 if (mode === 'translate' && targetLang) {
-                    const { error: insertError } = await supabase
-                        .from('recipe_translations')
-                        .upsert({
-                            recipe_id: id,
-                            language_code: targetLang,
-                            title: result.title,
-                            ingredients: result.ingredients,
-                            instructions: result.instructions
-                        });
+                    // PREVENT BAD SAVE: Don't save if it's identical to original (AI failed to translate)
+                    const isIdentical = result.title === recipe.title;
 
-                    if (insertError) console.error("Failed to cache translation:", insertError);
+                    if (isIdentical) {
+                        console.warn("Translation identical to original. Skipping DB save to avoid cache poisoning.");
+                    } else {
+                        const { error: insertError } = await supabase
+                            .from('recipe_translations')
+                            .upsert({
+                                recipe_id: id,
+                                language_code: targetLang,
+                                title: result.title,
+                                ingredients: result.ingredients,
+                                instructions: result.instructions
+                            });
+                        if (insertError) console.error("Failed to cache translation:", insertError);
+                    }
                 }
 
                 // 4. Update View (Temporary Local State)
