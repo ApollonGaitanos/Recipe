@@ -35,64 +35,82 @@ serve(async (req) => {
         if (url) {
             console.log(`Fetching URL: ${url}`);
 
-            // Strategy:
-            // 1. Try Direct Fetch (Fastest)
-            // 2. Try AllOrigins (Proxy for CORS/403 blocks)
+            // Strategy: Triple Fallback
+            // 1. Direct Fetch (Mimic Browser)
+            // 2. AllOrigins (Proxy A)
+            // 3. CorsProxy.io (Proxy B)
+
+            const standardHeaders = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Upgrade-Insecure-Requests': '1'
+            };
+
+            const cleanContent = (html: string) => {
+                let clean = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "")
+                    .replace(/<svg\b[^>]*>([\s\S]*?)<\/svg>/gim, "") // excessive noise
+                    .replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
+                return clean.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+            };
 
             try {
                 // 1. Direct Fetch
                 console.log("Attempting Direct Fetch...");
-                const urlResp = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5'
-                    }
-                });
+                const urlResp = await fetch(url, { headers: standardHeaders });
+                if (!urlResp.ok && urlResp.status !== 403) throw new Error(`Direct fetch failed: ${urlResp.status}`);
+                // If 403, it's likely a block, so throw to trigger catch immediately
+                if (urlResp.status === 403) throw new Error("Blocked by WAF (403)");
 
-                if (!urlResp.ok) throw new Error(`Direct fetch failed: ${urlResp.status}`);
-
-                const htmlContent = await urlResp.text();
-
-                // Cleanup HTML
-                let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-                    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
-                cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+                processingText = cleanContent(await urlResp.text());
 
             } catch (directError) {
                 console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins...`);
 
                 try {
-                    // 2. AllOrigins Proxy (Fallback)
+                    // 2. AllOrigins Proxy (Fallback A)
                     const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-                    if (!proxyResp.ok) throw new Error("Proxy response not OK");
-
+                    if (!proxyResp.ok) throw new Error("AllOrigins failed");
                     const proxyData = await proxyResp.json();
-                    if (!proxyData.contents) throw new Error("Proxy returned no content");
+                    if (!proxyData.contents) throw new Error("No content from AllOrigins");
 
-                    let cleanHtml = proxyData.contents.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-                        .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
-                    cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                    processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+                    processingText = cleanContent(proxyData.contents);
 
                 } catch (proxyError) {
-                    // If all fail, we proceed with empty text. 
-                    // The AI prompt will catch it and return "No recipe content found".
-                    console.error(`All fetch methods failed. Error: ${proxyError.message}`);
+                    console.warn(`AllOrigins failed (${proxyError.message}). Trying CorsProxy...`);
+
+                    try {
+                        // 3. CorsProxy.io (Fallback B - different IP pool)
+                        const cpResp = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { headers: standardHeaders });
+                        if (!cpResp.ok) throw new Error("CorsProxy failed");
+
+                        processingText = cleanContent(await cpResp.text());
+
+                    } catch (finalError) {
+                        console.error(`All fetch methods failed. Last error: ${finalError.message}`);
+                        // processingText remains empty, triggering the validation error below
+                    }
                 }
             }
 
             // Global Length Check / Truncation
             if (processingText) {
-                if (processingText.length > 30000) {
-                    processingText = processingText.substring(0, 30000);
+                if (processingText.length > 35000) {
+                    processingText = processingText.substring(0, 35000);
                 }
                 console.log(`Final Extracted Text Length: ${processingText.length}`);
             }
         }
 
-        // 5. Construct Prompt based on MODE (default: extract)
+        // 5. Validation: Ensure we have content to send to AI
+        if (url && (!processingText || processingText.trim().length < 50)) {
+            console.warn(`URL Fetch failed for ${url}. Extracted text length: ${processingText?.length || 0}`);
+            throw new Error('Could not retrieve content from this URL. The website might be using security protection (like Cloudflare) or is empty. Please try manually copying and pasting the recipe text.');
+        }
+
+        // 6. Construct Prompt based on MODE (default: extract)
         const selectedMode = mode || 'extract';
         let systemPrompt = "";
         let temperature = 0.1;
