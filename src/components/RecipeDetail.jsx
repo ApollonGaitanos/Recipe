@@ -12,6 +12,7 @@ import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 import { parseRecipe } from '../utils/recipeParser';
 import TranslationModal from './TranslationModal';
+import AIErrorModal from './AIErrorModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
     const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes, toggleSave, isRecipeSaved, duplicateRecipe } = useRecipes();
