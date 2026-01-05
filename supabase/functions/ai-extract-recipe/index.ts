@@ -36,84 +36,50 @@ serve(async (req) => {
             console.log(`Fetching URL: ${url}`);
 
             // Strategy:
-            // 1. Try Jina.ai Reader (Best for LLMs, handles content extraction)
-            // 2. Try Direct Fetch (Fastest if it works)
-            // 3. Try AllOrigins (Proxy for simple CORS/403 blocks)
+            // 1. Try Direct Fetch (Fastest)
+            // 2. Try AllOrigins (Proxy for CORS/403 blocks)
 
             try {
-                // 1. Jina AI Reader
-                console.log("Attempting Jina AI Reader...");
-                const jinaApiKey = Deno.env.get('JINA_API_KEY');
-                const jinaHeaders = {
-                    'User-Agent': 'RecipeApp/1.0',
-                    'Accept': 'text/plain'
-                };
-                if (jinaApiKey) {
-                    jinaHeaders['Authorization'] = `Bearer ${jinaApiKey}`;
-                }
-
-                const jinaResp = await fetch(`https://r.jina.ai/${url}`, {
-                    headers: jinaHeaders
+                // 1. Direct Fetch
+                console.log("Attempting Direct Fetch...");
+                const urlResp = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5'
+                    }
                 });
 
-                if (jinaResp.ok) {
-                    const jinaText = await jinaResp.text();
-                    // Jina returns "Title\n\nURL\n\nContent..."
-                    if (jinaText.length > 200 && !jinaText.includes("Cloudflare") && !jinaText.includes("Verify you are human")) {
-                        processingText = jinaText;
-                        console.log(`Jina AI success: ${processingText.length} chars.`);
-                    } else {
-                        throw new Error("Jina returned captcha or empty content");
-                    }
-                } else {
-                    throw new Error(`Jina failed: ${jinaResp.status}`);
-                }
+                if (!urlResp.ok) throw new Error(`Direct fetch failed: ${urlResp.status}`);
 
-            } catch (jinaError) {
-                console.warn(`Jina Reader failed (${jinaError.message}). Falling back...`);
+                const htmlContent = await urlResp.text();
+
+                // Cleanup HTML
+                let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
+                cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
+                processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+            } catch (directError) {
+                console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins...`);
 
                 try {
-                    // 2. Direct Fetch (Fallback)
-                    console.log("Attempting Direct Fetch...");
-                    const urlResp = await fetch(url, {
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                            'Accept-Language': 'en-US,en;q=0.5'
-                        }
-                    });
+                    // 2. AllOrigins Proxy (Fallback)
+                    const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                    if (!proxyResp.ok) throw new Error("Proxy response not OK");
 
-                    if (!urlResp.ok) throw new Error(`Direct fetch failed: ${urlResp.status}`);
+                    const proxyData = await proxyResp.json();
+                    if (!proxyData.contents) throw new Error("Proxy returned no content");
 
-                    const htmlContent = await urlResp.text();
-
-                    // Cleanup HTML
-                    let cleanHtml = htmlContent.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+                    let cleanHtml = proxyData.contents.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
                         .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
                     cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
                     processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-                } catch (directError) {
-                    console.warn(`Direct fetch failed (${directError.message}). Trying AllOrigins...`);
-
-                    try {
-                        // 3. AllOrigins Proxy (Last Resort)
-                        const proxyResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-                        if (!proxyResp.ok) throw new Error("Proxy response not OK");
-
-                        const proxyData = await proxyResp.json();
-                        if (!proxyData.contents) throw new Error("Proxy returned no content");
-
-                        let cleanHtml = proxyData.contents.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-                            .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "");
-                        cleanHtml = cleanHtml.replace(/<\/(div|p|h\d|li|br)>/gim, "\n");
-                        processingText = cleanHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-                    } catch (proxyError) {
-                        // If all fail, we proceed with empty text. 
-                        // The AI prompt will catch it and return "No recipe content found".
-                        console.error(`All fetch methods failed. Error: ${proxyError.message}`);
-                    }
+                } catch (proxyError) {
+                    // If all fail, we proceed with empty text. 
+                    // The AI prompt will catch it and return "No recipe content found".
+                    console.error(`All fetch methods failed. Error: ${proxyError.message}`);
                 }
             }
 
