@@ -335,13 +335,30 @@ ${jsonStructure}`;
                 console.log(`Trying model: ${model}...`);
                 const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
+                // Config Logic: Gemma does NOT support JSON mode. Gemini DOES.
+                const isGemma = model.includes('gemma');
+                const modelConfig = {
+                    temperature: temperature,
+                    maxOutputTokens: 8000,
+                };
+
+                // Only add JSON mode for Gemini
+                if (!isGemma) {
+                    modelConfig.responseMimeType = "application/json";
+                }
+
+                const currentPayload = {
+                    contents: [{ parts }],
+                    generationConfig: modelConfig
+                };
+
                 const response = await fetch(CURRENT_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'x-goog-api-key': apiKey
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(currentPayload)
                 });
 
                 if (!response.ok) {
