@@ -307,17 +307,15 @@ ${jsonStructure}`;
         };
 
         // 6. API Call with Fallback Logic
-        // Strategy: 
         // - Text/URL: Use Gemma models (High RPD Limit)
         // - Image: Must use Gemini models (Visual support)
 
         const TEXT_MODELS = [
-            'gemini-2.5-flash',           // Priority 1: Standard Production
-            'gemini-2.0-flash',           // Priority 2: Legacy Stable
-            'gemini-2.5-flash-lite',      // Priority 3: Efficient
-            'gemini-2.0-flash-lite',      // Priority 4: Legacy Efficient
-            'gemma-2-27b-it',             // Priority 5: High Intel Open Model (Backup)
-            'gemma-2-9b-it'               // Priority 6: Fast Open Model (last resort)
+            'gemini-3-flash',             // Priority 1: Best Quality (Low Limit)
+            'gemini-2.5-flash',           // Priority 2: Standard (Low Limit)
+            'gemini-2.5-flash-lite',      // Priority 3: Efficient (Low Limit)
+            'gemma-3-27b-it',             // Priority 4: High Limit Backup (14k RPD!)
+            'gemma-3-12b-it'              // Priority 5: High Limit Backup (14k RPD!)
         ];
 
         const VISUAL_MODELS = [
