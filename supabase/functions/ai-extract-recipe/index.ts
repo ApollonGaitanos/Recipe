@@ -181,12 +181,12 @@ Your goal is to provide the MOST TRADITIONAL, STANDARD, and AUTHENTIC recipe for
 LOGIC:
 1. **TRADITION and AUTHENTICITY**: If the user asks for "Carbonara", provide the AUTHENTIC Roman version (Guanciale, Pecorino, Eggs, Pepper. NO Cream). Do not offer variations unless explicitly asked.
 2. **PANTRY STAPLES**: If the user lists ingredients (e.g., "Eggs, Flour"), create a BASIC recipe using ONLY those ingredients + standard pantry staples (Water, Oil, Salt, Pepper). Do NOT assume or add fancy ingredients (like Butter or Milk) unless necessary for chemistry.
-3. **COMPLETE METADATA**: You must infer prepTime, cookTime, and tools.
+3. **COMPLETE METADATA**: You MUST populate "tools" (e.g. "Skillet", "Whisk") and "description" (appetizing summary).
 4. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
 
 EXAMPLE:
 Input: "Carbonara"
-Output: { "title": "Spaghetti Carbonara", "description": "The authentic Roman classic using guanciale and pecorino romano.", "ingredients": [{"amount": "200g", "name": "Guanciale"}, {"amount": "100g", "name": "Pecorino Romano"}, {"amount": "4", "name": "Large Eggs"}, {"amount": "400g", "name": "Spaghetti"}, {"amount": "", "name": "Black Pepper"}], "instructions": ["Boil pasta...", "Crisp guanciale...", "Mix eggs and cheese..."] }
+Output: { "title": "Spaghetti Carbonara", "description": "The authentic Roman classic using guanciale and pecorino romano.", "tools": ["Large Pot", "Skillet", "Bowl"], "ingredients": [{"amount": "200g", "name": "Guanciale"}, {"amount": "100g", "name": "Pecorino Romano"}, {"amount": "4", "name": "Large Eggs"}, {"amount": "400g", "name": "Spaghetti"}, {"amount": "", "name": "Black Pepper"}], "instructions": ["Boil pasta...", "Crisp guanciale...", "Mix eggs and cheese..."] }
 
 ${jsonStructure}`;
                 break;
@@ -200,12 +200,14 @@ Your goal is to ENHANCE the instructions with useful tips and visual cues WITHOU
 LOGIC:
 1. **NON-DESTRUCTIVE**: Do NOT add new ingredients. Do NOT change temperatures or main steps.
 2. **ADD VISUAL CUES**: "Mix until combined" -> "Mix until combined and no dry flour remains (approx 2 mins)."
-3. **ADD TIPS**: Add helpful context as part of the step or in parenthesis.
-4. **LANGUAGE**: Keep the input language.
+3. **INFER TOOLS**: Look at the steps and ingredients to populate the "tools" array (e.g. if it says "whisk", add "Whisk").
+4. **DESCRIPTION**: If the description is empty or boring, write a better one.
+5. **LANGUAGE**: Keep the input language.
 
 EXAMPLE:
 Input Instructions: ["Mix flour and water", "Knead"]
 Output Instructions: ["In a large mixing bowl, combine the flour and lukewarm water until a shaggy dough forms.", "Transfer to a clean surface and knead steadily for 8-10 minutes until the dough is smooth and elastic (it should spring back when poked)."]
+Output Tools: ["Large Mixing Bowl", "Clean Surface"]
 
 ${jsonStructure}`;
                 break;
