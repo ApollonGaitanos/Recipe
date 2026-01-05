@@ -113,9 +113,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     };
 
     // Open the modal
-    const handleMagicAction = (mode) => {
-        setActionModal({ isOpen: true, mode });
-    };
+
 
     // AI Enhance/Translate Logic (View-Only / Cache First)
     const executeAIAction = async (targetLang) => {
@@ -470,9 +468,12 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <h2 className="text-3xl font-serif font-bold text-zinc-900 dark:text-white">{t('instructionsSection')}</h2>
                             <div className="flex gap-2">
 
-                                <button onClick={() => handleMagicAction('translate')} className="btn-secondary-small bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none">
-                                    <Globe className="w-4 h-4" />
-                                    Translate
+                                <button
+                                    onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold"
+                                >
+                                    <Globe size={14} />
+                                    Translate AI
                                 </button>
 
                                 {/* Make a Copy Button */}
