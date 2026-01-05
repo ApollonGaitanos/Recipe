@@ -284,18 +284,15 @@ IMPORTANT:
         // - Image: Must use Gemini models (Visual support)
 
         const TEXT_MODELS = [
-            'gemma-3-27b-it',             // High Quota, Smart
-            'gemma-3-12b-it',             // High Quota, Fast
-            'gemini-2.5-flash-lite',      // Experimental High Quota
-            'gemini-1.5-flash',           // Fallback
+            'gemma-3-27b-it',             // High RPD Limit (14.4k)
+            'gemma-3-12b-it',             // High RPD Limit (14.4k)
+            'gemini-1.5-flash',
             'gemini-1.5-pro'
         ];
 
         const VISUAL_MODELS = [
-            'gemini-2.0-flash-exp',       // Experimental (Often separate quota)
-            'gemini-1.5-flash',           // Standard
-            'gemini-1.5-pro',
-            'gemini-1.5-flash-8b'
+            'gemini-1.5-flash',
+            'gemini-1.5-pro'
         ];
 
         const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
