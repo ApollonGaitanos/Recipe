@@ -92,7 +92,7 @@ export default function Layout({ children, fullWidth = false }) {
                                     className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
                                 >
                                     <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-highlight transition-colors">
-                                        {((useAuth().profile?.username) || (user?.user_metadata?.username) || user?.email?.split('@')[0])}
+                                        {(profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0])}
                                     </span>
                                     <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-highlight group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                                         <UserIcon className="w-5 h-5" />

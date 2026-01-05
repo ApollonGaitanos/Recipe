@@ -88,10 +88,15 @@ function Feed({ isPrivate = false }) {
   // Slice for pagination
   const visibleRecipes = filteredRecipes.slice(0, visibleCount);
 
-  // Reset pagination when filter changes
-  useEffect(() => {
+  // Reset pagination when filter changes (Adjusting state during render)
+  const [prevSearch, setPrevSearch] = useState(searchQuery);
+  const [prevCategories, setPrevCategories] = useState(activeCategories);
+
+  if (searchQuery !== prevSearch || activeCategories !== prevCategories) {
     setVisibleCount(12);
-  }, [activeCategories, searchQuery]);
+    setPrevSearch(searchQuery);
+    setPrevCategories(activeCategories);
+  }
 
   const confirmDelete = async () => {
     if (deleteId) {
