@@ -13,38 +13,28 @@ async function extractWithAI(input) {
         body.text = 'Extract recipe from this image';
     }
 
-    // Use direct fetch to get better error details
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-
-    // Get function URL - handles local vs production
-    const functionUrl = import.meta.env.VITE_SUPABASE_URL
-        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-extract-recipe`
-        : 'http://localhost:54321/functions/v1/ai-extract-recipe';
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
     try {
-        const response = await fetch(functionUrl, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(body)
+        // Use supabase.functions.invoke for automatic auth handling (User Token or Anon Key)
+        // This solves "Invalid JWT" issues by ensuring the client handles header attachment and refreshing.
+        const { data, error } = await supabase.functions.invoke('ai-extract-recipe', {
+            body: body
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`Edge Function Error (${response.status}):`, errorText);
-            throw new Error(`Server Error ${response.status}: ${errorText || 'Unknown error'}`);
+        if (error) {
+            console.error('Edge Function Error:', error);
+            // If it's a context/response error, try to extract details
+            const message = error.context?.json ? (await error.context.json()).error : error.message;
+            throw new Error(message || 'Unknown Edge Function Error');
         }
 
-        const data = await response.json();
+        if (!data) throw new Error('AI returned empty response');
         if (data.error) throw new Error(data.error);
+
         return data;
 
-    } catch (networkError) {
-        console.error("Network/Fetch Error:", networkError);
-        throw new Error(`Network Error: ${networkError.message}`);
+    } catch (err) {
+        console.error("AI Invoke Error:", err);
+        throw new Error(`AI Service Error: ${err.message}`);
     }
 }
 
