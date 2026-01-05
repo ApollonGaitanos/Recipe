@@ -134,9 +134,15 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     .single();
 
                 if (cachedData) {
-                    // BAD CACHE CHECK: If cached title is identical to original, it's likely a failed previous run.
+                    // BAD CACHE CHECK: If cached title is identical to original, it's a "Ghost Translation".
+                    // FIX: Delete it immediately so it doesn't persist.
                     if (cachedData.title === recipe.title) {
-                        console.warn("Detected BAD CACHE (Identical to original). Ignoring cache to force AI retry.");
+                        console.warn("Detected BAD CACHE (English stored as " + targetLang + "). Deleting from DB...");
+                        await supabase.from('recipe_translations')
+                            .delete()
+                            .eq('recipe_id', id)
+                            .eq('language_code', targetLang);
+                        console.log("Bad cache deleted. Proceeding to fresh AI generation.");
                     } else {
                         console.log("Using cached translation for:", targetLang);
                         setTranslatedRecipe({
@@ -176,13 +182,13 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
             if (result) {
                 // 3. Save to DB (Cache It)
-                // 3. Save to DB (Cache It)
                 if (mode === 'translate' && targetLang) {
-                    // PREVENT BAD SAVE: Don't save if it's identical to original (AI failed to translate)
+                    // PREVENT BAD SAVE: Don't save if it's identical to original (AI failed/refused).
+                    // This prevents "poisoning" the cache with English text stored as 'it'.
                     const isIdentical = result.title === recipe.title;
 
                     if (isIdentical) {
-                        console.warn("Translation identical to original. Skipping DB save to avoid cache poisoning.");
+                        console.warn("AI returned identical text. Skipping DB save to prevent cache poisoning.");
                     } else {
                         const { error: insertError } = await supabase
                             .from('recipe_translations')
