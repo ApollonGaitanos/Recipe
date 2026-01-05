@@ -27,6 +27,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     // AI Modal State
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
     const [translatedRecipe, setTranslatedRecipe] = useState(null);
+    const [aiError, setAiError] = useState(null);
+
 
     // Sync Like Status
     const isLiked = checkIsLiked(id);
@@ -206,7 +208,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
             }
         } catch (error) {
             console.error('AI ' + mode + ' failed: ', error);
-            alert('Failed: ' + error.message);
+            setAiError(error);
         } finally {
             setIsProcessing(false);
         }

@@ -21,6 +21,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [isSaving, setIsSaving] = useState(false);
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
     const [isProcessingAI, setIsProcessingAI] = useState(false);
+    const [aiError, setAiError] = useState(null);
+
     const [pendingTranslations, setPendingTranslations] = useState([]);
 
     // Dirty State Tracking
@@ -679,6 +681,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     </div>
                 </div>
             </main>
+
+            <AIErrorModal
+                isOpen={!!aiError}
+                onClose={() => setAiError(null)}
+                error={aiError}
+            />
 
             <MagicImportModal
                 isOpen={showMagicImport}
