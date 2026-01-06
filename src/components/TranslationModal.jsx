@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Globe, Sparkles, Check, ChevronRight } from 'lucide-react';
+import { X, Globe, Sparkles, Check, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isProcessing, isPermanent = false }) {
+export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isProcessing, isPermanent = false, onBack }) {
     const { t, language } = useLanguage();
     const [targetLang, setTargetLang] = useState(language === 'en' ? 'el' : 'en');
     const [step, setStep] = useState('select'); // 'select' | 'confirm'
@@ -42,6 +42,15 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-3">
+                        {onBack && step !== 'confirm' && (
+                            <button
+                                onClick={onBack}
+                                disabled={isProcessing}
+                                className="mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors disabled:opacity-50"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        )}
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isTranslate
                             ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                             : 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'

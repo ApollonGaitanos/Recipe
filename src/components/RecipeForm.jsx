@@ -348,6 +348,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
     };
 
+    const handleBackToFeatures = () => {
+        setActionModal({ isOpen: false, mode: null });
+        setAiFeaturesOpen(true);
+    };
+
     if (isLoading) return <div className="p-8 text-center text-gray-500">Loading recipe...</div>;
 
     return (
@@ -502,6 +507,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <TranslationModal
                 isOpen={actionModal.isOpen && (actionModal.mode === 'enhance' || actionModal.mode === 'translate')}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
+                onBack={handleBackToFeatures}
                 mode={actionModal.mode}
                 onConfirm={executeAIAction}
                 isProcessing={isProcessingAI}
@@ -511,6 +517,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <MagicImportModal
                 isOpen={actionModal.isOpen && actionModal.mode === 'magic'}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
+                onBack={handleBackToFeatures}
                 onImport={(data) => {
                     handleMagicImport(data);
                     setActionModal({ isOpen: false, mode: null });
@@ -520,6 +527,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <AIChefModal
                 isOpen={actionModal.isOpen && (actionModal.mode === 'chef' || actionModal.mode === 'create')}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
+                onBack={handleBackToFeatures}
                 onImport={(data) => {
                     handleMagicImport(data);
                     setActionModal({ isOpen: false, mode: null });

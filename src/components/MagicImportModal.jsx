@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText } from 'lucide-react';
+import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText, ChevronLeft } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 
-export default function MagicImportModal({ isOpen, onClose, onImport }) {
+export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) {
     const { t, language } = useLanguage();
 
     // --- State Management ---
@@ -154,6 +154,14 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
+                        {onBack && (
+                            <button
+                                onClick={onBack}
+                                className="mr-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        )}
                         <Sparkles size={20} className="text-highlight" />
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
                             Magic Import

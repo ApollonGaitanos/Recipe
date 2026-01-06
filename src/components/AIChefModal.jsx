@@ -82,6 +82,14 @@ export default function AIChefModal({ isOpen, onClose, onImport }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
+                        {onBack && (
+                            <button
+                                onClick={onBack}
+                                className="mr-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        )}
                         <ChefHat size={20} className="text-highlight" />
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
                             AI Chef
