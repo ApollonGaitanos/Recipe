@@ -450,15 +450,15 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                         <div className="text-xs text-zinc-500">Cals</div>
                                     </div>
                                     <div>
-                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.protein || '-'}</div>
+                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.protein ? `${recipe.protein}g` : '-'}</div>
                                         <div className="text-xs text-zinc-500">Protein</div>
                                     </div>
                                     <div>
-                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.carbs || '-'}</div>
+                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.carbs ? `${recipe.carbs}g` : '-'}</div>
                                         <div className="text-xs text-zinc-500">Carbs</div>
                                     </div>
                                     <div>
-                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.fat || '-'}</div>
+                                        <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.fat ? `${recipe.fat}g` : '-'}</div>
                                         <div className="text-xs text-zinc-500">Fat</div>
                                     </div>
                                 </div>

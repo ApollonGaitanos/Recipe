@@ -84,39 +84,51 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                     <div className="space-y-1">
                         <label className="text-[10px] uppercase font-bold text-gray-500">Calories</label>
                         <input
-                            type="text"
+                            type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="e.g. 450"
+                            placeholder="450"
                             value={formData.calories || ''}
                             onChange={e => handleChange('calories', e.target.value)}
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Protein</label>
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Protein (g)</label>
                         <input
-                            type="text"
+                            type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="e.g. 32g"
+                            placeholder="32"
                             value={formData.protein || ''}
                             onChange={e => handleChange('protein', e.target.value)}
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Carbs</label>
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Carbs (g)</label>
                         <input
-                            type="text"
+                            type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="e.g. 12g"
+                            placeholder="12"
                             value={formData.carbs || ''}
                             onChange={e => handleChange('carbs', e.target.value)}
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Fat</label>
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Fat (g)</label>
                         <input
-                            type="text"
+                            type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="e.g. 28g"
+                            placeholder="28"
                             value={formData.fat || ''}
                             onChange={e => handleChange('fat', e.target.value)}
                         />
