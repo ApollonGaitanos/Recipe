@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,9 +7,11 @@ import { useRecipes } from '../context/RecipeContext';
 import { Search, Globe, Moon, Sun, User as UserIcon, LogOut, Settings, Menu, X, ChefHat } from 'lucide-react';
 import AuthModal from './AuthModal';
 import LogoutModal from './LogoutModal';
+import SearchSuggestions from './SearchSuggestions';
 
 export default function Layout({ children, fullWidth = false }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const { t, toggleLanguage } = useLanguage();
     const { theme, toggleTheme } = useTheme();
     const { user, profile, signOut } = useAuth();
@@ -18,6 +20,9 @@ export default function Layout({ children, fullWidth = false }) {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+    const isDiscoverPage = location.pathname === '/';
 
     const myKitchenPath = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0]
         ? `/${profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0]}`
@@ -70,7 +75,18 @@ export default function Layout({ children, fullWidth = false }) {
                                 placeholder={t('searchPlaceholder')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
                             />
+
+                            {/* Autocomplete Dropdown - Only if NOT on Discover Page */}
+                            {!isDiscoverPage && (
+                                <SearchSuggestions
+                                    query={searchQuery}
+                                    isVisible={isSearchFocused}
+                                    onClose={() => setIsSearchFocused(false)}
+                                    onClear={() => setSearchQuery('')}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -133,7 +149,17 @@ export default function Layout({ children, fullWidth = false }) {
                         placeholder={t('searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
                     />
+                    {/* Mobile Autocomplete Dropdown */}
+                    {!isDiscoverPage && (
+                        <SearchSuggestions
+                            query={searchQuery}
+                            isVisible={isSearchFocused}
+                            onClose={() => setIsSearchFocused(false)}
+                            onClear={() => setSearchQuery('')}
+                        />
+                    )}
                 </div>
             </div>
 
