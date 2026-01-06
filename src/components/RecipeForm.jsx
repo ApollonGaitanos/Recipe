@@ -512,6 +512,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 mode={actionModal.mode}
                 onConfirm={executeAIAction}
                 isProcessing={isProcessingAI}
+                isPermanent={true}
             />
 
             <MagicImportModal

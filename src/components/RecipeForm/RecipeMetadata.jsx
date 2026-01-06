@@ -7,7 +7,7 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
 
             {/* Description */}
             <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Description / Story</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Description / Story <span className="text-gray-400 font-normal normal-case">(optional)</span></label>
                 <textarea
                     className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-4 py-3 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
                     placeholder="Tell us about this dish..."
