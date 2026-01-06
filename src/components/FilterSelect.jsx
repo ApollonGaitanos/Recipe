@@ -54,7 +54,7 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
                             >
                                 <div className="flex items-center gap-2 overflow-hidden flex-1">
                                     {/* Dynamic Icon Container */}
-                                    <div className={`rounded-lg flex items-center justify-center shrink-0 ${compact ? 'w-7 h-7' : 'w-9 h-9'} ${activeCount > 0 ? 'bg-white/50 text-[#63886f] dark:text-[#8ca395]' : 'bg-gray-100 dark:bg-white/5 text-gray-500'
+                                    <div className={`rounded-lg flex items-center justify-center shrink-0 ${compact ? 'w-7 h-7' : 'w-9 h-9'} ${activeCount > 0 ? 'bg-white/50 text-[#63886f] dark:bg-black/20 dark:text-[#8ca395]' : 'bg-gray-100 dark:bg-white/5 text-gray-500'
                                         }`}>
                                         {activeCount === 0 ? (
                                             <category.icon size={compact ? 14 : 16} />
