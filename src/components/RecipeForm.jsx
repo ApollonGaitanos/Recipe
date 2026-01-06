@@ -13,10 +13,6 @@ import AIErrorModal from './AIErrorModal';
 import IngredientsList from './RecipeForm/IngredientsList';
 import InstructionsList from './RecipeForm/InstructionsList';
 import ToolsList from './RecipeForm/ToolsList';
-// Sub-components
-import IngredientsList from './RecipeForm/IngredientsList';
-import InstructionsList from './RecipeForm/InstructionsList';
-import ToolsList from './RecipeForm/ToolsList';
 import RecipeMetadata from './RecipeForm/RecipeMetadata';
 import MagicImportModal from './MagicImportModal';
 
