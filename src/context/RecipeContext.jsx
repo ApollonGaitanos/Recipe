@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 // import { v4 as uuidv4 } from 'uuid';
 // import { supabase } from '../supabaseClient'; // REMOVED: Now using service
 import { useAuth } from './AuthContext';
