@@ -33,24 +33,30 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
             setLoading(true);
             try {
                 // 1. Search Profiles
-                const { data: profileData } = await supabase
+                const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .select('username, id, bio')
                     .ilike('username', `%${query}%`)
                     .limit(3);
 
+                if (profileError) console.error("Profile search error:", profileError);
+
                 // 2. Search Public Recipes
-                const { data: recipeData } = await supabase
+                const { data: recipeData, error: recipeError } = await supabase
                     .from('recipes')
-                    .select('id, title, user_id, profiles:user_id (username)')
+                    // Use standard join syntax. If multiple FKs exist, Supabase might complain, 
+                    // but usually 'profiles' works if it's the main relation.
+                    .select('id, title, is_public, profiles (username)')
                     .eq('is_public', true)
                     .ilike('title', `%${query}%`)
                     .limit(5);
 
+                if (recipeError) console.error("Recipe search error:", recipeError);
+
                 setProfiles(profileData || []);
                 setRecipes(recipeData || []);
             } catch (err) {
-                console.error("Error fetching suggestions:", err);
+                console.error("Critical search suggestions error:", err);
             } finally {
                 setLoading(false);
             }
