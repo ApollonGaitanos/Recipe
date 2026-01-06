@@ -200,6 +200,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
             const submissionData = {
                 ...formData,
+                prepTime: formData.prepTime ? parseInt(formData.prepTime, 10) : 0,
+                cookTime: formData.cookTime ? parseInt(formData.cookTime, 10) : 0,
+                servings: formData.servings ? parseInt(formData.servings, 10) : 0,
                 ingredients: finalIngredients, // Save as JSON object array
                 instructions: finalInstructions,
                 tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
@@ -407,6 +410,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
                     {/* Save */}
                     <button
+                        type="button"
                         onClick={handleSaveLocal}
                         disabled={isSaving}
                         className="flex items-center gap-2 bg-[#1a2c20] dark:bg-[#63886f] text-white px-8 py-2.5 rounded-full font-bold hover:opacity-90 transition-all shadow-lg shadow-[#63886f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
