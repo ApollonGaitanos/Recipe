@@ -37,7 +37,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         tags: '',
         is_public: false,
         description: '',
-        image: null
+        image: null,
+        calories: '',
+        protein: '',
+        carbs: '',
+        fat: ''
     });
 
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
@@ -113,7 +117,11 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         tags: Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || ''),
                         is_public: data.is_public,
                         description: data.description || '',
-                        image: data.image_url
+                        image: data.image_url,
+                        calories: data.calories || '',
+                        protein: data.protein || '',
+                        carbs: data.carbs || '',
+                        fat: data.fat || ''
                     });
 
                     if (data.image_url) setImagePreview(data.image_url);
@@ -208,6 +216,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 ingredients: finalIngredients, // Save as JSON object array
                 instructions: finalInstructions,
                 tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+                calories: formData.calories,
+                protein: formData.protein,
+                carbs: formData.carbs,
+                fat: formData.fat
             };
 
             // Call Parent Save
@@ -248,6 +260,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         handleMetadataChange('cookTime', data.cookTime || formData.cookTime);
         handleMetadataChange('servings', data.servings || formData.servings);
         handleMetadataChange('description', data.description || formData.description);
+
+        // Nutrition
+        handleMetadataChange('calories', data.calories || data.nutrition?.calories || formData.calories);
+        handleMetadataChange('protein', data.protein || data.nutrition?.protein || formData.protein);
+        handleMetadataChange('carbs', data.carbs || data.nutrition?.carbs || formData.carbs);
+        handleMetadataChange('fat', data.fat || data.nutrition?.fat || formData.fat);
 
         if (data.tags && Array.isArray(data.tags)) {
             handleMetadataChange('tags', data.tags.join(', '));

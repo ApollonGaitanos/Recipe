@@ -75,6 +75,55 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                 </div>
             </div>
 
+            {/* Nutrition Row */}
+            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
+                    Nutrition <span className="text-gray-400 font-normal normal-case">(per serving)</span>
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Calories</label>
+                        <input
+                            type="text"
+                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
+                            placeholder="e.g. 450"
+                            value={formData.calories || ''}
+                            onChange={e => handleChange('calories', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Protein</label>
+                        <input
+                            type="text"
+                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
+                            placeholder="e.g. 32g"
+                            value={formData.protein || ''}
+                            onChange={e => handleChange('protein', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Carbs</label>
+                        <input
+                            type="text"
+                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
+                            placeholder="e.g. 12g"
+                            value={formData.carbs || ''}
+                            onChange={e => handleChange('carbs', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase font-bold text-gray-500">Fat</label>
+                        <input
+                            type="text"
+                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
+                            placeholder="e.g. 28g"
+                            value={formData.fat || ''}
+                            onChange={e => handleChange('fat', e.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+
             {/* Filters (4 Boxes) */}
             <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
                 <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
