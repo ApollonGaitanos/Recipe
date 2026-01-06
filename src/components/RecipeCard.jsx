@@ -23,7 +23,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
     const isSaved = isRecipeSaved ? isRecipeSaved(recipe.id) : false;
 
     React.useEffect(() => {
-        hasUserLiked(recipe.id).then(setLiked);
+        setLiked(hasUserLiked(recipe.id));
     }, [recipe.id, hasUserLiked]);
 
     const handleLike = (e) => {
