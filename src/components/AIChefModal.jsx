@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowRight, ChefHat, FileText } from 'lucide-react';
+import { X, ArrowRight, ChefHat, FileText, ChevronLeft } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 
