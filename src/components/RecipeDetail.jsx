@@ -468,43 +468,50 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     <div className="md:col-span-8 space-y-12">
 
                         {/* Meta Stats Row */}
-                        <div className="grid grid-cols-3 gap-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
-                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                                    <Clock className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Prep Time</div>
-                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 0} mins</div>
-                                </div>
-                            </div>
-                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                                <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                                    <ChefHat className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cook Time</div>
-                                    <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} mins</div>
-                                </div>
-                            </div>
-
-                            {/* Difficulty: Dynamic Display */}
-                            {(() => {
-                                const difficulty = (recipe.tags || []).find(t => ['Easy', 'Medium', 'Hard'].includes(t));
-                                if (!difficulty) return null;
-                                return (
-                                    <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                                        <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-highlight">
-                                            <Activity className="w-6 h-6" />
+                        {/* Meta Stats Row */}
+                        {(() => {
+                            const difficulty = (recipe.tags || []).find(t => ['Easy', 'Medium', 'Hard'].includes(t));
+                            return (
+                                <div className="flex flex-col md:flex-row gap-8 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+                                    <div className="flex-1 flex flex-col md:flex-row items-center gap-4 text-center md:text-left justify-center md:justify-start">
+                                        <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                            <Clock className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
-                                            <div className="font-semibold text-zinc-900 dark:text-white">{difficulty}</div>
+                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Prep Time</div>
+                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 0} mins</div>
                                         </div>
                                     </div>
-                                );
-                            })()}
-                        </div>
+                                    <div className="flex-1 flex flex-col md:flex-row items-center gap-4 text-center md:text-left justify-center md:justify-start relative">
+                                        {/* Divider on desktop */}
+                                        <div className="hidden md:block absolute -left-4 top-1/2 -translate-y-1/2 w-px h-8 bg-zinc-200 dark:bg-zinc-700"></div>
+
+                                        <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                            <ChefHat className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cook Time</div>
+                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} mins</div>
+                                        </div>
+                                    </div>
+
+                                    {difficulty && (
+                                        <div className="flex-1 flex flex-col md:flex-row items-center gap-4 text-center md:text-left justify-center md:justify-start relative">
+                                            {/* Divider on desktop */}
+                                            <div className="hidden md:block absolute -left-4 top-1/2 -translate-y-1/2 w-px h-8 bg-zinc-200 dark:bg-zinc-700"></div>
+
+                                            <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-highlight">
+                                                <Activity className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
+                                                <div className="font-semibold text-zinc-900 dark:text-white">{difficulty}</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
 
                         <div className="flex items-center justify-between">
                             <h2 className="text-3xl font-serif font-bold text-zinc-900 dark:text-white">{t('instructionsSection')}</h2>
