@@ -23,7 +23,7 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
 
     // Fetch Suggestions
     useEffect(() => {
-        if (!isVisible || !query || query.length < 2) {
+        if (!isVisible || !query || query.trim().length === 0) {
             setProfiles([]);
             setRecipes([]);
             return;
@@ -32,23 +32,15 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
         const fetchSuggestions = async () => {
             setLoading(true);
             try {
-                // 1. Search Profiles
+                // 1. Search Profiles (RPC for unaccent support)
                 const { data: profileData, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('username, id, bio')
-                    .ilike('username', `%${query}%`)
-                    .limit(3);
+                    .rpc('search_profiles_public', { search_term: query });
 
                 if (profileError) console.error("Profile search error:", profileError);
 
-                // 2. Search Public Recipes
+                // 2. Search Public Recipes (RPC for unaccent support & sorting)
                 const { data: recipeData, error: recipeError } = await supabase
-                    .from('recipes')
-                    // Using user_id for relationship just to be safe if 'profiles' alias fails silently
-                    .select('id, title, is_public, user_id, profiles (username)')
-                    .eq('is_public', true)
-                    .ilike('title', `%${query}%`)
-                    .limit(5);
+                    .rpc('search_recipes_public', { search_term: query });
 
                 if (recipeError) console.error("Recipe search error:", recipeError);
 
@@ -138,7 +130,7 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
                                             {recipe.title}
                                         </span>
                                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            by {recipe.profiles?.username || 'Chef'}
+                                            by {recipe.username || recipe.profiles?.username || 'Chef'}
                                         </span>
                                     </div>
                                 </button>
