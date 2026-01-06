@@ -12,6 +12,7 @@ import VisibilityModal from './VisibilityModal';
 import { generateRecipePDF } from '../utils/pdfGenerator';
 import { parseRecipe } from '../utils/recipeParser';
 import { parseSmartList, formatIngredient, formatInstruction, formatTool } from '../utils/dataFormatters';
+import { scaleIngredient } from '../utils/scalingUtils';
 import TranslationModal from './TranslationModal';
 import AIErrorModal from './AIErrorModal';
 
@@ -25,6 +26,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     const [isDownloading, setIsDownloading] = useState(false);
     const [isVisModalOpen, setIsVisModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Scaling State
+    const [servingCount, setServingCount] = useState(4);
 
     // AI Modal State
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null });
@@ -62,8 +66,16 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
     // recipe definition moved, result used in hooks
     const recipe = translatedRecipe || originalRecipe;
 
-    // if (!recipe) return null; // MOVED DOWN
+    // Effect to set initial servings when recipe loads
+    React.useEffect(() => {
+        if (recipe?.servings) {
+            setServingCount(Number(recipe.servings) || 4);
+        }
+    }, [recipe?.id, recipe?.servings]);
 
+    // Scaling Handlers
+    const handleIncrementServings = () => setServingCount(prev => prev + 1);
+    const handleDecrementServings = () => setServingCount(prev => Math.max(1, prev - 1));
 
     const isOwner = React.useMemo(() => {
         if (!user || !recipe) return false;
@@ -395,21 +407,36 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold font-serif">{t('ingredientsSection')}</h3>
                                 <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                    <button className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md">-</button>
-                                    <span className="font-semibold w-6 text-center">4</span>
-                                    <button className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md">+</button>
+                                    <button
+                                        onClick={handleDecrementServings}
+                                        className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md transition-colors"
+                                    >
+                                        -
+                                    </button>
+                                    <span className="font-semibold w-6 text-center tabular-nums">{servingCount}</span>
+                                    <button
+                                        onClick={handleIncrementServings}
+                                        className="w-8 h-8 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-md transition-colors"
+                                    >
+                                        +
+                                    </button>
                                 </div>
                             </div>
 
                             <ul className="space-y-4">
-                                {parseSmartList(recipe.ingredients).map((ingredient, index) => (
-                                    <li key={index} className="flex items-center gap-3 group cursor-pointer">
-                                        <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-primary transition-colors" />
-                                        <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                            {formatIngredient(ingredient)}
-                                        </span>
-                                    </li>
-                                ))}
+                                {parseSmartList(recipe.ingredients).map((ingredient, index) => {
+                                    // Scale Ingredient
+                                    const scaledIngredient = scaleIngredient(ingredient, Number(recipe.servings) || 4, servingCount);
+
+                                    return (
+                                        <li key={index} className="flex items-center gap-3 group cursor-pointer">
+                                            <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-primary transition-colors" />
+                                            <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                                {formatIngredient(scaledIngredient)}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
                             </ul>
 
                             <button className="w-full mt-8 py-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-highlight font-semibold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
