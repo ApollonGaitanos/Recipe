@@ -28,15 +28,15 @@ export const parseQuantity = (str) => {
     }
 
     // 1. Check for Mixed Fractions at START "1 1/2"
-    // We restrict to start ^ because "Step 2: add 1/2 cup" shouldn't parse "Step 2" as quantity.
-    // However, for ingredients list, usually quantity is first.
-    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)/);
+    // Allow spaces around slash: "1 1 / 2"
+    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)/);
     if (mixedMatch) {
         return parseInt(mixedMatch[1]) + (parseInt(mixedMatch[2]) / parseInt(mixedMatch[3]));
     }
 
     // 2. Check for Fractions at START "1/2"
-    const fractionMatch = trimmed.match(/^(\d+)\/(\d+)/);
+    // Allow spaces around slash: "1 / 2"
+    const fractionMatch = trimmed.match(/^(\d+)\s*\/\s*(\d+)/);
     if (fractionMatch) {
         return parseInt(fractionMatch[1]) / parseInt(fractionMatch[2]);
     }
@@ -112,8 +112,8 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
 
             // Reconstruct string
             const unicodeRegex = /^(\d+)?\s?([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/;
-            const mixedRegex = /^(\d+)\s+(\d+)\/(\d+)/;
-            const fractionRegex = /^(\d+)\/(\d+)/;
+            const mixedRegex = /^(\d+)\s+(\d+)\s*\/\s*(\d+)/;
+            const fractionRegex = /^(\d+)\s*\/\s*(\d+)/;
             const numberRegex = /^(\d+(\.\d+)?)/;
 
             let matchLength = 0;
