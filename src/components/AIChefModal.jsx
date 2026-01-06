@@ -4,7 +4,7 @@ import { X, ArrowRight, ChefHat, FileText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 
-export default function AIChefModal({ isOpen, onClose, onImport }) {
+export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
     const { t, language } = useLanguage();
 
     // --- State Management ---
