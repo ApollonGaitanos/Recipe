@@ -414,65 +414,76 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             </div>
 
             {/* Main Form */}
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-                {/* 1. Title (Top, Full Width) */}
-                <div className="space-y-2">
-                    <input
-                        className="w-full bg-transparent text-4xl md:text-5xl font-serif font-bold text-[#111813] dark:text-[#e0e6e2] border-b border-[#dce5df] dark:border-[#2a4030] pb-4 focus:border-primary focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 transition-colors"
-                        placeholder="Recipe Title"
-                        value={formData.title}
-                        onChange={e => handleMetadataChange('title', e.target.value)}
-                    />
-                </div>
+                {/* Left Column (5 cols): Photo, Ingredients, Tools */}
+                <div className="lg:col-span-5 space-y-8">
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-
-                    {/* Left Column (4 cols): Ingredients & Tools */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <IngredientsList
-                            ingredients={ingredientsList}
-                            setIngredients={setIngredientsList}
-                            markDirty={markDirty}
-                        />
-
-                        <ToolsList
-                            tools={toolsList}
-                            setTools={setToolsList}
-                            markDirty={markDirty}
-                        />
-                    </div>
-
-                    {/* Right Column (8 cols): Description, Metrics, Instructions */}
-                    <div className="lg:col-span-7 space-y-8">
-
-                        {/* Metadata (Image, Desc, Time, Servings, Tags) */}
-                        <RecipeMetadata
-                            formData={formData}
-                            handleChange={handleMetadataChange}
-                            handleTagChange={handleTagChange}
-                            imagePreview={imagePreview}
-                            handleImageChange={handleImageChange}
-                            triggerFileInput={() => fileInputRef.current?.click()}
-                        />
-
-                        {/* Hidden File Input (Attached to Ref) */}
+                    {/* 1. Photo Upload (Top Left) */}
+                    <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-[#dce5df] dark:border-[#2a4030] bg-gray-50 dark:bg-[#1a2c20]/50 flex flex-col items-center justify-center cursor-pointer hover:border-[#63886f] hover:bg-[#63886f]/5 transition-all overflow-hidden relative group"
+                    >
+                        {imagePreview ? (
+                            <img src={imagePreview} alt="Recipe" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="text-center p-6">
+                                <div className="w-12 h-12 bg-[#e8f5e9] dark:bg-[#2a4030] rounded-full flex items-center justify-center mx-auto mb-3 text-[#63886f]">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">Upload Photo</span>
+                            </div>
+                        )}
+                        {/* Hidden Input managed by parent's ref */}
                         <input
                             type="file"
                             accept="image/*"
                             className="hidden"
                             ref={fileInputRef}
                             onChange={handleImageChange}
-                        />
-
-                        {/* Instructions */}
-                        <InstructionsList
-                            instructions={instructionsList}
-                            setInstructions={setInstructionsList}
-                            markDirty={markDirty}
+                            onClick={(e) => e.stopPropagation()}
                         />
                     </div>
 
+                    <IngredientsList
+                        ingredients={ingredientsList}
+                        setIngredients={setIngredientsList}
+                        markDirty={markDirty}
+                    />
+
+                    <ToolsList
+                        tools={toolsList}
+                        setTools={setToolsList}
+                        markDirty={markDirty}
+                    />
+                </div>
+
+                {/* Right Column (7 cols): Title, Metadata, Instructions */}
+                <div className="lg:col-span-7 space-y-8">
+
+                    {/* 2. Title (Top Right) */}
+                    <div className="space-y-2">
+                        <input
+                            className="w-full bg-transparent text-4xl md:text-5xl font-serif font-bold text-[#111813] dark:text-[#e0e6e2] border-b border-[#dce5df] dark:border-[#2a4030] pb-4 focus:border-primary focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 transition-colors"
+                            placeholder="Recipe Title"
+                            value={formData.title}
+                            onChange={e => handleMetadataChange('title', e.target.value)}
+                        />
+                    </div>
+
+                    {/* Metadata (Desc, Time, Servings, Tags) */}
+                    <RecipeMetadata
+                        formData={formData}
+                        handleChange={handleMetadataChange}
+                        handleTagChange={handleTagChange}
+                    />
+
+                    {/* Instructions */}
+                    <InstructionsList
+                        instructions={instructionsList}
+                        setInstructions={setInstructionsList}
+                        markDirty={markDirty}
+                    />
                 </div>
 
             </div>
