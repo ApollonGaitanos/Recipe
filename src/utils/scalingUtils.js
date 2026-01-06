@@ -28,15 +28,15 @@ export const parseQuantity = (str) => {
     }
 
     // 1. Check for Mixed Fractions at START "1 1/2"
-    // Allow spaces around slash: "1 1 / 2" and alternative slash chars
-    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\s*[\/\u2044\u2215]\s*(\d+)/);
+    // Allow spaces around slash: "1 1 / 2" and alternative slash chars (division slash, backslash, division sign)
+    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\s*[\/\u2044\u2215\u00F7\\]\s*(\d+)/);
     if (mixedMatch) {
         return parseInt(mixedMatch[1]) + (parseInt(mixedMatch[2]) / parseInt(mixedMatch[3]));
     }
 
     // 2. Check for Fractions at START "1/2"
-    // Allow spaces around slash: "1 / 2" and alternative slash chars
-    const fractionMatch = trimmed.match(/^(\d+)\s*[\/\u2044\u2215]\s*(\d+)/);
+    // Allow spaces around slash: "1 / 2" and alternative slash chars (division slash, backslash, division sign)
+    const fractionMatch = trimmed.match(/^(\d+)\s*[\/\u2044\u2215\u00F7\\]\s*(\d+)/);
     if (fractionMatch) {
         return parseInt(fractionMatch[1]) / parseInt(fractionMatch[2]);
     }
@@ -92,8 +92,10 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
 
     // Handle Object structure: { amount: "2", item: "cups flour" }
     if (typeof ingredient === 'object' && ingredient !== null) {
-        const amount = parseFloat(ingredient.amount);
-        if (!isNaN(amount)) {
+        // Fix: Use parseQuantity to handle fractions in 'amount' string (e.g., "1/2")
+        // formerly: const amount = parseFloat(ingredient.amount);
+        const amount = parseQuantity(ingredient.amount);
+        if (amount !== null && !isNaN(amount)) {
             const newAmount = scaleLogic(amount);
             return {
                 ...ingredient,
@@ -112,8 +114,8 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
 
             // Reconstruct string
             const unicodeRegex = /^(\d+)?\s?([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/;
-            const mixedRegex = /^(\d+)\s+(\d+)\s*[\/\u2044\u2215]\s*(\d+)/;
-            const fractionRegex = /^(\d+)\s*[\/\u2044\u2215]\s*(\d+)/;
+            const mixedRegex = /^(\d+)\s+(\d+)\s*[\/\u2044\u2215\u00F7\\]\s*(\d+)/;
+            const fractionRegex = /^(\d+)\s*[\/\u2044\u2215\u00F7\\]\s*(\d+)/;
             const numberRegex = /^(\d+(\.\d+)?)/;
 
             let matchLength = 0;
