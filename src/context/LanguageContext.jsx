@@ -110,10 +110,19 @@ const translations = {
         visibility: {
             makePublic: "Make Public",
             makePrivate: "Make Private",
+            makePublicFriendly: "Share with the Community",
+            makePrivateFriendly: "Keep it Private",
             publicFeed: "Public Community Recipes",
             myRecipes: "My Recipe Collection",
             confirmPublic: "Are you sure you want to make this recipe PUBLIC? It will be visible to everyone.",
             confirmPrivate: "Are you sure you want to make this recipe PRIVATE? Only you will be able to see it.",
+            publicDesc: "Making this recipe public makes it visible to everyone. Other chefs will be able to view, like, and save your creation!",
+            publicBenefits: [
+                "Your name will be displayed as the author",
+                "Ideally suited for sharing your best dishes",
+                "You can revert to private anytime"
+            ],
+            privateDesc: "This recipe will be hidden from the Feed. It will only be visible to you in your personal kitchen.",
             publicBadge: "Public",
             privateBadge: "Private"
         },
@@ -298,10 +307,19 @@ const translations = {
         visibility: {
             makePublic: "Δημοσιοποίηση",
             makePrivate: "Απόκρυψη",
+            makePublicFriendly: "Μοιραστείτε με την Κοινότητα",
+            makePrivateFriendly: "Κρατήστε το Ιδιωτικό",
             publicFeed: "Συνταγές της Κοινότητας",
             myRecipes: "Η Συλλογή μου",
             confirmPublic: "Θέλετε σίγουρα να κάνετε τη συνταγή ΔΗΜΟΣΙΑ; Θα είναι ορατή σε όλους.",
             confirmPrivate: "Θέλετε σίγουρα να κάνετε τη συνταγή ΙΔΙΩΤΙΚΗ; Θα είναι ορατή μόνο σε εσάς.",
+            publicDesc: "Κάνοντας τη συνταγή δημόσια, γίνεται ορατή σε όλους. Άλλοι σεφ θα μπορούν να δουν, να αγαπήσουν και να αποθηκεύσουν τη δημιουργία σας!",
+            publicBenefits: [
+                "Το όνομά σας θα φαίνεται ως δημιουργός",
+                "Ιδανικό για να μοιραστείτε τα καλύτερα πιάτα σας",
+                "Μπορείτε να το ξανακάνετε ιδιωτικό οποτεδήποτε"
+            ],
+            privateDesc: "Η συνταγή θα κρυφτεί από τη ροή. Θα είναι ορατή μόνο σε εσάς στην προσωπική σας κουζίνα.",
             publicBadge: "Δημόσια",
             privateBadge: "Ιδιωτική"
         },
