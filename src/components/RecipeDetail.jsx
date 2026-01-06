@@ -315,14 +315,23 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         </div>
 
                         <div className="ml-auto flex items-center gap-4">
-                            <button
-                                onClick={() => isOwner && setIsVisModalOpen(true)}
-                                disabled={!isOwner}
-                                className={'flex items-center gap-2 text-sm font-medium transition-colors ' + (!isOwner ? 'opacity-70 cursor-not-allowed' : 'hover:brightness-110 cursor-pointer')}
-                            >
-                                <span className="text-zinc-500 dark:text-zinc-400">{recipe.is_public ? 'Public' : 'Private'}</span>
-                                {recipe.is_public ? <Globe className="w-4 h-4 text-highlight" /> : <Lock className="w-4 h-4 text-amber-500" />}
-                            </button>
+                            {/* Visibility Toggle */}
+                            <label className={`flex items-center gap-3 group ${isOwner ? 'cursor-pointer' : 'opacity-70 cursor-not-allowed'}`}>
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={recipe.is_public}
+                                        disabled={!isOwner}
+                                        onChange={() => isOwner && setIsVisModalOpen(true)}
+                                    />
+                                    <div className="w-14 h-8 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#63886f]"></div>
+                                </div>
+                                <span className={`text-sm font-medium flex items-center gap-1.5 transition-colors ${isOwner ? 'text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white' : 'text-zinc-400'}`}>
+                                    {recipe.is_public ? <Globe size={16} /> : <Lock size={16} />}
+                                    {recipe.is_public ? t('visibility.publicBadge') : t('visibility.privateBadge')}
+                                </span>
+                            </label>
 
                             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 mx-1" />
 

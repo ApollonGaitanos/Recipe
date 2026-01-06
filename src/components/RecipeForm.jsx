@@ -4,7 +4,7 @@ import { Save, X, Sparkles, Lock, Globe, ArrowLeft, Wand2 } from 'lucide-react';
 import { useBlocker } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-// import VisibilityModal from './VisibilityModal'; // Replaced by Toggle
+import VisibilityModal from './VisibilityModal';
 import TranslationModal from './TranslationModal';
 import ConfirmModal from './ConfirmModal';
 import { parseRecipe } from '../utils/recipeParser';
@@ -39,6 +39,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         description: '',
         image: null
     });
+
+    const [showVisibilityModal, setShowVisibilityModal] = useState(false);
 
     // List States (Structured Data)
     const [ingredientsList, setIngredientsList] = useState([]);
@@ -374,7 +376,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                                 type="checkbox"
                                 className="sr-only peer"
                                 checked={formData.is_public}
-                                onChange={(e) => handleMetadataChange('is_public', e.target.checked)}
+                                onChange={() => setShowVisibilityModal(true)}
                             />
                             <div className="w-14 h-8 bg-gray-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#63886f]"></div>
                         </div>
@@ -502,20 +504,21 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             </div>
 
             {/* Modals */}
-            <AIFeaturesModal
-                isOpen={aiFeaturesOpen}
-                onClose={() => setAiFeaturesOpen(false)}
-                onSelect={handleAIFeatureSelect}
+            <VisibilityModal
+                isOpen={showVisibilityModal}
+                onClose={() => setShowVisibilityModal(false)}
+                onConfirm={() => handleMetadataChange('is_public', !formData.is_public)}
+                isMakingPublic={!formData.is_public}
             />
 
-            <TranslationModal
-                isOpen={actionModal.isOpen && (actionModal.mode === 'enhance' || actionModal.mode === 'translate')}
+            <AIChefModal
+                isOpen={actionModal.isOpen && (actionModal.mode === 'chef' || actionModal.mode === 'create')}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
                 onBack={handleBackToFeatures}
-                mode={actionModal.mode}
-                onConfirm={executeAIAction}
-                isProcessing={isProcessingAI}
-                isPermanent={true}
+                onImport={(data) => {
+                    handleMagicImport(data);
+                    setActionModal({ isOpen: false, mode: null });
+                }}
             />
 
             <MagicImportModal
@@ -528,14 +531,20 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 }}
             />
 
-            <AIChefModal
-                isOpen={actionModal.isOpen && (actionModal.mode === 'chef' || actionModal.mode === 'create')}
-                onClose={() => setActionModal({ isOpen: false, mode: null })}
+            <TranslationModal
+                isOpen={actionModal.isOpen && (actionModal.mode === 'enhance' || actionModal.mode === 'translate')}
+                onClose={() => !isProcessingAI && setActionModal({ isOpen: false, mode: null })}
                 onBack={handleBackToFeatures}
-                onImport={(data) => {
-                    handleMagicImport(data);
-                    setActionModal({ isOpen: false, mode: null });
-                }}
+                mode={actionModal.mode}
+                onConfirm={executeAIAction}
+                isProcessing={isProcessingAI}
+                isPermanent={true}
+            />
+
+            <AIFeaturesModal
+                isOpen={aiFeaturesOpen}
+                onClose={() => setAiFeaturesOpen(false)}
+                onSelectFeature={handleAIFeatureSelect}
             />
 
             <AIErrorModal
