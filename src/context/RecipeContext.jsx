@@ -13,6 +13,7 @@ export function useRecipes() {
 }
 
 export default function RecipeContext({ children }) {
+    console.log("--> RENDER RecipeContext (v2-debug) <--");
     const { user } = useAuth();
     const { t } = useLanguage();
     const [recipes, setRecipes] = useState([]); // My Recipes
