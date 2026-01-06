@@ -13,6 +13,10 @@ export const toAppRecipe = (dbRecipe) => ({
     likes_count: dbRecipe.likes_count || 0,
     image_url: dbRecipe.image_url,
     description: dbRecipe.description || '',
+    calories: dbRecipe.calories,
+    protein: dbRecipe.protein,
+    carbs: dbRecipe.carbs,
+    fat: dbRecipe.fat,
     createdAt: dbRecipe.created_at,
     originId: dbRecipe.origin_id || null, // Forking support
     originTitle: dbRecipe.origin_title || null,
@@ -33,5 +37,9 @@ export const toDbRecipe = (appRecipe, userId, username) => ({
     origin_title: appRecipe.originTitle || null,
     origin_author_username: appRecipe.originAuthor || null,
     description: appRecipe.description || null,
+    calories: appRecipe.calories,
+    protein: appRecipe.protein,
+    carbs: appRecipe.carbs,
+    fat: appRecipe.fat
     // image_url is usually handled separately via storage upload, but could be added here if passed
 });
