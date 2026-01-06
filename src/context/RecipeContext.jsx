@@ -13,7 +13,6 @@ export function useRecipes() {
 }
 
 export default function RecipeContext({ children }) {
-    console.log("--> RENDER RecipeContext (v2-debug) <--");
     const { user } = useAuth();
     const { t } = useLanguage();
     const [recipes, setRecipes] = useState([]); // My Recipes
@@ -69,9 +68,7 @@ export default function RecipeContext({ children }) {
 
     const fetchPublicRecipes = useCallback(async () => {
         try {
-            console.log("Fetching public recipes...");
             const pubRecipes = await recipeService.fetchPublicRecipes();
-            console.log("Public recipes fetched:", pubRecipes);
             setPublicRecipes(pubRecipes);
         } catch (error) {
             console.error("Error fetching public recipes:", error);
@@ -90,6 +87,7 @@ export default function RecipeContext({ children }) {
             ]);
             setLoading(false);
         };
+        loadAll();
     }, [user, fetchPublicRecipes, fetchRecipes, fetchUserLikes, fetchSavedRecipes]);
 
 
