@@ -13,7 +13,12 @@ import AIErrorModal from './AIErrorModal';
 import IngredientsList from './RecipeForm/IngredientsList';
 import InstructionsList from './RecipeForm/InstructionsList';
 import ToolsList from './RecipeForm/ToolsList';
+// Sub-components
+import IngredientsList from './RecipeForm/IngredientsList';
+import InstructionsList from './RecipeForm/InstructionsList';
+import ToolsList from './RecipeForm/ToolsList';
 import RecipeMetadata from './RecipeForm/RecipeMetadata';
+import MagicImportModal from './MagicImportModal';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
@@ -506,11 +511,20 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             />
 
             <TranslationModal
-                isOpen={actionModal.isOpen}
+                isOpen={actionModal.isOpen && (actionModal.mode === 'enhance' || actionModal.mode === 'translate')}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
                 mode={actionModal.mode}
                 onConfirm={executeAIAction}
                 isProcessing={isProcessingAI}
+            />
+
+            <MagicImportModal
+                isOpen={actionModal.isOpen && actionModal.mode === 'magic'}
+                onClose={() => setActionModal({ isOpen: false, mode: null })}
+                onImport={(data) => {
+                    handleMagicImport(data);
+                    setActionModal({ isOpen: false, mode: null });
+                }}
             />
 
             <AIErrorModal
