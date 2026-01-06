@@ -288,7 +288,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             // Construct context from current state
             const currentRecipeState = {
                 ...formData,
-                ingredients: ingredientsList.map(ing => `${ ing.amount } ${ ing.item } `.trim()).join('\n'),
+                ingredients: ingredientsList.map(ing => (ing.amount + ' ' + ing.item).trim()).join('\n'),
                 instructions: instructionsList.map(step => step.text).join('\n'),
                 tools: toolsList.map(t => t.text).filter(Boolean)
             };
