@@ -241,7 +241,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
         }
     };
 
-    const displayDescription = recipe.description || (typeof recipe.instructions === 'string' ? recipe.instructions : recipe.instructions.join(' ')).substring(0, 160) + "...";
+    const displayDescription = recipe.description;
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark pt-2 pb-20 fade-in text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-200">
@@ -378,9 +378,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                 {/* Description Grid */}
                 <div className="max-w-4xl mx-auto text-center py-8">
-                    <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-300 leading-relaxed font-serif">
-                        "{displayDescription}"
-                    </p>
+                    {displayDescription && (
+                        <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-300 leading-relaxed font-serif">
+                            "{displayDescription}"
+                        </p>
+                    )}
                 </div>
 
                 {/* Main Content Grid */}
@@ -485,15 +487,23 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} mins</div>
                                 </div>
                             </div>
-                            <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                                <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-highlight">
-                                    <Activity className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
-                                    <div className="font-semibold text-zinc-900 dark:text-white">Medium</div>
-                                </div>
-                            </div>
+
+                            {/* Difficulty: Dynamic Display */}
+                            {(() => {
+                                const difficulty = (recipe.tags || []).find(t => ['Easy', 'Medium', 'Hard'].includes(t));
+                                if (!difficulty) return null;
+                                return (
+                                    <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-highlight">
+                                            <Activity className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
+                                            <div className="font-semibold text-zinc-900 dark:text-white">{difficulty}</div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         <div className="flex items-center justify-between">
