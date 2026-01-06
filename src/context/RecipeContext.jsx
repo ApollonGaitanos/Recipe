@@ -68,7 +68,9 @@ export default function RecipeContext({ children }) {
 
     const fetchPublicRecipes = useCallback(async () => {
         try {
+            console.log("Fetching public recipes...");
             const pubRecipes = await recipeService.fetchPublicRecipes();
+            console.log("Public recipes fetched:", pubRecipes);
             setPublicRecipes(pubRecipes);
         } catch (error) {
             console.error("Error fetching public recipes:", error);
