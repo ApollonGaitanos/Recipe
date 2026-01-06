@@ -587,7 +587,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             <AIFeaturesModal
                 isOpen={aiFeaturesOpen}
                 onClose={() => setAiFeaturesOpen(false)}
-                onSelectFeature={handleAIFeatureSelect}
+                onSelect={handleAIFeatureSelect}
             />
 
             <AIErrorModal
