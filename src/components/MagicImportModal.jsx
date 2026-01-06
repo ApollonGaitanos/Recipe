@@ -4,14 +4,14 @@ import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText, ChefHat, Link } 
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 
-export default function MagicImportModal({ isOpen, onClose, onImport }) {
+export default function MagicImportModal({ isOpen, onClose, onImport, initialMode = 'import' }) {
     const { t, language } = useLanguage();
 
     // --- State Management ---
     const [inputValue, setInputValue] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const [mode, setMode] = useState('import'); // 'import' or 'create'
+    const [mode, setMode] = useState(initialMode); // 'import' or 'create'
 
     const [error, setError] = useState(null);
 
@@ -39,7 +39,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport }) {
                 setInputValue('');
                 setPreviewUrl(null);
                 setSelectedImage(null);
-                setMode('import');
+                setMode(initialMode);
                 setScanProgress(0);
                 setIsParsing(false);
                 setError(null);

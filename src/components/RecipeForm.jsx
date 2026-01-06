@@ -1,9 +1,10 @@
+```javascript
 import React, { useState, useEffect, useRef } from 'react';
-import { Save, X, Sparkles, Lock, Globe, ArrowLeft } from 'lucide-react';
+import { Save, X, Sparkles, Lock, Globe, ArrowLeft, Wand2 } from 'lucide-react';
 import { useBlocker } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // Leftover for direct AI call, could be moved to service later
+import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import VisibilityModal from './VisibilityModal';
+// import VisibilityModal from './VisibilityModal'; // Replaced by Toggle
 import TranslationModal from './TranslationModal';
 import ConfirmModal from './ConfirmModal';
 import { parseRecipe } from '../utils/recipeParser';
@@ -15,6 +16,8 @@ import InstructionsList from './RecipeForm/InstructionsList';
 import ToolsList from './RecipeForm/ToolsList';
 import RecipeMetadata from './RecipeForm/RecipeMetadata';
 import MagicImportModal from './MagicImportModal';
+import AIFeaturesModal from './RecipeForm/AIFeaturesModal';
+import BlockerModal from './BlockerModal';
 
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
@@ -28,12 +31,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         prepTime: '',
         cookTime: '',
         servings: '',
-        ingredients: '', // Legacy string field, not used in UI but kept for safety
-        instructions: '', // Legacy string field
+        ingredients: '',
+        instructions: '',
         tags: '',
         is_public: false,
         description: '',
-        image: null // File or URL
+        image: null
     });
 
     // List States (Structured Data)
@@ -47,11 +50,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const [isSaving, setIsSaving] = useState(false);
 
     // Modal States
-    const [visibilityModalOpen, setVisibilityModalOpen] = useState(false);
+    const [aiFeaturesOpen, setAiFeaturesOpen] = useState(false);
     const [actionModal, setActionModal] = useState({ isOpen: false, mode: null }); // 'magic', 'enhance', 'translate'
     const [aiError, setAiError] = useState(null);
     const [isProcessingAI, setIsProcessingAI] = useState(false);
     const [pendingTranslations, setPendingTranslations] = useState([]);
+    const [validationError, setValidationError] = useState(null);
 
     const markDirty = () => setIsDirty(true);
 
@@ -141,18 +145,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         }
                     }
 
-                    // Tools - not in original DB schema as column? 
-                    // Wait, transformer says it's not there.
-                    // If it's not in DB, we can't load it.
-                    // Assuming for now it MIGHT be added or we ignore it on load if not present.
-                    // (User asked for AI support, we added it to prompt. Frontend displays it.
-                    // But if DB doesn't save it, it's transient. 
-                    // However, for this refactor, we maintain existing behavior which ignored it on save maybe?)
-                    // Checking implementation plan: "Ensure tools are extracted".
-                    // If DB doesn't have 'tools' column, we should probably add it or store in jsonb.
-                    // For now, let's init empty or try to find it.
-                    // *Self-correction*: If I don't see 'tools' in DB load, I leave empty. 
-
                 } catch (error) {
                     console.error('Error loading recipe:', error);
                 }
@@ -171,18 +163,6 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     const blocker = useBlocker(({ currentLocation }) => {
         return isDirty && !isSaving && currentLocation.pathname !== '/';
     });
-
-    useEffect(() => {
-        if (blocker.state === 'blocked') {
-            const confirmLeave = window.confirm('You have unsaved changes. Do you really want to leave?');
-            if (confirmLeave) {
-                blocker.proceed();
-            } else {
-                blocker.reset();
-            }
-        }
-    }, [blocker]);
-
 
     // Handlers
     const handleMetadataChange = (field, value) => {
@@ -207,7 +187,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     const handleSaveLocal = async () => {
         if (!formData.title.trim()) {
-            alert('Please enter a recipe title');
+            setValidationError('Please enter a recipe title');
             return;
         }
 
@@ -216,29 +196,20 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             // Reconstruct structured data for save
             const finalIngredients = ingredientsList.map(({ id, ...rest }) => rest).filter(i => i.item.trim());
             const finalInstructions = instructionsList.map(i => i.text).filter(t => t.trim());
-            // const finalTools = toolsList.map(t => t.text).filter(t => t.trim()); // Not saving tools to DB yet as per schema check
 
             const submissionData = {
                 ...formData,
                 ingredients: finalIngredients, // Save as JSON object array
                 instructions: finalInstructions,
                 tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
-                // tools: finalTools // If DB supported it
             };
 
             // Call Parent Save
             await onSave(submissionData);
 
-            // Handle Pending Translations (logic moved to parent or kept here? Kept here mostly)
+            // Handle Pending Translations
             if (pendingTranslations.length > 0) {
-                const { data: { session } } = await supabase.auth.getSession(); // Direct for now
-                // Ideally this goes to service too, but 'pendingTranslations' logic is tightly coupled here.
-                // We will skip refactoring this specific block to service for this turn to avoid scope creep,
-                // or we can iterate pendingTranslations and use recipeService.createTranslation() if it existed.
-                // For now, let's keep direct calls for translations or move to service if I added it.
-                // I didn't add `saveTranslation` to service. I'll leave as is or add inline.
-
-                const { data: latest } = await supabase.from('recipes').select('id').eq('title', formData.title).order('created_at', { ascending: false }).limit(1).single();
+                 const { data: latest } = await supabase.from('recipes').select('id').eq('title', formData.title).order('created_at', { ascending: false }).limit(1).single();
 
                 if (latest) {
                     await supabase.from('recipe_translations').upsert(
@@ -259,6 +230,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
         } catch (error) {
             console.error(error);
+            setAiError("Failed to save recipe. " + (error.message || "Unknown error"));
+        } finally {
             setIsSaving(false);
         }
     };
@@ -315,7 +288,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             // Construct context from current state
             const currentRecipeState = {
                 ...formData,
-                ingredients: ingredientsList.map(ing => `${ing.amount} ${ing.item}`.trim()).join('\n'),
+                ingredients: ingredientsList.map(ing => `${ ing.amount } ${ ing.item } `.trim()).join('\n'),
                 instructions: instructionsList.map(step => step.text).join('\n'),
                 tools: toolsList.map(t => t.text).filter(Boolean)
             };
@@ -356,58 +329,81 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 setActionModal({ isOpen: false, mode: null });
             }
         } catch (error) {
-            setAiError(error);
+            setAiError(error.message || "AI Error");
         } finally {
             setIsProcessingAI(false);
         }
     };
+    
+    // Feature Choice Handler
+    const handleAIFeatureSelect = (featureId) => {
+        setAiFeaturesOpen(false);
+        if (featureId === 'magic') {
+            setActionModal({ isOpen: true, mode: 'magic' }); 
+        } else if (featureId === 'chef') {
+            setActionModal({ isOpen: true, mode: 'create' });
+        } else {
+             setActionModal({ isOpen: true, mode: featureId });
+        }
+    };
 
-    if (isLoading) return <div className="p-8 text-center">Loading recipe...</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading recipe...</div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 pb-20 pt-6">
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <button onClick={onCancel} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors">
-                    <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
-                </button>
-                <div className="flex gap-2">
-                    {/* Action Buttons */}
-                    <button
-                        onClick={() => setActionModal({ isOpen: true, mode: 'magic' })}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-[#63886f] hover:bg-[#e8f5e9] dark:hover:bg-[#2a4030] transition-colors text-sm font-medium"
+            <div className="flex items-center justify-between mb-8 sticky top-0 bg-[#fbfdfc] dark:bg-[#112116] z-40 py-4 border-b border-gray-100 dark:border-white/5 lg:static lg:bg-transparent lg:border-none lg:p-0">
+                 <div className="flex items-center gap-4">
+                    <button onClick={onCancel} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors hidden lg:flex">
+                        <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
+                    </button>
+                    {/* Public/Private Toggle */}
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                            <input 
+                                type="checkbox" 
+                                className="sr-only peer"
+                                checked={formData.is_public}
+                                onChange={(e) => handleMetadataChange('is_public', e.target.checked)}
+                            />
+                            <div className="w-14 h-8 bg-gray-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#63886f]"></div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                            {formData.is_public ? <Globe size={16} /> : <Lock size={16} />}
+                            {formData.is_public ? 'Public' : 'Private'}
+                        </span>
+                    </label>
+                 </div>
+
+                <div className="flex gap-3">
+                     <button
+                        onClick={onCancel}
+                        className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
                     >
-                        <Sparkles size={16} /> Magic Import
+                        Cancel
                     </button>
                     <button
-                        onClick={() => setActionModal({ isOpen: true, mode: 'enhance' })}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-[#63886f] hover:bg-[#e8f5e9] dark:hover:bg-[#2a4030] transition-colors text-sm font-medium"
+                        onClick={onCancel}
+                        className="px-6 py-2 rounded-full font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors hidden lg:block"
                     >
-                        <Sparkles size={16} /> Enhance
+                        Cancel
                     </button>
+
+                    {/* AI Features Button */}
                     <button
-                        onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-[#63886f] hover:bg-[#e8f5e9] dark:hover:bg-[#2a4030] transition-colors text-sm font-medium"
+                        onClick={() => setAiFeaturesOpen(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
                     >
-                        <Globe size={16} /> Translate
+                        <Sparkles size={16} className="text-purple-500" /> 
+                        AI Features
                     </button>
-                    {/* Visibility */}
-                    <button
-                        onClick={() => setVisibilityModalOpen(true)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors text-sm font-medium ${formData.is_public
-                            ? 'bg-[#e8f5e9] border-[#63886f] text-[#63886f]'
-                            : 'items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-gray-500'
-                            }`}
-                    >
-                        {formData.is_public ? <Globe size={16} /> : <Lock size={16} />}
-                        {formData.is_public ? 'Public' : 'Private'}
-                    </button>
+
                     {/* Save */}
                     <button
                         onClick={handleSaveLocal}
                         disabled={isSaving}
-                        className="flex items-center gap-2 bg-[#1a2c20] dark:bg-[#63886f] text-white px-6 py-2 rounded-full font-medium hover:opacity-90 transition-all shadow-lg shadow-[#63886f]/20 disabled:opacity-50"
+                        className="flex items-center gap-2 bg-[#1a2c20] dark:bg-[#63886f] text-white px-8 py-2.5 rounded-full font-bold hover:opacity-90 transition-all shadow-lg shadow-[#63886f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSaving ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -496,14 +492,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             </div>
 
             {/* Modals */}
-            <VisibilityModal
-                isOpen={visibilityModalOpen}
-                onClose={() => setVisibilityModalOpen(false)}
-                isPublic={formData.is_public}
-                onConfirm={(isPub) => {
-                    handleMetadataChange('is_public', isPub);
-                    setVisibilityModalOpen(false);
-                }}
+            <AIFeaturesModal 
+                isOpen={aiFeaturesOpen}
+                onClose={() => setAiFeaturesOpen(false)}
+                onSelect={handleAIFeatureSelect}
             />
 
             <TranslationModal
@@ -516,12 +508,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             />
 
             <MagicImportModal
-                isOpen={actionModal.isOpen && actionModal.mode === 'magic'}
+                isOpen={actionModal.isOpen && (actionModal.mode === 'magic' || actionModal.mode === 'create')}
                 onClose={() => setActionModal({ isOpen: false, mode: null })}
                 onImport={(data) => {
                     handleMagicImport(data);
                     setActionModal({ isOpen: false, mode: null });
                 }}
+                initialMode={actionModal.mode === 'create' ? 'create' : 'import'}
             />
 
             <AIErrorModal
@@ -529,7 +522,23 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onClose={() => setAiError(null)}
                 error={aiError}
             />
+            
+            <ConfirmModal
+                isOpen={!!validationError}
+                onClose={() => setValidationError(null)}
+                onConfirm={() => setValidationError(null)}
+                title="Validation Error"
+                message={validationError}
+                confirmText="OK"
+            />
+            
+            <BlockerModal 
+                isOpen={blocker.state === 'blocked'}
+                onClose={() => blocker.reset()}
+                onConfirm={() => blocker.proceed()}
+            />
 
         </div>
     );
 }
+```
