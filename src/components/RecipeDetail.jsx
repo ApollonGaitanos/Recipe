@@ -15,7 +15,7 @@ import TranslationModal from './TranslationModal';
 import AIErrorModal from './AIErrorModal';
 
 export default function RecipeDetail({ id, onBack, onEdit }) {
-    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, checkIsLiked, publicRecipes, toggleSave, isRecipeSaved, duplicateRecipe } = useRecipes();
+    const { recipes, deleteRecipe, updateRecipe, toggleVisibility, toggleLike, hasUserLiked, publicRecipes, toggleSave, isRecipeSaved, duplicateRecipe } = useRecipes();
     const { t, language } = useLanguage();
     const { user } = useAuth();
 
@@ -32,7 +32,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
 
     // Sync Like Status
-    const isLiked = checkIsLiked(id);
+    const isLiked = hasUserLiked(id);
     const isSaved = isRecipeSaved(id);
 
     const contentRef = useRef(null);
