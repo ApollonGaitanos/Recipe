@@ -1,29 +1,33 @@
 /**
  * Parses a string to extract the quantity.
  * Supports:
- * - Decimals: "1.5 cups" -> 1.5
- * - Fractions: "1/2 cup" -> 0.5
- * - Mixed numbers: "1 1/2 cups" -> 1.5
- * - Ranges: "1-2 cups" -> 1.5 (takes average for scaling simple logic, or just lower bound? Let's take lower bound for safety or just parsing the first number)
- * Actually for scaling "1-2", ideally we scale both. But for MVP let's parse the first number found at the start.
+ * - Mixed fractions: "1 1/2 cups" -> 1.5
+ * - Simple fractions: "1/2 cup" -> 0.5
+ * - Decimals/Integers: "1.5" or "2"
+ * - Ranges: "1-2 cups" -> 1 (Parses the first number found)
  */
 export const parseQuantity = (str) => {
     if (typeof str !== 'string') return null;
 
-    // Check for mixed fractions first "1 1/2"
-    const mixedMatch = str.trim().match(/^(\d+)\s+(\d+)\/(\d+)/);
+    const trimmed = str.trim();
+
+    // 1. Check for Mixed Fractions at START "1 1/2"
+    // We restrict to start ^ because "Step 2: add 1/2 cup" shouldn't parse "Step 2" as quantity.
+    // However, for ingredients list, usually quantity is first.
+    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)/);
     if (mixedMatch) {
         return parseInt(mixedMatch[1]) + (parseInt(mixedMatch[2]) / parseInt(mixedMatch[3]));
     }
 
-    // Check for simple fractions "1/2"
-    const fractionMatch = str.trim().match(/^(\d+)\/(\d+)/);
+    // 2. Check for Fractions at START "1/2"
+    const fractionMatch = trimmed.match(/^(\d+)\/(\d+)/);
     if (fractionMatch) {
         return parseInt(fractionMatch[1]) / parseInt(fractionMatch[2]);
     }
 
-    // Check for decimals or integers "1.5" or "2"
-    const numberMatch = str.trim().match(/^(\d+(\.\d+)?)/);
+    // 3. Check for Decimals/Integers at START "1.5" or "2" or "10-12"
+    // This will greedily match "10" from "10-12"
+    const numberMatch = trimmed.match(/^(\d+(\.\d+)?)/);
     if (numberMatch) {
         return parseFloat(numberMatch[0]);
     }
@@ -58,7 +62,10 @@ export const formatQuantity = (num) => {
 };
 
 /**
- * Scales an ingredient item based on the serving ratio.
+ * Scales an ingredient item.
+ * LOGIC: (Quantity / OriginalServings) * NewServings
+ * This calculates the single-person portion first, then multiplies.
+ * 
  * @param {string|object} ingredient - The ingredient to scale.
  * @param {number} originalServings - The original recipe serving size.
  * @param {number} currentServings - The target serving size.
@@ -68,14 +75,18 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
         return ingredient;
     }
 
-    const ratio = currentServings / originalServings;
+    const scaleLogic = (qty) => {
+        // Step 1: Divide by default serving size
+        const unitQty = qty / originalServings;
+        // Step 2: Multiply by selected serving size
+        return unitQty * currentServings;
+    };
 
-    // Handle Object structure: { amount: "2", item: "cups flour" } or similar
+    // Handle Object structure: { amount: "2", item: "cups flour" }
     if (typeof ingredient === 'object' && ingredient !== null) {
-        // We only scale if there's a numeric amount
         const amount = parseFloat(ingredient.amount);
         if (!isNaN(amount)) {
-            const newAmount = amount * ratio;
+            const newAmount = scaleLogic(amount);
             return {
                 ...ingredient,
                 amount: formatQuantity(newAmount)
@@ -88,15 +99,10 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
     if (typeof ingredient === 'string') {
         const qty = parseQuantity(ingredient);
         if (qty !== null) {
-            const newQty = qty * ratio;
+            const newQty = scaleLogic(qty);
             const formattedNewQty = formatQuantity(newQty);
 
-            // Reconstruct string: replace the original number part with new one
-            // We use the same regex logic to locate the part to replace
-            // "1 1/2 cups" -> replace "1 1/2" with formattedNewQty
-            // "2 cups" -> replace "2"
-
-            // Regex to match the starting number/fraction again
+            // Reconstruct string
             const mixedRegex = /^(\d+)\s+(\d+)\/(\d+)/;
             const fractionRegex = /^(\d+)\/(\d+)/;
             const numberRegex = /^(\d+(\.\d+)?)/;
@@ -107,8 +113,6 @@ export const scaleIngredient = (ingredient, originalServings, currentServings) =
             else if (numberRegex.test(ingredient.trim())) matchLength = ingredient.trim().match(numberRegex)[0].length;
 
             if (matchLength > 0) {
-                // Carefully slice to keep original whitespace structure if necessary, though trim() usage might affect it. 
-                // Simple replacement at start of string:
                 return formattedNewQty + ingredient.trim().substring(matchLength);
             }
         }
