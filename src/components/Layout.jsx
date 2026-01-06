@@ -56,13 +56,13 @@ export default function Layout({ children, fullWidth = false }) {
                         <nav className="hidden md:flex items-center gap-6">
                             <button
                                 onClick={() => navigate('/')}
-                                className={`text-sm font-bold transition-colors ${location.pathname === '/' ? 'text-white dark:text-white' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
+                                className={`text-sm font-bold transition-colors ${location.pathname === '/' ? 'text-accent' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
                             >
                                 {t('nav.discover')}
                             </button>
                             <button
                                 onClick={() => navigate(myKitchenPath)}
-                                className={`text-sm font-bold transition-colors ${location.pathname === myKitchenPath ? 'text-white dark:text-white' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
+                                className={`text-sm font-bold transition-colors ${location.pathname === myKitchenPath ? 'text-accent' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
                             >
                                 {t('nav.myKitchen')}
                             </button>
