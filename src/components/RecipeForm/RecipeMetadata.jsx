@@ -26,6 +26,9 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                     <div className="relative">
                         <input
                             type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
                             placeholder="15"
                             value={formData.prepTime}
@@ -42,6 +45,9 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                     <div className="relative">
                         <input
                             type="number"
+                            min="0"
+                            step="1"
+                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                             className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
                             placeholder="30"
                             value={formData.cookTime}
@@ -57,6 +63,9 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                     </label>
                     <input
                         type="number"
+                        min="1"
+                        step="1"
+                        onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
                         className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
                         placeholder="4"
                         value={formData.servings}

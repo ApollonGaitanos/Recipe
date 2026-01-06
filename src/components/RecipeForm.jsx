@@ -374,6 +374,12 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 <div className="flex gap-2">
                     {/* Action Buttons */}
                     <button
+                        onClick={() => setActionModal({ isOpen: true, mode: 'magic' })}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-[#63886f] hover:bg-[#e8f5e9] dark:hover:bg-[#2a4030] transition-colors text-sm font-medium"
+                    >
+                        <Sparkles size={16} /> Magic Import
+                    </button>
+                    <button
                         onClick={() => setActionModal({ isOpen: true, mode: 'enhance' })}
                         className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#dce5df] dark:border-[#2a4030] text-[#63886f] hover:bg-[#e8f5e9] dark:hover:bg-[#2a4030] transition-colors text-sm font-medium"
                     >
