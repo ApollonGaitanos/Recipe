@@ -2,7 +2,7 @@
 import {
     Coffee, Sun, Moon, Utensils, Cookie, // Meal Types
     Leaf, WheatOff, Beef, // Dietary
-    Gauge, // Difficulty
+    Gauge, Zap, TrendingUp, Flame, // Difficulty
     Globe // Cuisine
 } from 'lucide-react';
 
@@ -37,9 +37,9 @@ export const FILTER_CATEGORIES = [
         label: 'Difficulty',
         icon: Gauge,
         options: [
-            { id: 'easy', label: 'Easy', value: 'Easy', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-            { id: 'medium', label: 'Medium', value: 'Medium', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
-            { id: 'hard', label: 'Hard', value: 'Hard', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' }
+            { id: 'easy', label: 'Easy', value: 'Easy', icon: Zap, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+            { id: 'medium', label: 'Medium', value: 'Medium', icon: TrendingUp, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+            { id: 'hard', label: 'Hard', value: 'Hard', icon: Flame, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' }
         ]
     },
     {
