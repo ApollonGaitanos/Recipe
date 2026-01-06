@@ -1,17 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText, ChefHat, Link } from 'lucide-react';
+import { X, Sparkles, Image as ImageIcon, ArrowRight, FileText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { parseRecipe } from '../utils/recipeParser';
 
-export default function MagicImportModal({ isOpen, onClose, onImport, initialMode = 'import' }) {
+export default function MagicImportModal({ isOpen, onClose, onImport }) {
     const { t, language } = useLanguage();
 
     // --- State Management ---
     const [inputValue, setInputValue] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
-    const [mode, setMode] = useState(initialMode); // 'import' or 'create'
 
     const [error, setError] = useState(null);
 
@@ -39,7 +38,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                 setInputValue('');
                 setPreviewUrl(null);
                 setSelectedImage(null);
-                setMode(initialMode);
                 setScanProgress(0);
                 setIsParsing(false);
                 setError(null);
@@ -113,11 +111,9 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
 
         try {
             let result;
+            const activeMode = 'extract';
 
-            // Determine effective mode
-            const activeMode = mode === 'create' ? 'create' : 'extract';
-
-            if (selectedImage && activeMode === 'extract') {
+            if (selectedImage) {
                 // Image Import
                 setScanProgress(20);
                 const base64 = await resizeImage(selectedImage);
@@ -158,9 +154,9 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
                     <div className="flex items-center gap-2">
-                        {mode === 'create' ? <ChefHat size={20} className="text-highlight" /> : <Sparkles size={20} className="text-highlight" />}
+                        <Sparkles size={20} className="text-highlight" />
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
-                            {mode === 'create' ? 'AI Chef' : 'Magic Import'}
+                            Magic Import
                         </h3>
                     </div>
 
@@ -173,31 +169,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                         </button>
                     </div>
                 </div>
-
-                {/* Tabs */}
-                <div className="flex px-6 border-b border-[#dce5df] dark:border-[#2a4030] bg-[#fcfdfc] dark:bg-[#15231a]">
-                    <button
-                        onClick={() => { setMode('import'); setError(null); }}
-                        className={`py-3 px-1 mr-6 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'import'
-                            ? 'border-primary text-gray-900 dark:text-gray-200'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                            }`}
-                    >
-                        <Link size={16} />
-                        Import
-                    </button>
-                    <button
-                        onClick={() => { setMode('create'); setError(null); }}
-                        className={`py-3 px-1 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${mode === 'create'
-                            ? 'border-primary text-gray-900 dark:text-gray-200'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                            }`}
-                    >
-                        <ChefHat size={16} />
-                        Create
-                    </button>
-                </div>
-
 
                 {/* Content */}
                 <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20]">
@@ -216,13 +187,13 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                     {/* Source Input */}
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            {mode === 'create' ? 'Details' : 'Source'}
+                            Source
                         </label>
                         <div className="relative">
                             <textarea
                                 value={inputValue}
                                 onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
-                                placeholder={mode === 'create' ? "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')..." : "Paste full recipe text or enter a website URL..."}
+                                placeholder="Paste full recipe text or enter a website URL..."
                                 className={`w-full h-40 rounded-xl border p-4 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all ${error
                                     ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
                                     : 'border-[#dce5df] dark:border-[#2a4030]'
@@ -235,38 +206,34 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                     </div>
 
                     {/* Image Upload (Only for Import) */}
-                    {mode === 'import' && (
-                        <>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={fileInputRef}
-                                onChange={handleFileSelect}
-                                className="hidden"
-                            />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                    />
 
-                            {!previewUrl ? (
+                    {!previewUrl ? (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
+                        >
+                            <ImageIcon size={18} />
+                            Add Image (Optional)
+                        </button>
+                    ) : (
+                        <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
+                                    onClick={handleRemoveImage}
+                                    className="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
                                 >
-                                    <ImageIcon size={18} />
-                                    Add Image (Optional)
+                                    <X size={18} />
                                 </button>
-                            ) : (
-                                <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
-                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            onClick={handleRemoveImage}
-                                            className="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
-                                        >
-                                            <X size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
+                            </div>
+                        </div>
                     )}
 
                     {/* Button */}
@@ -279,19 +246,17 @@ export default function MagicImportModal({ isOpen, onClose, onImport, initialMod
                             }`}
                     >
                         {isParsing ? (
-                            <span>{mode === 'create' ? 'Creating...' : 'Analyzing...'} {Math.round(scanProgress)}%</span>
+                            <span>Analyzing... {Math.round(scanProgress)}%</span>
                         ) : (
                             <>
-                                {mode === 'create' ? 'Create Recipe' : 'Import Recipe'}
+                                Import Recipe
                                 <ArrowRight size={18} />
                             </>
                         )}
                     </button>
 
                     <p className="text-center text-xs text-gray-400">
-                        {mode === 'create'
-                            ? 'AI Chef will generate a recipe based on your description.'
-                            : 'Magic Import analyzes your source to extract ingredients and steps.'}
+                        Magic Import analyzes your source to extract ingredients and steps.
                     </p>
                 </div>
             </div>
