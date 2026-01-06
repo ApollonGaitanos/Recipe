@@ -93,10 +93,14 @@ function Feed({ isPrivate = false }) {
     <Layout currentView={isPrivate ? 'myRecipes' : 'home'}>
 
       {/* FILTER BAR */}
-      <div className="mb-8">
+      <div className="mb-8 space-y-2">
+        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 ml-1">
+          Filters
+        </label>
         <FilterSelect
           selectedTags={activeCategories}
           onChange={setActiveCategories}
+          compact={true}
         />
       </div>
 
