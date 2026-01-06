@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, Sparkles, Lock, Globe, ArrowLeft } from 'lucide-react';
 import { useBlocker } from 'react-router-dom';
-import { supabase } from '../../supabaseClient'; // Leftover for direct AI call, could be moved to service later
-import { useAuth } from '../../context/AuthContext';
-import VisibilityModal from '../VisibilityModal';
-import TranslationModal from '../TranslationModal';
-import ConfirmModal from '../ConfirmModal';
-import { parseRecipe } from '../../utils/recipeParser';
+import { supabase } from '../supabaseClient'; // Leftover for direct AI call, could be moved to service later
+import { useAuth } from '../context/AuthContext';
+import VisibilityModal from './VisibilityModal';
+import TranslationModal from './TranslationModal';
+import ConfirmModal from './ConfirmModal';
+import { parseRecipe } from '../utils/recipeParser';
 import AIErrorModal from '../AIErrorModal';
 
 // Sub-components
