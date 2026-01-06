@@ -21,8 +21,11 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [onClose]);
 
+    console.log("SearchSuggestions rendered", { query, isVisible });
+
     // Fetch Suggestions
     useEffect(() => {
+        console.log("SearchSuggestions effect check", { query, isVisible });
         if (!isVisible || !query || query.length < 2) {
             setProfiles([]);
             setRecipes([]);
@@ -30,6 +33,7 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
         }
 
         const fetchSuggestions = async () => {
+            console.log("Starting fetch for:", query);
             setLoading(true);
             try {
                 // 1. Search Profiles
@@ -44,14 +48,15 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
                 // 2. Search Public Recipes
                 const { data: recipeData, error: recipeError } = await supabase
                     .from('recipes')
-                    // Use standard join syntax. If multiple FKs exist, Supabase might complain, 
-                    // but usually 'profiles' works if it's the main relation.
-                    .select('id, title, is_public, profiles (username)')
+                    // Using user_id for relationship just to be safe if 'profiles' alias fails silently
+                    .select('id, title, is_public, user_id, profiles (username)')
                     .eq('is_public', true)
                     .ilike('title', `%${query}%`)
                     .limit(5);
 
                 if (recipeError) console.error("Recipe search error:", recipeError);
+
+                console.log("Fetch results:", { profileData, recipeData });
 
                 setProfiles(profileData || []);
                 setRecipes(recipeData || []);
