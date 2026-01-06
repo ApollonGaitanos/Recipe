@@ -59,14 +59,19 @@ export default function FilterSelect({ selectedTags = [], onChange }) {
                                         <span className={`text-xs font-bold uppercase tracking-wider ${activeCount > 0 ? 'text-[#63886f] dark:text-[#8ca395]' : 'text-gray-500'}`}>
                                             {category.label}
                                         </span>
-                                        {activeCount > 0 && (
+                                        {activeCount > 0 && !compact && (
                                             <span className="text-xs font-medium text-[#111813] dark:text-white">
                                                 {activeCount} selected
                                             </span>
                                         )}
+                                        {activeCount > 0 && compact && (
+                                            <span className="text-[10px] font-medium text-[#111813] dark:text-white leading-none">
+                                                {activeCount}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                                <ChevronDown size={16} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={compact ? 14 : 16} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Dropdown Popover */}
