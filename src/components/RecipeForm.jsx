@@ -255,23 +255,33 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     };
 
     const handleMagicImport = (data) => {
-        handleMetadataChange('title', data.title || formData.title);
-        handleMetadataChange('prepTime', data.prepTime || formData.prepTime);
-        handleMetadataChange('cookTime', data.cookTime || formData.cookTime);
-        handleMetadataChange('servings', data.servings || formData.servings);
-        handleMetadataChange('description', data.description || formData.description);
+        // 1. Core Metadata (Overwrite if provided, standard behavior)
+        if (data.title) handleMetadataChange('title', data.title);
+        if (data.prepTime) handleMetadataChange('prepTime', data.prepTime);
+        if (data.cookTime) handleMetadataChange('cookTime', data.cookTime);
+        if (data.servings) handleMetadataChange('servings', data.servings);
 
-        // Nutrition
-        handleMetadataChange('calories', data.calories || data.nutrition?.calories || formData.calories);
-        handleMetadataChange('protein', data.protein || data.nutrition?.protein || formData.protein);
-        handleMetadataChange('carbs', data.carbs || data.nutrition?.carbs || formData.carbs);
-        handleMetadataChange('fat', data.fat || data.nutrition?.fat || formData.fat);
-
-        if (data.tags && Array.isArray(data.tags)) {
-            handleMetadataChange('tags', data.tags.join(', '));
+        // 2. Description: Add ONLY if currently empty
+        if (!formData.description && data.description) {
+            handleMetadataChange('description', data.description);
         }
 
-        // Ingredients
+        // 3. Nutrition: Add ONLY if currently empty
+        if (!formData.calories) handleMetadataChange('calories', data.calories || data.nutrition?.calories || '');
+        if (!formData.protein) handleMetadataChange('protein', data.protein || data.nutrition?.protein || '');
+        if (!formData.carbs) handleMetadataChange('carbs', data.carbs || data.nutrition?.carbs || '');
+        if (!formData.fat) handleMetadataChange('fat', data.fat || data.nutrition?.fat || '');
+
+        // 4. Tags (Filters): Additive (Merge unique variables)
+        if (data.tags && Array.isArray(data.tags)) {
+            const currentTags = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+            const newTags = data.tags.filter(t => !currentTags.includes(t));
+            if (newTags.length > 0) {
+                handleMetadataChange('tags', [...currentTags, ...newTags].join(', '));
+            }
+        }
+
+        // 5. Ingredients: Overwrite (Standard behavior for "Enhance" / "Import")
         if (data.ingredients) {
             let newIngs = [];
             if (Array.isArray(data.ingredients)) {
@@ -297,8 +307,23 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             if (newIngs.length > 0) setIngredientsList(newIngs);
         }
 
+        // 6. Instructions: Overwrite (Standard behavior to allow improvements)
         if (data.instructions) setInstructionsList(parseInstructions(data.instructions));
-        if (data.tools) setToolsList(parseTools(data.tools));
+
+        // 7. Tools: Additive (Merge unique)
+        if (data.tools) {
+            const newToolsRaw = Array.isArray(data.tools) ? data.tools : String(data.tools).split(',');
+            setToolsList(prevTools => {
+                const existingTexts = new Set(prevTools.map(t => t.text.toLowerCase().trim()).filter(Boolean));
+                const uniqueNew = newToolsRaw
+                    .map(t => t.trim())
+                    .filter(t => t && !existingTexts.has(t.toLowerCase()))
+                    .map((t, i) => ({ id: Date.now() + 2000 + i, text: t }));
+
+                // Return previous tools + new unique tools
+                return [...prevTools, ...uniqueNew];
+            });
+        }
 
         markDirty();
     };
