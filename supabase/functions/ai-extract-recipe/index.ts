@@ -158,6 +158,12 @@ Return the output in this strict JSON structure:
     "Step 1 text",
     "Step 2 text"
   ],
+  "nutrition": {
+    "calories": "500",
+    "protein": "30g",
+    "carbs": "50g",
+    "fat": "20g"
+  },
   "detectedLanguage": "en" 
 }
 - "detectedLanguage": The ISO 639-1 code (e.g. "en", "el", "fr") of the language the recipe is written in.
@@ -168,6 +174,7 @@ Return the output in this strict JSON structure:
 - "tools": Array of strings (e.g. ["Large pot", "Whisk", "Oven"]). List specific equipment needed.
 - "ingredients": Array of OBJECTS. "amount" must include number AND unit (e.g. "1 tbsp", "150g"). "name" is the ingredient name. The UNIT itself must be in the target language (e.g. "tbsp" -> "κ.σ.", "g" -> "γρ").
 - "instructions": Array of strings. Each string is ONE step. NO numbering.
+- "nutrition": Object. ESTIMATE the nutritional values PER SERVING based on the ingredients if not provided in the text. Return strings with units (e.g. "500 kcal", "20g").
 - SPLIT instructions into distinct steps.
 - Returns only valid JSON.`;
 
@@ -182,7 +189,8 @@ LOGIC:
 1. **TRADITION and AUTHENTICITY**: If the user asks for "Carbonara", provide the AUTHENTIC Roman version (Guanciale, Pecorino, Eggs, Pepper. NO Cream). Do not offer variations unless explicitly asked.
 2. **PANTRY STAPLES**: If the user lists ingredients (e.g., "Eggs, Flour"), create a BASIC recipe using ONLY those ingredients + standard pantry staples (Water, Oil, Salt, Pepper). Do NOT assume or add fancy ingredients (like Butter or Milk) unless necessary for chemistry.
 3. **COMPLETE METADATA**: You MUST populate "tools" (e.g. "Skillet", "Whisk") and "description" (appetizing summary).
-4. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
+4. **NUTRITION**: You MUST provide estimated nutrition per serving.
+5. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
 
 EXAMPLE:
 Input: "Carbonara"
@@ -202,7 +210,8 @@ LOGIC:
 2. **ADD VISUAL CUES**: "Mix until combined" -> "Mix until combined and no dry flour remains (approx 2 mins)."
 3. **INFER TOOLS**: Look at the steps and ingredients to populate the "tools" array (e.g. if it says "whisk", add "Whisk").
 4. **DESCRIPTION**: If the description is empty or boring, write a better one.
-5. **LANGUAGE**: Keep the input language.
+5. **NUTRITION**: ESTIMATE calories and macros per serving based on the ingredients.
+6. **LANGUAGE**: Keep the input language.
 
 EXAMPLE:
 Input Instructions: ["Mix flour and water", "Knead"]
@@ -235,6 +244,12 @@ Return the output in this strict JSON structure:
     "[TRANSLATED STEP 1]",
     "[TRANSLATED STEP 2]"
   ],
+  "nutrition": {
+    "calories": "500",
+    "protein": "30g",
+    "carbs": "50g",
+    "fat": "20g"
+  },
   "detectedLanguage": "${targetLanguage}" 
 }
 - "detectedLanguage": "${targetLanguage}"
@@ -250,6 +265,7 @@ Your task is to translate the JSON content into **${langName}** with strict 1:1 
 LOGIC:
 1. **MANDATORY**: The content of the values (title, ingredients, instructions) MUST be in **${langName}**.
 2. **STRICT TRANSLATION**: Translate Title, Description, Ingredient Names, Tools, Instructions, and Tags.
+3. **NUTRITION**: Copy the nutrition values if present, or estimate them if missing.
 3. **UNIT CONVERSION**: If formatting for Greek/European output, convert 'cups'/'oz' to 'grams'/'ml' where appropriate.
 4. **NO RE-INTERPRETATION**: Do not change the cooking method or add steps. Just translate.
 5. **KEYS IMMUTABLE**: Keep JSON keys exactly as is (e.g. "title": "...") but translate the value.
@@ -269,8 +285,9 @@ LOGIC:
 1. **DIGITAL TWIN (XEROX MODE)**: Copy the title, ingredients, and instructions EXACTLY as they appear in the source.
 2. **NO ALTERATIONS**: If the source says "mix 10 mins", output "mix 10 mins". Do not "fix" it to "mix 10 minutes".
 3. **NO HALLUCINATIONS**: Do not add ingredients or steps that are not in the source text/image.
-4. **STRUCTURE ONLY**: Your only job is to format the existing data into the JSON structure.
-5. **LANGUAGE**: Keep the original language of the source.
+4. **ENRICHMENT**: You ARE allowed to estimate "nutrition" and "tools" if they are missing from the source.
+5. **STRUCTURE ONLY**: Your only job is to format the existing data into the JSON structure.
+6. **LANGUAGE**: Keep the original language of the source.
 
 ${jsonStructure}`;
                 break;
@@ -484,6 +501,7 @@ ${jsonStructure}`;
             tags: recipeData.tags || '',
             tools: recipeData.tools || [], // New Field
             description: recipeData.description || '', // New Field
+            nutrition: recipeData.nutrition || {}, // New Field
             detectedLanguage: recipeData.detectedLanguage || 'en'
         }), {
             headers: {
