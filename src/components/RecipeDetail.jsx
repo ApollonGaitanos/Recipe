@@ -390,22 +390,35 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             </div>
 
                             <ul className="space-y-4">
-                                {(Array.isArray(recipe.ingredients) ? recipe.ingredients : (typeof recipe.ingredients === 'string' ? recipe.ingredients.split('\n').filter(Boolean) : [])).map((ingredient, index) => (
-                                    <li key={index} className="flex items-center gap-3 group cursor-pointer">
-                                        <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-primary transition-colors" />
-                                        <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                            {(() => {
-                                                if (!ingredient) return '';
-                                                if (typeof ingredient === 'object') {
-                                                    const amt = ingredient.amount || '';
-                                                    const name = ingredient.name || ingredient.item || '';
-                                                    return (String(amt || '') + ' ' + String(name || '')).trim();
-                                                }
-                                                return String(ingredient);
-                                            })()}
-                                        </span>
-                                    </li>
-                                ))}
+                                {(() => {
+                                    let items = recipe.ingredients;
+                                    // 1. Try to parse if it's a JSON string
+                                    if (typeof items === 'string' && (items.trim().startsWith('[') || items.trim().startsWith('{'))) {
+                                        try { items = JSON.parse(items); } catch (e) { /* ignore */ }
+                                    }
+
+                                    // 2. Normalize to array
+                                    if (!Array.isArray(items)) {
+                                        items = typeof items === 'string' ? items.split('\n').filter(Boolean) : [];
+                                    }
+
+                                    return items.map((ingredient, index) => (
+                                        <li key={index} className="flex items-center gap-3 group cursor-pointer">
+                                            <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-primary transition-colors" />
+                                            <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                                {(() => {
+                                                    if (!ingredient) return '';
+                                                    if (typeof ingredient === 'object') {
+                                                        const amt = ingredient.amount || '';
+                                                        const name = ingredient.name || ingredient.item || '';
+                                                        return (String(amt || '') + ' ' + String(name || '')).trim();
+                                                    }
+                                                    return String(ingredient);
+                                                })()}
+                                            </span>
+                                        </li>
+                                    ));
+                                })()}
                             </ul>
 
                             <button className="w-full mt-8 py-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-highlight font-semibold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
@@ -415,24 +428,40 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         </div>
 
                         {/* Tools Section */}
-                        {recipe.tools && recipe.tools.length > 0 && (
-                            <div className="bg-zinc-50 dark:bg-[#0D1811] rounded-3xl p-8 border border-zinc-100 dark:border-zinc-800 list-disc">
-                                <h3 className="text-xl font-bold font-serif mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
-                                    <span className="text-highlight">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
-                                    </span>
-                                    Tools
-                                </h3>
-                                <ul className="space-y-3">
-                                    {(Array.isArray(recipe.tools) ? recipe.tools : String(recipe.tools).split('\n')).map((tool, idx) => (
-                                        <li key={idx} className="flex items-start gap-3">
-                                            <span className="text-highlight mt-1.5 w-1.5 h-1.5 bg-highlight rounded-full block flex-shrink-0"></span>
-                                            <span className="text-zinc-700 dark:text-zinc-300 leading-snug">{tool}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+                        {(() => {
+                            let items = recipe.tools;
+                            // 1. Parse
+                            if (typeof items === 'string' && (items.trim().startsWith('[') || items.trim().startsWith('{'))) {
+                                try { items = JSON.parse(items); } catch (e) { }
+                            }
+                            // 2. Normalize
+                            if (!Array.isArray(items)) {
+                                items = typeof items === 'string' ? items.split('\n').filter(Boolean) : [];
+                            }
+
+                            if (items.length === 0) return null;
+
+                            return (
+                                <div className="bg-zinc-50 dark:bg-[#0D1811] rounded-3xl p-8 border border-zinc-100 dark:border-zinc-800 list-disc">
+                                    <h3 className="text-xl font-bold font-serif mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
+                                        <span className="text-highlight">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
+                                        </span>
+                                        Tools
+                                    </h3>
+                                    <ul className="space-y-3">
+                                        {items.map((tool, idx) => (
+                                            <li key={idx} className="flex items-start gap-3">
+                                                <span className="text-highlight mt-1.5 w-1.5 h-1.5 bg-highlight rounded-full block flex-shrink-0"></span>
+                                                <span className="text-zinc-700 dark:text-zinc-300 leading-snug">
+                                                    {typeof tool === 'object' ? (tool.text || tool.name || JSON.stringify(tool)) : tool}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            );
+                        })()}
 
                         {/* Nutrition Card */}
                         <div className="bg-white dark:bg-[#0D1811] rounded-3xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm">
@@ -535,17 +564,29 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         </div>
 
                         <div className="space-y-10 relative border-l-2 border-zinc-100 dark:border-zinc-800 ml-3 md:ml-4 pl-8 md:pl-10 pb-10">
-                            {(Array.isArray(recipe.instructions) ? recipe.instructions : (typeof recipe.instructions === 'string' ? recipe.instructions.split('\n').filter(Boolean) : [])).map((step, index) => (
-                                <div key={index} className="relative">
-                                    <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-primary flex items-center justify-center text-highlight font-bold z-10">
-                                        {index + 1}
+                            {(() => {
+                                let items = recipe.instructions;
+                                // 1. Parse
+                                if (typeof items === 'string' && (items.trim().startsWith('[') || items.trim().startsWith('{'))) {
+                                    try { items = JSON.parse(items); } catch (e) { }
+                                }
+                                // 2. Normalize
+                                if (!Array.isArray(items)) {
+                                    items = typeof items === 'string' ? items.split('\n').filter(Boolean) : [];
+                                }
+
+                                return items.map((step, index) => (
+                                    <div key={index} className="relative">
+                                        <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-primary flex items-center justify-center text-highlight font-bold z-10">
+                                            {index + 1}
+                                        </div>
+                                        <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Step {index + 1}</h4>
+                                        <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                            {typeof step === 'object' ? (step.text || step.step || JSON.stringify(step)) : step}
+                                        </p>
                                     </div>
-                                    <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Step {index + 1}</h4>
-                                    <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                                        {step}
-                                    </p>
-                                </div>
-                            ))}
+                                ));
+                            })()}
                         </div>
 
                         {/* Tags Section */}
