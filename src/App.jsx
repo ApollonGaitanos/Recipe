@@ -13,7 +13,7 @@ import ConfirmationModal from './components/ConfirmModal';
 import MyKitchen from './components/MyKitchen';
 import AccountSettings from './components/AccountSettings';
 import ErrorBoundary from './components/ErrorBoundary'; // Moved up for usage
-import { RECIPE_CATEGORIES } from './constants/categories';
+import FilterSelect from './components/FilterSelect';
 
 // --- ROUTE COMPONENTS ---
 
@@ -26,7 +26,6 @@ function Feed({ isPrivate = false }) {
   const [deleteId, setDeleteId] = useState(null);
   const [activeCategories, setActiveCategories] = useState([]); // Empty = All
   const [visibleCount, setVisibleCount] = useState(12);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Redirect if accessing private while logged out
   useEffect(() => {
@@ -41,24 +40,6 @@ function Feed({ isPrivate = false }) {
   // Search & Filter Logic
   const normalizeText = (text) => text ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
   const normalizedQuery = normalizeText(searchQuery);
-
-  const categories = RECIPE_CATEGORIES.map(cat => ({
-    id: cat.id,
-    label: t(cat.labelKey)
-  }));
-
-  // Categories to display (Top 6 + Expanded)
-  const visibleCategories = isExpanded ? categories : categories.slice(0, 6);
-
-  const toggleCategory = (catId) => {
-    setActiveCategories(prev => {
-      if (prev.includes(catId)) {
-        return prev.filter(c => c !== catId);
-      } else {
-        return [...prev, catId];
-      }
-    });
-  };
 
   const filteredRecipes = displayRecipes.filter(r => {
     // 1. Search Query
@@ -112,38 +93,11 @@ function Feed({ isPrivate = false }) {
     <Layout currentView={isPrivate ? 'myRecipes' : 'home'}>
 
       {/* FILTER BAR */}
-      <div className="flex flex-col gap-3 mb-8">
-        <div className="flex flex-wrap items-center gap-3 transition-all duration-300 ease-in-out">
-          <button
-            className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all border ${activeCategories.length === 0
-              ? 'bg-black text-white border-black'
-              : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
-              }`}
-            onClick={() => setActiveCategories([])}
-          >
-            <span>{t('filters.all')}</span>
-          </button>
-
-          {visibleCategories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => toggleCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${activeCategories.includes(cat.id)
-                ? 'bg-black text-white border-black'
-                : 'bg-white dark:bg-surface-dark border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
-                }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="px-4 py-2 text-sm font-bold text-highlight hover:text-highlight/80 underline decoration-2 underline-offset-4 transition-colors ml-2"
-          >
-            {isExpanded ? t('feed.showLess') : t('feed.showMore')}
-          </button>
-        </div>
+      <div className="mb-8">
+        <FilterSelect
+          selectedTags={activeCategories}
+          onChange={setActiveCategories}
+        />
       </div>
 
       {/* GRID HEADER */}
