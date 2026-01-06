@@ -364,7 +364,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
     if (isLoading) return <div className="p-8 text-center">Loading recipe...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto px-4 pb-20 pt-6">
+        <div className="max-w-7xl mx-auto px-4 pb-20 pt-6">
 
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
@@ -416,41 +416,64 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             {/* Main Form */}
             <div className="space-y-8">
 
-                <RecipeMetadata
-                    formData={formData}
-                    handleChange={handleMetadataChange}
-                    handleTagChange={handleTagChange}
-                    imagePreview={imagePreview}
-                    handleImageChange={handleImageChange}
-                    triggerFileInput={() => fileInputRef.current?.click()} // If we kept ref on parent
-                />
+                {/* 1. Title (Top, Full Width) */}
+                <div className="space-y-2">
+                    <input
+                        className="w-full bg-transparent text-4xl md:text-5xl font-serif font-bold text-[#111813] dark:text-[#e0e6e2] border-b border-[#dce5df] dark:border-[#2a4030] pb-4 focus:border-primary focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 transition-colors"
+                        placeholder="Recipe Title"
+                        value={formData.title}
+                        onChange={e => handleMetadataChange('title', e.target.value)}
+                    />
+                </div>
 
-                {/* Hidden File Input (Attached to Ref) */}
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-                <IngredientsList
-                    ingredients={ingredientsList}
-                    setIngredients={setIngredientsList}
-                    markDirty={markDirty}
-                />
+                    {/* Left Column (4 cols): Ingredients & Tools */}
+                    <div className="lg:col-span-5 space-y-8">
+                        <IngredientsList
+                            ingredients={ingredientsList}
+                            setIngredients={setIngredientsList}
+                            markDirty={markDirty}
+                        />
 
-                <InstructionsList
-                    instructions={instructionsList}
-                    setInstructions={setInstructionsList}
-                    markDirty={markDirty}
-                />
+                        <ToolsList
+                            tools={toolsList}
+                            setTools={setToolsList}
+                            markDirty={markDirty}
+                        />
+                    </div>
 
-                <ToolsList
-                    tools={toolsList}
-                    setTools={setToolsList}
-                    markDirty={markDirty}
-                />
+                    {/* Right Column (8 cols): Description, Metrics, Instructions */}
+                    <div className="lg:col-span-7 space-y-8">
+
+                        {/* Metadata (Image, Desc, Time, Servings, Tags) */}
+                        <RecipeMetadata
+                            formData={formData}
+                            handleChange={handleMetadataChange}
+                            handleTagChange={handleTagChange}
+                            imagePreview={imagePreview}
+                            handleImageChange={handleImageChange}
+                            triggerFileInput={() => fileInputRef.current?.click()}
+                        />
+
+                        {/* Hidden File Input (Attached to Ref) */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                        />
+
+                        {/* Instructions */}
+                        <InstructionsList
+                            instructions={instructionsList}
+                            setInstructions={setInstructionsList}
+                            markDirty={markDirty}
+                        />
+                    </div>
+
+                </div>
 
             </div>
 
