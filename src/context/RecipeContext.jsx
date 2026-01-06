@@ -88,245 +88,249 @@ export default function RecipeContext({ children }) {
             setLoading(false);
         };
         loadAll();
+            ]);
+    setLoading(false);
+};
+loadAll();
     }, [user, fetchPublicRecipes, fetchRecipes, fetchUserLikes, fetchSavedRecipes]);
 
 
-    // --- ACTIONS ---
+// --- ACTIONS ---
 
-    const addRecipe = async (recipeData) => {
-        if (!user) return;
-        try {
-            let imageUrl = recipeData.image;
+const addRecipe = async (recipeData) => {
+    if (!user) return;
+    try {
+        let imageUrl = recipeData.image;
 
-            // Handle Image Upload
-            if (recipeData.image instanceof File) {
-                imageUrl = await recipeService.uploadImage(recipeData.image, user.id);
-            }
-
-            // Create
-            const newRecipe = await recipeService.create({ ...recipeData, image_url: imageUrl }, user.id);
-
-            // Update State
-            setRecipes(prev => [newRecipe, ...prev]);
-            if (newRecipe.is_public) {
-                setPublicRecipes(prev => [newRecipe, ...prev]);
-            }
-        } catch (error) {
-            console.error("Error adding recipe:", error);
-            throw error;
+        // Handle Image Upload
+        if (recipeData.image instanceof File) {
+            imageUrl = await recipeService.uploadImage(recipeData.image, user.id);
         }
-    };
 
-    const updateRecipe = async (id, updatedData) => {
-        try {
-            let imageUrl = updatedData.image; // Assume existing URL
+        // Create
+        const newRecipe = await recipeService.create({ ...recipeData, image_url: imageUrl }, user.id);
 
-            // Handle New Image Upload
-            if (updatedData.image instanceof File) {
-                imageUrl = await recipeService.uploadImage(updatedData.image, user.id);
-            }
-
-            // Clean up data for update provided to service
-            const updatePayload = { ...updatedData };
-            if (imageUrl) updatePayload.image_url = imageUrl;
-            delete updatePayload.image; // Remove file object
-
-            const updatedRecipe = await recipeService.update(id, updatePayload, user.id);
-
-            // Update DOM
-            setRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
-            setPublicRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
-            // Also update saved if necessary
-            setSavedRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
-
-        } catch (error) {
-            console.error("Error updating recipe:", error);
-            throw error;
+        // Update State
+        setRecipes(prev => [newRecipe, ...prev]);
+        if (newRecipe.is_public) {
+            setPublicRecipes(prev => [newRecipe, ...prev]);
         }
-    };
+    } catch (error) {
+        console.error("Error adding recipe:", error);
+        throw error;
+    }
+};
 
-    const deleteRecipe = async (id) => {
-        try {
-            await recipeService.delete(id);
+const updateRecipe = async (id, updatedData) => {
+    try {
+        let imageUrl = updatedData.image; // Assume existing URL
 
-            setRecipes(prev => prev.filter(r => r.id !== id));
-            setPublicRecipes(prev => prev.filter(r => r.id !== id));
-            setSavedRecipes(prev => prev.filter(r => r.id !== id));
-            setSavedRecipeIds(prev => {
-                const next = new Set(prev);
-                next.delete(id);
-                return next;
-            });
-        } catch (error) {
-            console.error("Error deleting recipe:", error);
-            throw error;
+        // Handle New Image Upload
+        if (updatedData.image instanceof File) {
+            imageUrl = await recipeService.uploadImage(updatedData.image, user.id);
         }
-    };
 
-    const toggleVisibility = async (id, isPublic) => {
-        try {
-            const updated = await recipeService.toggleVisibility(id, isPublic);
+        // Clean up data for update provided to service
+        const updatePayload = { ...updatedData };
+        if (imageUrl) updatePayload.image_url = imageUrl;
+        delete updatePayload.image; // Remove file object
 
-            setRecipes(prev => prev.map(r => r.id === id ? updated : r));
+        const updatedRecipe = await recipeService.update(id, updatePayload, user.id);
 
-            if (isPublic) {
-                // It BECAME public -> Add to feed (or update if already there)
-                setPublicRecipes(prev => {
-                    if (prev.find(r => r.id === id)) return prev.map(r => r.id === id ? updated : r);
-                    return [updated, ...prev];
-                });
-            } else {
-                // It became PRIVATE -> Remove from feed
-                setPublicRecipes(prev => prev.filter(r => r.id !== id));
-            }
-            return updated;
-        } catch (error) {
-            console.error("Error toggling visibility:", error);
-            throw error;
-        }
-    };
+        // Update DOM
+        setRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
+        setPublicRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
+        // Also update saved if necessary
+        setSavedRecipes(prev => prev.map(r => r.id === id ? updatedRecipe : r));
 
-    const toggleLike = async (recipeId) => {
-        if (!user) return; // Prompt login in UI
+    } catch (error) {
+        console.error("Error updating recipe:", error);
+        throw error;
+    }
+};
 
-        const isLiked = userLikes.has(recipeId);
+const deleteRecipe = async (id) => {
+    try {
+        await recipeService.delete(id);
 
-        // 1. Optimistic Update for UI (Immediate feedback)
-        setUserLikes(prev => {
+        setRecipes(prev => prev.filter(r => r.id !== id));
+        setPublicRecipes(prev => prev.filter(r => r.id !== id));
+        setSavedRecipes(prev => prev.filter(r => r.id !== id));
+        setSavedRecipeIds(prev => {
             const next = new Set(prev);
-            if (isLiked) next.delete(recipeId);
-            else next.add(recipeId);
+            next.delete(id);
             return next;
         });
+    } catch (error) {
+        console.error("Error deleting recipe:", error);
+        throw error;
+    }
+};
 
-        // 2. Optimistic Update for Like Count (UI Feedback)
-        const updateCount = (r) => {
+const toggleVisibility = async (id, isPublic) => {
+    try {
+        const updated = await recipeService.toggleVisibility(id, isPublic);
+
+        setRecipes(prev => prev.map(r => r.id === id ? updated : r));
+
+        if (isPublic) {
+            // It BECAME public -> Add to feed (or update if already there)
+            setPublicRecipes(prev => {
+                if (prev.find(r => r.id === id)) return prev.map(r => r.id === id ? updated : r);
+                return [updated, ...prev];
+            });
+        } else {
+            // It became PRIVATE -> Remove from feed
+            setPublicRecipes(prev => prev.filter(r => r.id !== id));
+        }
+        return updated;
+    } catch (error) {
+        console.error("Error toggling visibility:", error);
+        throw error;
+    }
+};
+
+const toggleLike = async (recipeId) => {
+    if (!user) return; // Prompt login in UI
+
+    const isLiked = userLikes.has(recipeId);
+
+    // 1. Optimistic Update for UI (Immediate feedback)
+    setUserLikes(prev => {
+        const next = new Set(prev);
+        if (isLiked) next.delete(recipeId);
+        else next.add(recipeId);
+        return next;
+    });
+
+    // 2. Optimistic Update for Like Count (UI Feedback)
+    const updateCount = (r) => {
+        if (r.id !== recipeId) return r;
+        return {
+            ...r,
+            likes_count: isLiked ? Math.max(0, r.likes_count - 1) : r.likes_count + 1
+        };
+    };
+
+    setRecipes(prev => prev.map(updateCount));
+    setPublicRecipes(prev => prev.map(updateCount));
+    setSavedRecipes(prev => prev.map(updateCount));
+
+    // 3. API Call
+    try {
+        await recipeService.toggleLike(recipeId, user.id, isLiked);
+    } catch (error) {
+        console.error("Error toggling like:", error);
+        // Revert on error
+        setUserLikes(prev => {
+            const next = new Set(prev);
+            if (isLiked) next.add(recipeId); // Re-add if we failed to delete
+            else next.delete(recipeId); // Delete if we failed to add
+            return next;
+        });
+        // Revert Counts
+        const revertCount = (r) => {
             if (r.id !== recipeId) return r;
             return {
                 ...r,
-                likes_count: isLiked ? Math.max(0, r.likes_count - 1) : r.likes_count + 1
+                likes_count: isLiked ? r.likes_count + 1 : Math.max(0, r.likes_count - 1)
             };
         };
+        setRecipes(prev => prev.map(revertCount));
+        setPublicRecipes(prev => prev.map(revertCount));
+        setSavedRecipes(prev => prev.map(revertCount));
+    }
+};
 
-        setRecipes(prev => prev.map(updateCount));
-        setPublicRecipes(prev => prev.map(updateCount));
-        setSavedRecipes(prev => prev.map(updateCount));
+const toggleSave = async (recipe) => {
+    if (!user) return;
 
-        // 3. API Call
-        try {
-            await recipeService.toggleLike(recipeId, user.id, isLiked);
-        } catch (error) {
-            console.error("Error toggling like:", error);
-            // Revert on error
-            setUserLikes(prev => {
-                const next = new Set(prev);
-                if (isLiked) next.add(recipeId); // Re-add if we failed to delete
-                else next.delete(recipeId); // Delete if we failed to add
-                return next;
-            });
-            // Revert Counts
-            const revertCount = (r) => {
-                if (r.id !== recipeId) return r;
-                return {
-                    ...r,
-                    likes_count: isLiked ? r.likes_count + 1 : Math.max(0, r.likes_count - 1)
-                };
-            };
-            setRecipes(prev => prev.map(revertCount));
-            setPublicRecipes(prev => prev.map(revertCount));
-            setSavedRecipes(prev => prev.map(revertCount));
-        }
-    };
+    const isSaved = savedRecipeIds.has(recipe.id);
 
-    const toggleSave = async (recipe) => {
-        if (!user) return;
+    // Optimistic UI
+    setSavedRecipeIds(prev => {
+        const next = new Set(prev);
+        if (isSaved) next.delete(recipe.id);
+        else next.add(recipe.id);
+        return next;
+    });
 
-        const isSaved = savedRecipeIds.has(recipe.id);
+    if (isSaved) {
+        setSavedRecipes(prev => prev.filter(r => r.id !== recipe.id));
+    } else {
+        setSavedRecipes(prev => [recipe, ...prev]);
+    }
 
-        // Optimistic UI
+    try {
+        await recipeService.toggleSave(recipe.id, user.id, isSaved);
+    } catch (error) {
+        console.error("Error toggling save:", error);
+        // Revert
         setSavedRecipeIds(prev => {
             const next = new Set(prev);
-            if (isSaved) next.delete(recipe.id);
-            else next.add(recipe.id);
+            if (isSaved) next.add(recipe.id);
+            else next.delete(recipe.id);
             return next;
         });
-
         if (isSaved) {
-            setSavedRecipes(prev => prev.filter(r => r.id !== recipe.id));
-        } else {
             setSavedRecipes(prev => [recipe, ...prev]);
+        } else {
+            setSavedRecipes(prev => prev.filter(r => r.id !== recipe.id));
         }
+    }
+};
 
-        try {
-            await recipeService.toggleSave(recipe.id, user.id, isSaved);
-        } catch (error) {
-            console.error("Error toggling save:", error);
-            // Revert
-            setSavedRecipeIds(prev => {
-                const next = new Set(prev);
-                if (isSaved) next.add(recipe.id);
-                else next.delete(recipe.id);
-                return next;
-            });
-            if (isSaved) {
-                setSavedRecipes(prev => [recipe, ...prev]);
-            } else {
-                setSavedRecipes(prev => prev.filter(r => r.id !== recipe.id));
-            }
-        }
-    };
+const duplicateRecipe = async (originalRecipe) => {
+    if (!user) return;
+    try {
+        const newRecipeData = {
+            ...originalRecipe,
+            title: `${originalRecipe.title} (Copy)`,
+            is_public: false,
+            originId: originalRecipe.originId || originalRecipe.id,
+            originTitle: originalRecipe.originTitle || originalRecipe.title,
+            originAuthor: originalRecipe.originAuthor || originalRecipe.author_username
+        };
+        delete newRecipeData.id;
+        delete newRecipeData.createdAt;
 
-    const duplicateRecipe = async (originalRecipe) => {
-        if (!user) return;
-        try {
-            const newRecipeData = {
-                ...originalRecipe,
-                title: `${originalRecipe.title} (Copy)`,
-                is_public: false,
-                originId: originalRecipe.originId || originalRecipe.id,
-                originTitle: originalRecipe.originTitle || originalRecipe.title,
-                originAuthor: originalRecipe.originAuthor || originalRecipe.author_username
-            };
-            delete newRecipeData.id;
-            delete newRecipeData.createdAt;
+        await addRecipe(newRecipeData);
+    } catch (error) {
+        console.error("Error duplicating recipe:", error);
+        throw error;
+    }
+};
 
-            await addRecipe(newRecipeData);
-        } catch (error) {
-            console.error("Error duplicating recipe:", error);
-            throw error;
-        }
-    };
+const isRecipeSaved = (recipeId) => savedRecipeIds.has(recipeId);
 
-    const isRecipeSaved = (recipeId) => savedRecipeIds.has(recipeId);
-
-    // Check if liked (helper)
-    const hasUserLiked = (recipeId) => userLikes.has(recipeId);
+// Check if liked (helper)
+const hasUserLiked = (recipeId) => userLikes.has(recipeId);
 
 
-    return (
-        <RecipeContextData.Provider value={{
-            recipes,
-            publicRecipes,
-            userLikes,
-            savedRecipes,
-            addRecipe,
-            updateRecipe,
-            deleteRecipe,
-            toggleVisibility,
-            toggleLike,
-            hasUserLiked,
-            toggleSave,
-            isRecipeSaved,
-            loading,
-            searchQuery,
-            setSearchQuery,
-            duplicateRecipe,
-            fetchPublicRecipes,
-            fetchRecipes,
-            fetchSavedRecipes,
-            fetchUserLikes
-        }}>
-            {children}
-        </RecipeContextData.Provider>
-    );
+return (
+    <RecipeContextData.Provider value={{
+        recipes,
+        publicRecipes,
+        userLikes,
+        savedRecipes,
+        addRecipe,
+        updateRecipe,
+        deleteRecipe,
+        toggleVisibility,
+        toggleLike,
+        hasUserLiked,
+        toggleSave,
+        isRecipeSaved,
+        loading,
+        searchQuery,
+        setSearchQuery,
+        duplicateRecipe,
+        fetchPublicRecipes,
+        fetchRecipes,
+        fetchSavedRecipes,
+        fetchUserLikes
+    }}>
+        {children}
+    </RecipeContextData.Provider>
+);
 }
