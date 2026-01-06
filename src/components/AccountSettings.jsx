@@ -94,19 +94,26 @@ const AccountSettings = () => {
             });
             if (metaError) throw metaError;
 
-            // Update Profile Table (Username)
+            // Update Profile Table (Username & Bio)
+            // We always update bio in the table to ensure public visibility
+            const profileUpdates = {
+                bio: formData.bio
+            };
+
+            // Only include username if it changed
             if (formData.username !== profile?.username) {
-                const { error: profileError } = await updateProfileTable({
-                    username: formData.username
-                });
-                if (profileError) {
-                    // Fallback database check
-                    if (profileError.code === '23505') {
-                        setUsernameStatus('unavailable');
-                        throw new Error("this username already exist");
-                    }
-                    throw profileError;
+                profileUpdates.username = formData.username;
+            }
+
+            const { error: profileError } = await updateProfileTable(profileUpdates);
+
+            if (profileError) {
+                // Fallback database check
+                if (profileError.code === '23505') {
+                    setUsernameStatus('unavailable');
+                    throw new Error("this username already exist");
                 }
+                throw profileError;
             }
 
             setSuccess(true);
