@@ -1,4 +1,4 @@
-```javascript
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, Sparkles, Lock, Globe, ArrowLeft, Wand2 } from 'lucide-react';
 import { useBlocker } from 'react-router-dom';
@@ -209,7 +209,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
             // Handle Pending Translations
             if (pendingTranslations.length > 0) {
-                 const { data: latest } = await supabase.from('recipes').select('id').eq('title', formData.title).order('created_at', { ascending: false }).limit(1).single();
+                const { data: latest } = await supabase.from('recipes').select('id').eq('title', formData.title).order('created_at', { ascending: false }).limit(1).single();
 
                 if (latest) {
                     await supabase.from('recipe_translations').upsert(
@@ -334,16 +334,16 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             setIsProcessingAI(false);
         }
     };
-    
+
     // Feature Choice Handler
     const handleAIFeatureSelect = (featureId) => {
         setAiFeaturesOpen(false);
         if (featureId === 'magic') {
-            setActionModal({ isOpen: true, mode: 'magic' }); 
+            setActionModal({ isOpen: true, mode: 'magic' });
         } else if (featureId === 'chef') {
             setActionModal({ isOpen: true, mode: 'create' });
         } else {
-             setActionModal({ isOpen: true, mode: featureId });
+            setActionModal({ isOpen: true, mode: featureId });
         }
     };
 
@@ -354,15 +354,15 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
             {/* Header */}
             <div className="flex items-center justify-between mb-8 sticky top-0 bg-[#fbfdfc] dark:bg-[#112116] z-40 py-4 border-b border-gray-100 dark:border-white/5 lg:static lg:bg-transparent lg:border-none lg:p-0">
-                 <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                     <button onClick={onCancel} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors hidden lg:flex">
                         <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
                     </button>
                     {/* Public/Private Toggle */}
                     <label className="flex items-center gap-3 cursor-pointer group">
                         <div className="relative">
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 className="sr-only peer"
                                 checked={formData.is_public}
                                 onChange={(e) => handleMetadataChange('is_public', e.target.checked)}
@@ -374,10 +374,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                             {formData.is_public ? 'Public' : 'Private'}
                         </span>
                     </label>
-                 </div>
+                </div>
 
                 <div className="flex gap-3">
-                     <button
+                    <button
                         onClick={onCancel}
                         className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
                     >
@@ -395,7 +395,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         onClick={() => setAiFeaturesOpen(true)}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
                     >
-                        <Sparkles size={16} className="text-purple-500" /> 
+                        <Sparkles size={16} className="text-purple-500" />
                         AI Features
                     </button>
 
@@ -492,7 +492,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
             </div>
 
             {/* Modals */}
-            <AIFeaturesModal 
+            <AIFeaturesModal
                 isOpen={aiFeaturesOpen}
                 onClose={() => setAiFeaturesOpen(false)}
                 onSelect={handleAIFeatureSelect}
@@ -522,7 +522,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 onClose={() => setAiError(null)}
                 error={aiError}
             />
-            
+
             <ConfirmModal
                 isOpen={!!validationError}
                 onClose={() => setValidationError(null)}
@@ -531,8 +531,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 message={validationError}
                 confirmText="OK"
             />
-            
-            <BlockerModal 
+
+            <BlockerModal
                 isOpen={blocker.state === 'blocked'}
                 onClose={() => blocker.reset()}
                 onConfirm={() => blocker.proceed()}
@@ -541,4 +541,4 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         </div>
     );
 }
-```
+
