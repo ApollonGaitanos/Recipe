@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, Users } from 'lucide-react';
-import { FILTER_CATEGORIES } from '../../constants/filters';
+import FilterSelect from '../FilterSelect';
 
 export default function RecipeMetadata({ formData, handleChange, handleTagChange }) {
     return (
@@ -75,47 +75,15 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="space-y-6 pt-4 border-t border-gray-100 dark:border-white/5">
-                {FILTER_CATEGORIES.map(category => (
-                    <div key={category.id} className="space-y-3">
-                        <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                            <category.icon size={14} />
-                            {category.label}
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {category.options.map(option => {
-                                const isSelected = formData.tags?.includes(option.value);
-                                return (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => {
-                                            const currentTags = formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
-                                            let newTags;
-                                            if (isSelected) {
-                                                newTags = currentTags.filter(t => t !== option.value);
-                                            } else {
-                                                newTags = [...currentTags, option.value];
-                                            }
-                                            // Call the parent's handleChange directly for 'tags' field
-                                            // We use handleTagChange logic but mapped to the 'tags' field manually
-                                            // Actually parent expects handleTagChange(e) or we can just call handleChange('tags', string)
-                                            handleChange('tags', newTags.join(', '));
-                                        }}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${isSelected
-                                            ? 'bg-[#63886f] text-white border-[#63886f] shadow-sm'
-                                            : 'bg-white dark:bg-[#1a2c20] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-[#2a4030] hover:border-[#63886f] hover:text-[#63886f]'
-                                            }`}
-                                    >
-                                        {option.icon && <option.icon size={12} />}
-                                        {option.flag && <span>{option.flag}</span>}
-                                        {option.label}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ))}
+            {/* Filters (4 Boxes) */}
+            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
+                    Filters
+                </label>
+                <FilterSelect
+                    selectedTags={formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : []}
+                    onChange={(newTags) => handleChange('tags', newTags.join(', '))}
+                />
             </div>
         </div>
     );
