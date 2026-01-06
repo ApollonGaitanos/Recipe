@@ -267,10 +267,16 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         }
 
         // 3. Nutrition: Add ONLY if currently empty
-        if (!formData.calories) handleMetadataChange('calories', data.calories || data.nutrition?.calories || '');
-        if (!formData.protein) handleMetadataChange('protein', data.protein || data.nutrition?.protein || '');
-        if (!formData.carbs) handleMetadataChange('carbs', data.carbs || data.nutrition?.carbs || '');
-        if (!formData.fat) handleMetadataChange('fat', data.fat || data.nutrition?.fat || '');
+        const parseNutrition = (val) => {
+            if (!val) return '';
+            const match = String(val).match(/(\d+)/);
+            return match ? match[1] : '';
+        };
+
+        if (!formData.calories) handleMetadataChange('calories', parseNutrition(data.calories || data.nutrition?.calories));
+        if (!formData.protein) handleMetadataChange('protein', parseNutrition(data.protein || data.nutrition?.protein));
+        if (!formData.carbs) handleMetadataChange('carbs', parseNutrition(data.carbs || data.nutrition?.carbs));
+        if (!formData.fat) handleMetadataChange('fat', parseNutrition(data.fat || data.nutrition?.fat));
 
         // 4. Tags (Filters): Additive (Merge unique variables)
         if (data.tags && Array.isArray(data.tags)) {
