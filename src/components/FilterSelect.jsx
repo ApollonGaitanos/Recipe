@@ -32,46 +32,67 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
 
     return (
         <div className="w-full" ref={containerRef}>
-            {/* 4-Box Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Flex Container for "Smaller in Length" Boxes */}
+            <div className={`flex flex-wrap ${compact ? 'gap-2' : 'gap-3'}`}>
                 {FILTER_CATEGORIES.map(category => {
-                    // Calculate active count for this category
-                    const categoryValues = category.options.map(o => o.value);
-                    const activeCount = selectedTags.filter(t => categoryValues.includes(t)).length;
+                    // Find renderable options that are currently selected
+                    const selectedOptions = category.options.filter(o => selectedTags.includes(o.value));
+                    const activeCount = selectedOptions.length;
                     const isOpen = openCategory === category.id;
 
                     return (
-                        <div key={category.id} className="relative">
+                        <div key={category.id} className="relative flex-1 min-w-[150px] max-w-[240px]">
                             <button
                                 onClick={() => setOpenCategory(isOpen ? null : category.id)}
-                                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${isOpen
-                                    ? 'border-[#63886f] ring-1 ring-[#63886f] bg-white dark:bg-[#1a2c20]'
-                                    : activeCount > 0
-                                        ? 'border-[#63886f] bg-[#e8f5e9] dark:bg-[#63886f]/20'
-                                        : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2c20] hover:border-gray-300 dark:hover:border-white/20'
+                                className={`w-full flex items-center justify-between rounded-xl border transition-all duration-200 ${compact ? 'p-2' : 'p-3'
+                                    } ${isOpen
+                                        ? 'border-[#63886f] ring-1 ring-[#63886f] bg-white dark:bg-[#1a2c20]'
+                                        : activeCount > 0
+                                            ? 'border-[#63886f] bg-[#e8f5e9] dark:bg-[#63886f]/20'
+                                            : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2c20] hover:border-gray-300 dark:hover:border-white/20'
                                     }`}
                             >
-                                <div className="flex items-center gap-2 overflow-hidden">
-                                    <div className={`p-1.5 rounded-lg ${activeCount > 0 ? 'bg-white/50 text-[#63886f] dark:text-[#8ca395]' : 'bg-gray-100 dark:bg-white/5 text-gray-500'}`}>
-                                        <category.icon size={16} />
+                                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                    {/* Dynamic Icon Container */}
+                                    <div className={`rounded-lg flex items-center justify-center shrink-0 ${compact ? 'w-7 h-7' : 'w-9 h-9'} ${activeCount > 0 ? 'bg-white/50 text-[#63886f] dark:text-[#8ca395]' : 'bg-gray-100 dark:bg-white/5 text-gray-500'
+                                        }`}>
+                                        {activeCount === 0 ? (
+                                            <category.icon size={compact ? 14 : 16} />
+                                        ) : (
+                                            /* Render Selected Icons (Grid or Single) */
+                                            <div className={`grid ${activeCount > 1 ? 'grid-cols-2 gap-0.5' : 'grid-cols-1'} w-full h-full items-center justify-items-center p-0.5`}>
+                                                {selectedOptions.slice(0, 4).map((opt, i) => (
+                                                    <div key={opt.id} className="flex items-center justify-center w-full h-full">
+                                                        {opt.flag ? (
+                                                            <span className={`${activeCount > 1 ? 'text-[8px]' : 'text-sm'} leading-none`}>{opt.flag}</span>
+                                                        ) : (
+                                                            opt.icon && <opt.icon size={activeCount > 1 ? (compact ? 8 : 10) : (compact ? 14 : 16)} />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex flex-col items-start truncate">
-                                        <span className={`text-xs font-bold uppercase tracking-wider ${activeCount > 0 ? 'text-[#63886f] dark:text-[#8ca395]' : 'text-gray-500'}`}>
+
+                                    {/* Label & Count */}
+                                    <div className="flex flex-col items-start truncate min-w-0 flex-1">
+                                        <span className={`font-bold uppercase tracking-wider truncate w-full text-left ${compact ? 'text-[10px]' : 'text-xs'
+                                            } ${activeCount > 0 ? 'text-[#63886f] dark:text-[#8ca395]' : 'text-gray-500'}`}>
                                             {category.label}
                                         </span>
                                         {activeCount > 0 && !compact && (
-                                            <span className="text-xs font-medium text-[#111813] dark:text-white">
-                                                {activeCount} selected
+                                            <span className="text-xs font-medium text-[#111813] dark:text-white truncate w-full text-left">
+                                                {selectedOptions.map(o => o.value).join(', ')}
                                             </span>
                                         )}
                                         {activeCount > 0 && compact && (
-                                            <span className="text-[10px] font-medium text-[#111813] dark:text-white leading-none">
-                                                {activeCount}
+                                            <span className="text-[10px] font-medium text-[#111813] dark:text-white leading-none truncate w-full text-left">
+                                                {selectedOptions.map(o => o.value).join(', ')}
                                             </span>
                                         )}
                                     </div>
                                 </div>
-                                <ChevronDown size={compact ? 14 : 16} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={compact ? 14 : 16} className={`text-gray-400 shrink-0 ml-1 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Dropdown Popover */}
@@ -110,14 +131,13 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
             {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4">
                     {selectedTags.map(tag => {
-                        // Find label/icon for this tag
                         let option = null;
                         FILTER_CATEGORIES.some(cat => {
                             option = cat.options.find(o => o.value === tag);
                             return !!option;
                         });
 
-                        if (!option) return null; // Should not happen
+                        if (!option) return null;
 
                         return (
                             <button
