@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X, Check } from 'lucide-react';
 import { FILTER_CATEGORIES } from '../constants/filters';
 
-export default function FilterSelect({ selectedTags = [], onChange }) {
+export default function FilterSelect({ selectedTags = [], onChange, compact = false }) {
     // State to track which category dropdown is open
     const [openCategory, setOpenCategory] = useState(null);
     const containerRef = useRef(null);
