@@ -51,7 +51,7 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
                 onClick={onClose}
             />
 
-            <div className="relative w-full max-w-lg bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="relative w-full max-w-lg max-h-[85vh] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-xl border border-gray-100 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Sparkles size={20} className="text-[#63886f]" />
@@ -65,7 +65,7 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
                     </button>
                 </div>
 
-                <div className="p-4 grid gap-3">
+                <div className="p-4 grid gap-3 overflow-y-auto">
                     {features.map((feature) => (
                         <button
                             key={feature.id}

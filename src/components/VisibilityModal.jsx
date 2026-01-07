@@ -15,7 +15,7 @@ export default function VisibilityModal({ isOpen, onClose, onConfirm, isMakingPu
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm fade-in" onClick={onClose}>
             <div
-                className="bg-white dark:bg-[#1a1a1a] w-full max-w-md rounded-3xl p-6 shadow-2xl transform transition-all scale-100 animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800"
+                className="bg-white dark:bg-[#1a1a1a] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl transform transition-all scale-100 animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex justify-end mb-2">

@@ -99,39 +99,60 @@ export default function Layout({ children, fullWidth = false }) {
 
                     {/* RIGHT: Actions */}
                     <div className="flex items-center gap-2">
-                        <button onClick={toggleLanguage} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Switch Language">
-                            <Globe size={20} />
-                        </button>
-                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Toggle Theme">
-                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                        </button>
-
-                        <div className="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
-
-                        {user ? (
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
-                                    className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
-                                >
-                                    <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-highlight transition-colors">
-                                        {(profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0])}
-                                    </span>
-                                    <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-highlight group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-                                        <UserIcon className="w-5 h-5" />
-                                    </div>
-                                </button>
-
-
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => setShowAuthModal(true)}
-                                className="ml-2 px-4 py-2 min-w-[110px] flex justify-center rounded-full bg-primary text-white text-sm font-bold hover:opacity-90 transition-colors shadow-sm"
-                            >
-                                {t('nav.login')}
+                        {/* Desktop Only: Theme & Language */}
+                        <div className="hidden md:flex items-center gap-2">
+                            <button onClick={toggleLanguage} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Switch Language">
+                                <Globe size={20} />
                             </button>
-                        )}
+                            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 transition-colors" title="Toggle Theme">
+                                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                            </button>
+                            <div className="h-6 w-px bg-gray-200 dark:bg-white/10 mx-1"></div>
+                        </div>
+
+                        {/* Mobile: Prominent Navigation Icons */}
+                        <div className="flex md:hidden items-center gap-1 mr-1">
+                            <button
+                                onClick={() => navigate('/')}
+                                className={`p-2 rounded-full transition-colors ${location.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300'}`}
+                            >
+                                <Globe size={20} />
+                            </button>
+                            {user && (
+                                <button
+                                    onClick={() => navigate(myKitchenPath)}
+                                    className={`p-2 rounded-full transition-colors ${location.pathname === myKitchenPath ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300'}`}
+                                >
+                                    <ChefHat size={20} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* User Profile / Login (Desktop) */}
+                        <div className="hidden md:flex items-center">
+                            {user ? (
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => user ? navigate('/account') : setShowAuthModal(true)}
+                                        className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
+                                    >
+                                        <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-highlight transition-colors">
+                                            {(profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0])}
+                                        </span>
+                                        <div className="w-9 h-9 rounded-full bg-surface-hover flex items-center justify-center text-highlight group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                            <UserIcon className="w-5 h-5" />
+                                        </div>
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setShowAuthModal(true)}
+                                    className="ml-2 px-4 py-2 min-w-[110px] flex justify-center rounded-full bg-primary text-white text-sm font-bold hover:opacity-90 transition-colors shadow-sm"
+                                >
+                                    {t('nav.login')}
+                                </button>
+                            )}
+                        </div>
 
                         {/* Mobile Menu Toggle */}
                         <button
@@ -185,17 +206,28 @@ export default function Layout({ children, fullWidth = false }) {
                         </div>
 
                         <nav className="flex flex-col gap-2">
-                            <button onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
-                                <Globe size={20} className="text-gray-400" /> {t('nav.discover')}
-                            </button>
-                            {user && (
-                                <button onClick={() => { navigate(myKitchenPath); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
-                                    <div className="text-gray-400"><ChefHat size={20} /></div> {t('nav.myKitchen')}
+                            {/* Settings / System Toggles */}
+                            <div className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-xl mb-2">
+                                <button onClick={toggleLanguage} className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-white dark:bg-black/20 border border-gray-100 dark:border-white/5 text-sm font-medium">
+                                    <Globe size={16} /> Language
                                 </button>
-                            )}
-                            <div className="h-px bg-gray-100 dark:bg-white/10 my-2"></div>
+                                <button onClick={toggleTheme} className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-white dark:bg-black/20 border border-gray-100 dark:border-white/5 text-sm font-medium">
+                                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} Theme
+                                </button>
+                            </div>
+
                             {user ? (
                                 <>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10 mb-2">
+                                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                                            <UserIcon size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold truncate">{(profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0])}</p>
+                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        </div>
+                                    </div>
+
                                     <button onClick={() => { navigate('/account'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 text-left font-medium">
                                         <Settings size={20} className="text-gray-400" /> {t('nav.settings')}
                                     </button>

@@ -436,12 +436,13 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     </label>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 lg:gap-3 items-center">
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
+                        className="p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors lg:hidden"
+                        title="Cancel"
                     >
-                        Cancel
+                        <X size={20} />
                     </button>
                     <button
                         onClick={onCancel}
@@ -453,10 +454,10 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     {/* AI Features Button */}
                     <button
                         onClick={() => setAiFeaturesOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
+                        className="flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
                     >
                         <Sparkles size={16} className="text-purple-500" />
-                        AI Features
+                        <span className="hidden sm:inline">AI Features</span>
                     </button>
 
                     {/* Save */}
@@ -464,13 +465,15 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         type="button"
                         onClick={handleSaveLocal}
                         disabled={isSaving}
-                        className="flex items-center gap-2 bg-[#1a2c20] dark:bg-[#63886f] text-white px-8 py-2.5 rounded-full font-bold hover:opacity-90 transition-all shadow-lg shadow-[#63886f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 bg-[#1a2c20] dark:bg-[#63886f] text-white px-4 sm:px-8 py-2.5 rounded-full font-bold hover:opacity-90 transition-all shadow-lg shadow-[#63886f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSaving ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                             <>
-                                <Save size={18} /> Save
+                                <Save size={18} />
+                                <span className="hidden sm:inline">Save</span>
+                                <span className="sm:hidden">Save</span>
                             </>
                         )}
                     </button>

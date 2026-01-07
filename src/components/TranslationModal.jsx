@@ -37,7 +37,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-md bg-white dark:bg-[#1a2c20] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-md max-h-[90vh] bg-white dark:bg-[#1a2c20] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-[#dce5df] dark:border-[#2a4030] animate-in fade-in zoom-in-95 duration-200">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
@@ -71,7 +71,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                 </div>
 
                 {/* Body */}
-                <div className="p-6 bg-white dark:bg-[#1a2c20]">
+                <div className="p-6 bg-white dark:bg-[#1a2c20] overflow-y-auto">
                     {step === 'confirm' ? (
                         <div className="flex flex-col gap-4 animate-in slide-in-from-right duration-300">
                             <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex gap-3 text-amber-800 dark:text-amber-200">
