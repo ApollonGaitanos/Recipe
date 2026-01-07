@@ -84,7 +84,9 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
                             {profiles.map(profile => (
                                 <button
                                     key={profile.id}
-                                    onClick={() => {
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault(); // Prevent focus loss
                                         navigate(`/${profile.username}`);
                                         onClose();
                                         onClear();
@@ -115,7 +117,9 @@ export default function SearchSuggestions({ query, isVisible, onClose, onClear }
                             {recipes.map(recipe => (
                                 <button
                                     key={recipe.id}
-                                    onClick={() => {
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault(); // Prevent focus loss
                                         navigate(`/recipe/${recipe.id}`);
                                         onClose();
                                         onClear();
