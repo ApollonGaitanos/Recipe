@@ -19,7 +19,7 @@ export default function RecipeMetadata({ formData, handleChange, handleTagChange
             </div>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <div className="space-y-2">
                     <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
                         <Clock size={14} /> Prep

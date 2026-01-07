@@ -185,7 +185,7 @@ const AccountSettings = () => {
 
                         {/* Main Content Area */}
                         <main className="flex-1">
-                            <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 transition-colors duration-200">
+                            <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 sm:p-8 transition-colors duration-200">
                                 {/* Profile Header */}
                                 <div className="flex items-center justify-between mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
                                     <div>
