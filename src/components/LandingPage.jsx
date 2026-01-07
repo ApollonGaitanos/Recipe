@@ -121,9 +121,8 @@ export default function LandingPage() {
                             { icon: Users, label: "Smart Scaling", desc: "Adjust serving sizes and ingredients automatically." },
                             { icon: ChefHat, label: "Private Chef", desc: "Get AI-powered tips and ingredient substitutions." },
                             { icon: Import, label: "Magic Import", desc: "Extract recipes from any website URL." },
-                            { icon: Copy, label: "Quick Copy", desc: "Copy ingredients or steps with a single click." },
+                            { icon: Copy, label: "Quick Copy", desc: "Copy any recipe and edit it to your preferences." },
                             { icon: Share2, label: "Share", desc: "Share your culinary creations with friends." },
-                            { icon: Clock, label: "Timers", desc: "Keep track of prep and cooking times." },
                             { icon: Sparkles, label: "Enhance", desc: "Let AI improve your recipe descriptions." }
                         ].map((item, idx) => (
                             <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
