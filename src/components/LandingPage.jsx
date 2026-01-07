@@ -47,8 +47,8 @@ export default function LandingPage() {
 
                 {/* HERO SECTION */}
                 <div className="w-full max-w-4xl mx-auto text-center py-16 md:py-24 px-4">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/20 animate-in zoom-in duration-500">
-                        <ChefHat size={48} className="text-white" strokeWidth={1.5} />
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/20 animate-in zoom-in duration-500 overflow-hidden">
+                        <img src="/logo.png" alt="Opsopoiia Logo" className="w-full h-full object-cover p-4 opacity-90 invert-0 brightness-0 invert" />
                     </div>
 
                     <h1 className="text-4xl md:text-6xl font-serif font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
