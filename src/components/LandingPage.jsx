@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChefHat, Globe, Sparkles, Import, BookOpen, ArrowRight } from 'lucide-react';
+import { ChefHat, Globe, Sparkles, Import, BookOpen, ArrowRight, Copy, Share2, Users, Clock, Languages } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import Layout from './Layout';
@@ -100,6 +99,39 @@ export default function LandingPage() {
                                 <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                                     {feature.description}
                                 </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* GLOSSARY SECTION */}
+                <div className="w-full max-w-6xl mx-auto px-4 py-16 border-t border-gray-100 dark:border-white/5">
+                    <div className="text-center mb-12">
+                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 dark:text-white mb-4">
+                            Know Your Tools
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                            Master your kitchen with these powerful built-in features.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                        {[
+                            { icon: Languages, label: "Translate", desc: "Instantly translate recipes to your preferred language." },
+                            { icon: Users, label: "Smart Scaling", desc: "Adjust serving sizes and ingredients automatically." },
+                            { icon: ChefHat, label: "Private Chef", desc: "Get AI-powered tips and ingredient substitutions." },
+                            { icon: Import, label: "Magic Import", desc: "Extract recipes from any website URL." },
+                            { icon: Copy, label: "Quick Copy", desc: "Copy ingredients or steps with a single click." },
+                            { icon: Share2, label: "Share", desc: "Share your culinary creations with friends." },
+                            { icon: Clock, label: "Timers", desc: "Keep track of prep and cooking times." },
+                            { icon: Sparkles, label: "Enhance", desc: "Let AI improve your recipe descriptions." }
+                        ].map((item, idx) => (
+                            <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
+                                    <item.icon size={20} />
+                                </div>
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{item.label}</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
