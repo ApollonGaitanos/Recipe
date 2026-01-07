@@ -44,8 +44,12 @@ export default function Layout({ children, fullWidth = false }) {
                             onClick={() => navigate('/')}
                             className="flex items-center gap-2 cursor-pointer group"
                         >
-                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-gray-900 overflow-hidden">
-                                <img src="/logo.png" alt="Opsopoiia Logo" className="w-full h-full object-cover p-1.5 opacity-90 invert dark:invert-0" />
+                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-gray-900 overflow-hidden relative">
+                                <img
+                                    src="/logo.png"
+                                    alt="Opsopoiia Logo"
+                                    className="w-full h-full object-contain p-1.5 opacity-90 mix-blend-multiply dark:mix-blend-screen dark:invert dark:filter dark:brightness-200"
+                                />
                             </div>
                             <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-highlight transition-colors">
                                 {t('appTitle')}
