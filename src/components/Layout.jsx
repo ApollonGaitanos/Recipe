@@ -48,7 +48,7 @@ export default function Layout({ children, fullWidth = false }) {
                                 <img
                                     src="/logo.png"
                                     alt="Opsopoiia Logo"
-                                    className="w-full h-full object-contain p-1.5 opacity-90 mix-blend-multiply dark:mix-blend-screen dark:invert dark:filter dark:brightness-200"
+                                    className="w-full h-full object-contain p-1.5 opacity-90 dark:invert dark:filter dark:brightness-200"
                                 />
                             </div>
                             <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-highlight transition-colors">

@@ -51,7 +51,7 @@ export default function LandingPage() {
                         <img
                             src="/logo.png"
                             alt="Opsopoiia Logo"
-                            className="w-full h-full object-contain p-4 mix-blend-multiply opacity-80"
+                            className="w-full h-full object-contain p-4 opacity-80"
                         />
                     </div>
 
