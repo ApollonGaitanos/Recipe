@@ -55,8 +55,8 @@ export default function Layout({ children, fullWidth = false }) {
                         {/* Desktop Nav */}
                         <nav className="hidden md:flex items-center gap-6">
                             <button
-                                onClick={() => navigate('/')}
-                                className={`text-sm font-bold transition-colors ${location.pathname === '/' ? 'text-accent' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
+                                onClick={() => navigate('/discover')}
+                                className={`text-sm font-bold transition-colors ${location.pathname === '/discover' ? 'text-accent' : 'text-gray-900 dark:text-gray-300 hover:text-accent'}`}
                             >
                                 {t('nav.discover')}
                             </button>
@@ -113,8 +113,8 @@ export default function Layout({ children, fullWidth = false }) {
                         {/* Mobile: Prominent Navigation Icons */}
                         <div className="flex md:hidden items-center gap-1 mr-1">
                             <button
-                                onClick={() => navigate('/')}
-                                className={`p-2 rounded-full transition-colors ${location.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300'}`}
+                                onClick={() => navigate('/discover')}
+                                className={`p-2 rounded-full transition-colors ${location.pathname === '/discover' ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300'}`}
                             >
                                 <Globe size={20} />
                             </button>

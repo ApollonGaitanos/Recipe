@@ -241,6 +241,12 @@ function ProtectedRoute({ children }) {
 
 // --- MAIN ROUTER ---
 
+import LandingPage from './components/LandingPage';
+
+// ... (existing imports, but simplified for brevity of replacement block)
+
+// --- MAIN ROUTER ---
+
 // Helper to redirect legacy /my-recipes to username
 function MyRecipesRedirect() {
   const { user, profile } = useAuth();
@@ -254,7 +260,8 @@ function MyRecipesRedirect() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/" element={<Feed isPrivate={false} />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/discover" element={<Feed isPrivate={false} />} />
       <Route path="/my-recipes" element={<MyRecipesRedirect />} />
       <Route path="/recipe/:id" element={<DetailRoute />} />
       <Route path="/add" element={<FormRoute />} />
