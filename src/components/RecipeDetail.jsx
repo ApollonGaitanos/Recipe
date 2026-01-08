@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark, GitFork } from 'lucide-react';
+import { ArrowLeft, Edit, Edit2, Trash2, Clock, Users, Download, Globe, Lock, ChefHat, Sparkles, Heart, Check, ShoppingCart, ShoppingBag, Activity, Printer, Share2, Star, BarChart2, Info, Languages, Image as ImageIcon, Bookmark, GitFork, Utensils } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../supabaseClient';
@@ -438,8 +438,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     const scaledIngredient = scaleIngredient(ingredient, Number(recipe.servings) || 4, servingCount);
 
                                     return (
-                                        <li key={index} className="flex items-center gap-3 group cursor-pointer">
-                                            <div className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-zinc-600 group-hover:border-primary transition-colors" />
+                                        <li key={index} className="flex items-center gap-3 group">
+                                            <Utensils className="w-4 h-4 text-primary opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                                             <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                                                 {formatIngredient(scaledIngredient)}
                                             </span>
@@ -447,11 +447,6 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     );
                                 })}
                             </ul>
-
-                            <button className="w-full mt-8 py-3 rounded-xl bg-primary/10 dark:bg-primary/20 text-highlight font-semibold text-sm hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
-                                <ShoppingBag className="w-4 h-4" />
-                                Add to Shopping List
-                            </button>
                         </div>
 
                         {/* Tools Section */}
