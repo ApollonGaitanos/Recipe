@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         const presignedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
         console.log("[Edge Function] Presigned URL generated successfully.");
 
-        const publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${key}`;
+        const publicUrl = `https://pub-b961e51ead5a440db1b7069b36b1e006.r2.dev/${key}`;
 
         return new Response(
             JSON.stringify({
