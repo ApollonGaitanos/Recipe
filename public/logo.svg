@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Spoon (Left) -->
+  <path d="M30 35 L30 75" />
+  <path d="M30 35 C 24 35, 24 20, 30 20 C 36 20, 36 35, 30 35" />
+
+  <!-- Knife (Center) -->
+  <path d="M50 15 L50 80" />
+  <path d="M50 45 C 55 45, 55 80, 50 80" />
+
+  <!-- Fork (Right) -->
+  <path d="M70 35 L70 75" />
+  <path d="M65 20 L65 35" />
+  <path d="M70 20 L70 35" />
+  <path d="M75 20 L75 35" />
+
+  <!-- Lyre Frame (Connecting them) -->
+  <path d="M20 30 C 10 30, 20 85, 50 85 C 80 85, 90 30, 80 30" />
+  <!-- Loops at top -->
+  <path d="M20 30 C 25 30, 25 35, 30 35" /> <!-- Connect left loop to spoon -->
+  <path d="M80 30 C 75 30, 75 35, 70 35" /> <!-- Connect right loop to fork -->
+</svg>

@@ -46,7 +46,7 @@ export default function Layout({ children, fullWidth = false }) {
                         >
                             <div className="w-10 h-10 flex items-center justify-center relative">
                                 <img
-                                    src="/logo.png"
+                                    src="/logo.svg"
                                     alt="Opsopoiia Logo"
                                     className="w-full h-full object-contain"
                                 />
