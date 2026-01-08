@@ -44,11 +44,11 @@ export default function Layout({ children, fullWidth = false }) {
                             onClick={() => navigate('/')}
                             className="flex items-center gap-2 cursor-pointer group"
                         >
-                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-gray-900 overflow-hidden relative">
+                            <div className="w-10 h-10 flex items-center justify-center relative">
                                 <img
                                     src="/logo.png"
                                     alt="Opsopoiia Logo"
-                                    className="w-full h-full object-contain p-1.5 opacity-90 dark:invert dark:filter dark:brightness-200"
+                                    className="w-full h-full object-contain"
                                 />
                             </div>
                             <h1 className="text-2xl font-serif font-bold tracking-tight text-gray-900 dark:text-white group-hover:text-highlight transition-colors">
