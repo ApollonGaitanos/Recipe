@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
         const S3 = new S3Client({
             region: 'auto',
             endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            forcePathStyle: true,
             credentials: {
                 accessKeyId: R2_ACCESS_KEY_ID,
                 secretAccessKey: R2_SECRET_ACCESS_KEY,
