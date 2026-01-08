@@ -154,7 +154,8 @@ const translations = {
         card: {
             ppl: "ppl",
             chef: "Chef",
-            ago: "ago"
+            ago: "ago",
+            noImage: "Cooking in progress..."
         },
         detail: {
             by: "by",
@@ -351,7 +352,8 @@ const translations = {
         card: {
             ppl: "άτομα",
             chef: "Σεφ",
-            ago: "πριν"
+            ago: "πριν",
+            noImage: "Μαγειρεύεται..."
         },
         detail: {
             by: "από",

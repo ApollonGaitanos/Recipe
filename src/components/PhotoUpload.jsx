@@ -4,8 +4,9 @@ import imageCompression from 'browser-image-compression';
 import { supabase } from '../supabaseClient';
 import { Camera, X, Loader2, Image as ImageIcon } from 'lucide-react';
 
-export default function PhotoUpload({ currentImage, onImageChange }) {
+export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
     const [uploading, setUploading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [preview, setPreview] = useState(currentImage);
     const fileInputRef = useRef(null);
     const [error, setError] = useState(null);
@@ -68,16 +69,47 @@ export default function PhotoUpload({ currentImage, onImageChange }) {
         }
     };
 
-    const handleRemove = (e) => {
+    const handleRemove = async (e) => {
         e.stopPropagation();
-        setPreview(null);
-        onImageChange(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
+
+        // If it's a new recipe (not saved yet), just clear the UI
+        if (!recipeId || recipeId === 'new') {
+            setPreview(null);
+            onImageChange(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        // Secure Server-Side Deletion
+        setDeleting(true);
+        setError(null);
+
+        try {
+            const { error } = await supabase.functions.invoke('delete-image', {
+                body: {
+                    recipeId: recipeId,
+                    imageUrl: preview
+                }
+            });
+
+            if (error) throw new Error(error.message || "Failed to delete image");
+
+            // UI Cleanup after success
+            setPreview(null);
+            onImageChange(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+        } catch (err) {
+            console.error('Delete Error:', err);
+            setError("Could not delete image. Please try again.");
+        } finally {
+            setDeleting(false);
+        }
     };
 
     return (
         <div
-            onClick={() => !uploading && fileInputRef.current?.click()}
+            onClick={() => !uploading && !deleting && fileInputRef.current?.click()}
             className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed 
                 ${error ? 'border-red-300 bg-red-50' : 'border-[#dce5df] dark:border-[#2a4030] bg-gray-50 dark:bg-[#1a2c20]/50'}
                 flex flex-col items-center justify-center cursor-pointer 
@@ -88,12 +120,18 @@ export default function PhotoUpload({ currentImage, onImageChange }) {
                     <Loader2 className="w-8 h-8 animate-spin" />
                     <span className="text-sm font-medium">Compressing & Uploading...</span>
                 </div>
+            ) : deleting ? (
+                <div className="flex flex-col items-center gap-3 text-red-500">
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <span className="text-sm font-medium">Securely Deleting...</span>
+                </div>
             ) : preview ? (
                 <>
                     <img src={preview} alt="Recipe" className="w-full h-full object-cover" />
                     <button
                         onClick={handleRemove}
                         className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete Photo"
                     >
                         <X size={16} />
                     </button>
@@ -105,7 +143,6 @@ export default function PhotoUpload({ currentImage, onImageChange }) {
                     </div>
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
                         Upload Photo
-
                     </span>
                     {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
                 </div>

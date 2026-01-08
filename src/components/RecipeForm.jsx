@@ -480,6 +480,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     {/* 1. Photo Upload (Top Left) */}
                     <PhotoUpload
                         currentImage={formData.image}
+                        recipeId={recipeId}
                         onImageChange={(url) => {
                             setFormData(prev => ({ ...prev, image: url }));
                             markDirty();
