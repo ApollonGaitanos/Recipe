@@ -105,8 +105,7 @@ export default function PhotoUpload({ currentImage, onImageChange }) {
                     </div>
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
                         Upload Photo
-                        <br />
-                        <span className="text-xs text-gray-400">(Max 200KB)</span>
+
                     </span>
                     {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
                 </div>
