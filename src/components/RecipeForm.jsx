@@ -120,51 +120,51 @@ useEffect(() => {
                     fat: data.fat || ''
                 });
 
-            });
 
-// Structured Data Parsing
-if (data.ingredients) {
-    try {
-        const parsedIng = typeof data.ingredients === 'string'
-            ? JSON.parse(data.ingredients) // If stored as JSON string
-            : data.ingredients;
 
-        // Check if it matches our object structure
-        if (Array.isArray(parsedIng) && typeof parsedIng[0] === 'object') {
-            setIngredientsList(parsedIng.map((ing, i) => ({ ...ing, id: Date.now() + i })));
+                // Structured Data Parsing
+                if (data.ingredients) {
+                    try {
+                        const parsedIng = typeof data.ingredients === 'string'
+                            ? JSON.parse(data.ingredients) // If stored as JSON string
+                            : data.ingredients;
+
+                        // Check if it matches our object structure
+                        if (Array.isArray(parsedIng) && typeof parsedIng[0] === 'object') {
+                            setIngredientsList(parsedIng.map((ing, i) => ({ ...ing, id: Date.now() + i })));
+                        } else {
+                            // Fallback to line parser
+                            setIngredientsList(parseIngredients(String(data.ingredients)));
+                        }
+                    } catch (e) {
+                        setIngredientsList(parseIngredients(String(data.ingredients)));
+                    }
+                }
+
+                if (data.instructions) {
+                    try {
+                        const parsedInst = typeof data.instructions === 'string' && data.instructions.startsWith('[')
+                            ? JSON.parse(data.instructions)
+                            : data.instructions;
+                        setInstructionsList(parseInstructions(parsedInst));
+                    } catch (e) {
+                        setInstructionsList(parseInstructions(data.instructions));
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error loading recipe:', error);
+            }
         } else {
-            // Fallback to line parser
-            setIngredientsList(parseIngredients(String(data.ingredients)));
+            // New Recipe
+            setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
+            setInstructionsList([{ id: Date.now(), text: '' }]);
+            setToolsList([{ id: Date.now(), text: '' }]);
         }
-    } catch (e) {
-        setIngredientsList(parseIngredients(String(data.ingredients)));
-    }
-}
-
-if (data.instructions) {
-    try {
-        const parsedInst = typeof data.instructions === 'string' && data.instructions.startsWith('[')
-            ? JSON.parse(data.instructions)
-            : data.instructions;
-        setInstructionsList(parseInstructions(parsedInst));
-    } catch (e) {
-        setInstructionsList(parseInstructions(data.instructions));
-    }
-}
-
-} catch (error) {
-    console.error('Error loading recipe:', error);
-}
-            } else {
-    // New Recipe
-    setIngredientsList([{ id: Date.now(), amount: '', item: '' }]);
-    setInstructionsList([{ id: Date.now(), text: '' }]);
-    setToolsList([{ id: Date.now(), text: '' }]);
-}
-setIsLoading(false);
-        };
-load();
-    }, [recipeId]);
+        setIsLoading(false);
+    };
+    load();
+}, [recipeId]);
 
 // Blocker logic
 const blocker = useBlocker(({ currentLocation }) => {
