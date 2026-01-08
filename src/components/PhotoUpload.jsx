@@ -130,7 +130,7 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
                     <img src={preview} alt="Recipe" className="w-full h-full object-cover" />
                     <button
                         onClick={handleRemove}
-                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                         title="Delete Photo"
                     >
                         <X size={16} />
