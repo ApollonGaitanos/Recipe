@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, User, Award, Heart, Lock, Globe, Bookmark, GitFork } from 'lucide-react';
+import { Clock, User, Award, Heart, Lock, Globe, Bookmark, GitFork, ChefHat } from 'lucide-react';
 import { useRecipes } from '../context/RecipeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -73,12 +73,23 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
             className="group cursor-pointer flex flex-col gap-3 relative"
         >
             {/* Image Container */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-700">
-                <div className="text-center p-4">
-                    <span className="text-sm font-medium text-gray-400 dark:text-gray-500">
-                        Images are still a work in progress
-                    </span>
-                </div>
+            {/* Image Container */}
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-100 dark:border-gray-800">
+                {recipe.image_url ? (
+                    <img
+                        src={recipe.image_url}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                ) : (
+                    <div className="text-center p-4">
+                        {/* Placeholder Pattern to look a bit nicer than just text */}
+                        <ChefHat className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                        <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                            {t('card.noImage')}
+                        </span>
+                    </div>
+                )}
 
                 {/* Bottom Right: Like */}
                 <div className="absolute bottom-3 right-3">

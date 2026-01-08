@@ -371,13 +371,22 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </div>
                 </div>
 
-                {/* Hero Image - Placeholder Style */}
-                <div className="relative w-full aspect-[21/9] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                    <div className="text-center p-6">
-                        <span className="text-lg font-medium text-zinc-400 dark:text-zinc-500">
-                            Images are still a work in progress
-                        </span>
-                    </div>
+                {/* Hero Image */}
+                <div className="relative w-full aspect-[21/9] bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border border-zinc-100 dark:border-zinc-800">
+                    {recipe.image_url ? (
+                        <img
+                            src={recipe.image_url}
+                            alt={recipe.title}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="text-center p-6 flex flex-col items-center">
+                            <ChefHat className="w-12 h-12 text-zinc-300 dark:text-zinc-600 mb-3" />
+                            <span className="text-lg font-medium text-zinc-400 dark:text-zinc-500">
+                                {t ? t('card.noImage') : 'No image available'}
+                            </span>
+                        </div>
+                    )}
 
                     {/* Floating Action Button */}
                     <button
