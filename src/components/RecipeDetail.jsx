@@ -607,32 +607,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     </div>
                 </div>
 
-                {/* You Might Also Like Section */}
-                <div className="border-t border-zinc-200 dark:border-zinc-800 pt-16 mt-16">
-                    <h3 className="text-2xl font-serif font-bold text-zinc-900 dark:text-white mb-8">You might also like</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="group cursor-pointer">
-                                <div className="aspect-[4/3] bg-zinc-100 dark:bg-zinc-900 rounded-xl mb-4 overflow-hidden flex items-center justify-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                                    <div className="text-center p-4">
-                                        <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
-                                            Images are still a work in progress
-                                        </span>
-                                    </div>
-                                </div>
-                                <h4 className="font-bold text-lg text-zinc-900 dark:text-white leading-tight group-hover:text-highlight transition-colors">
-                                    {i === 1 ? "Summer Grilled Chicken Salad" : i === 2 ? "Creamy Garlic Pasta" : "Rustic Vegetable Soup"}
-                                </h4>
-                                <div className="flex items-center gap-2 text-zinc-500 text-sm mt-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span>{i === 1 ? "25 mins" : i === 2 ? "40 mins" : "55 mins"}</span>
-                                    <span>•</span>
-                                    <span>{i === 1 ? "Easy" : i === 2 ? "Medium" : "Easy"}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
 
             </div>
 
