@@ -1,8 +1,48 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+// --- SSRF Protection Helper ---
+const isSafeUrl = (urlString: string): boolean => {
+    try {
+        const url = new URL(urlString);
+
+        // 1. Block Localhost / Local domains
+        if (url.hostname === 'localhost' || url.hostname.endsWith('.local')) return false;
+
+        // 2. Block Private IP Ranges (IPv4)
+        // Regex for IPv4 format to verify if hostname is an IP
+        const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+        const match = url.hostname.match(ipv4Regex);
+
+        if (match) {
+            const parts = match.slice(1, 5).map(Number);
+            const ip = parts.join('.');
+
+            // 10.0.0.0/8
+            if (parts[0] === 10) return false;
+            // 172.16.0.0/12
+            if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
+            // 192.168.0.0/16
+            if (parts[0] === 192 && parts[1] === 168) return false;
+            // 127.0.0.0/8 (Loopback)
+            if (parts[0] === 127) return false;
+            // 169.254.0.0/16 (Link-local / Cloud Metadata)
+            if (parts[0] === 169 && parts[1] === 254) return false;
+        }
+
+        // 3. Allowed Protocols
+        if (!['http:', 'https:'].includes(url.protocol)) return false;
+
+        return true;
+    } catch (e) {
+        return false; // Invalid URL structure
+    }
+};
 
 serve(async (req) => {
     // 1. CORS Handling
+    // 0. Auth & CORS Handling
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             headers: {
@@ -14,6 +54,23 @@ serve(async (req) => {
     }
 
     try {
+        // 1. VERIFY AUTHENTICATION (CRITICAL SECURITY FIX)
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            throw new Error("Unauthorized: Missing Authorization header");
+        }
+
+        const supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader } } }
+        );
+
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+        if (authError || !user) {
+            throw new Error("Unauthorized: Invalid Token");
+        }
 
         // 2. Input Parsing
         const { text, imageBase64, imageType, url, targetLanguage, mode } = await req.json()
@@ -34,6 +91,11 @@ serve(async (req) => {
 
         if (url) {
             console.log(`Fetching URL: ${url}`);
+
+            // 2b. SSRF Check (CRITICAL SECURITY FIX)
+            if (!isSafeUrl(url)) {
+                throw new Error("Security Violation: Access to this URL is blocked.");
+            }
 
             // Strategy: Triple Fallback
             // 1. Direct Fetch (Mimic Browser)

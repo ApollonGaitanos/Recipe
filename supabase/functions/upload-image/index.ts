@@ -57,11 +57,14 @@ Deno.serve(async (req) => {
 
         const { filename, filetype } = body;
 
+        // 3. Strict Input Validation (CRITICAL SECURITY FIX)
+        const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
         // Basic Validation
-        if (!filename || !filetype) {
-            console.error("[Edge Function] Missing filename or filetype");
+        if (!filename || !filetype || !ALLOWED_MIME_TYPES.includes(filetype)) {
+            console.error(`[Edge Function] Invalid input. Filename: ${filename}, Filetype: ${filetype}`);
             return new Response(
-                JSON.stringify({ error: "Missing filename or filetype" }),
+                JSON.stringify({ error: "Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed." }),
                 {
                     status: 400,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
