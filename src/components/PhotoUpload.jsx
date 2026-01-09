@@ -21,7 +21,7 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
         try {
             // 1. Compression
             const options = {
-                maxSizeMB: 0.2, // 200KB limit
+                maxSizeMB: 0.2, // ~200KB target for speed
                 maxWidthOrHeight: 1200,
                 useWebWorker: true,
                 fileType: 'image/jpeg'
@@ -31,33 +31,46 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
             const compressedFile = await imageCompression(file, options);
             console.log('Compressed size:', compressedFile.size / 1024, 'KB');
 
-            // 2. Get Presigned URL
+            // 2. Get Presigned POST Policy
+            // CRITICAL: Send filesize so backend can enforce limits BEFORE upload
             const { data, error: functionError } = await supabase.functions.invoke('upload-image', {
                 body: {
                     filename: file.name,
-                    filetype: compressedFile.type
+                    filetype: compressedFile.type,
+                    filesize: compressedFile.size
                 }
             });
 
             if (functionError) throw new Error("Failed to get upload URL");
             if (data.error) throw new Error(data.error);
 
-            const { uploadUrl, publicUrl } = data;
+            const { uploadUrl, fields, publicUrl } = data;
 
-            // 3. Upload to R2
+            // 3. Construct FormData for S3 Presigned POST
+            const formData = new FormData();
+
+            // Append all policy fields first
+            Object.entries(fields).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+
+            // Append file last
+            formData.append('file', compressedFile);
+
+            // 4. Upload to R2 (POST Request)
             const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
-                body: compressedFile,
-                headers: {
-                    'Content-Type': compressedFile.type
-                }
+                method: 'POST',
+                body: formData,
+                // Do NOT set Content-Type header manually for FormData; browser does it
             });
 
             if (!uploadResponse.ok) {
+                const text = await uploadResponse.text();
+                console.error("Upload failed details:", text);
                 throw new Error("Failed to upload image provider");
             }
 
-            // 4. Success
+            // 5. Success
             setPreview(publicUrl);
             onImageChange(publicUrl); // Pass URL back to parent
 

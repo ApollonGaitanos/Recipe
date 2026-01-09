@@ -2,47 +2,74 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// --- SSRF Protection Helper ---
+// --- SSRF Protection Helper (STRICT) ---
 const isSafeUrl = (urlString: string): boolean => {
     try {
         const url = new URL(urlString);
 
-        // 1. Block Localhost / Local domains
+        // 1. Protocol must be HTTPS
+        if (url.protocol !== 'https:') return false;
+
+        // 2. Block IP Literals (IPv4 & IPv6)
+        // This regex checks if the hostname looks like an IP address
+        // IPv4: 1.2.3.4
+        // IPv6: [::1] or similar
+        const isIp = /^(\d{1,3}\.){3}\d{1,3}$|^\[[\da-fA-F:]+\]$|^[\da-fA-F:]+$/.test(url.hostname);
+        if (isIp) return false;
+
+        // 3. Block Localhost / Local domains explicitly
         if (url.hostname === 'localhost' || url.hostname.endsWith('.local')) return false;
 
-        // 2. Block Private IP Ranges (IPv4)
-        // Regex for IPv4 format to verify if hostname is an IP
-        const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-        const match = url.hostname.match(ipv4Regex);
-
-        if (match) {
-            const parts = match.slice(1, 5).map(Number);
-            const ip = parts.join('.');
-
-            // 10.0.0.0/8
-            if (parts[0] === 10) return false;
-            // 172.16.0.0/12
-            if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
-            // 192.168.0.0/16
-            if (parts[0] === 192 && parts[1] === 168) return false;
-            // 127.0.0.0/8 (Loopback)
-            if (parts[0] === 127) return false;
-            // 169.254.0.0/16 (Link-local / Cloud Metadata)
-            if (parts[0] === 169 && parts[1] === 254) return false;
-        }
-
-        // 3. Allowed Protocols
-        if (!['http:', 'https:'].includes(url.protocol)) return false;
+        // 4. DNS Rebinding / Private Range Defense
+        // Since we cannot resolve DNS inside Deno Deploy easily without trusted bindings,
+        // relying on "No IP Literals" + "HTTPS Only" is a strong defense.
+        // Public trusted infrastructure usually has valid SSL certs.
+        // An attacker pointing a domain to 127.0.0.1 won't have a valid cert for that domain,
+        // so the HTTPS handshake will fail (unless we mistakenly ignore SSL errors).
 
         return true;
     } catch (e) {
-        return false; // Invalid URL structure
+        return false;
     }
 };
 
+// --- Safe Fetcher (Handles Redirects Manually) ---
+async function safeFetch(initialUrl: string, headers: any, maxRedirects = 5) {
+    let currentUrl = initialUrl;
+    let redirectCount = 0;
+
+    while (redirectCount < maxRedirects) {
+        if (!isSafeUrl(currentUrl)) {
+            throw new Error(`Security Violation: Access to ${currentUrl} is blocked.`);
+        }
+
+        console.log(`[SafeFetch] Requesting: ${currentUrl}`);
+
+        // Manual redirect handling to validate every hop
+        const response = await fetch(currentUrl, {
+            headers: headers,
+            redirect: 'manual'
+        });
+
+        if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('Location');
+            if (!location) throw new Error("Redirect response missing Location header");
+
+            // Handle relative or absolute redirects
+            const nextUrl = new URL(location, currentUrl).toString();
+            currentUrl = nextUrl;
+            redirectCount++;
+            continue;
+        }
+
+        return response;
+    }
+
+    throw new Error("Too many redirects");
+}
+
 serve(async (req) => {
     // 1. CORS Handling
-    // 0. Auth & CORS Handling
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             headers: {
@@ -92,13 +119,8 @@ serve(async (req) => {
         if (url) {
             console.log(`Fetching URL: ${url}`);
 
-            // 2b. SSRF Check (CRITICAL SECURITY FIX)
-            if (!isSafeUrl(url)) {
-                throw new Error("Security Violation: Access to this URL is blocked.");
-            }
-
             // Strategy: Triple Fallback
-            // 1. Direct Fetch (Mimic Browser)
+            // 1. Direct Fetch (Safe Mode)
             // 2. AllOrigins (Proxy A)
             // 3. CorsProxy.io (Proxy B)
 
@@ -134,9 +156,11 @@ serve(async (req) => {
             };
 
             try {
-                // 1. Direct Fetch
+                // 1. Direct Fetch (SECURE)
                 console.log("Attempting Direct Fetch...");
-                const urlResp = await fetch(url, { headers: standardHeaders });
+
+                // Using safeFetch instead of direct fetch
+                const urlResp = await safeFetch(url, standardHeaders);
 
                 // 403/401/503 usually means blocked -> Throw to trigger proxy
                 if (!urlResp.ok) {

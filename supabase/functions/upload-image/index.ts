@@ -1,6 +1,6 @@
 
-import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3";
-import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner";
+import { S3Client } from "npm:@aws-sdk/client-s3";
+import { createPresignedPost } from "npm:@aws-sdk/s3-presigned-post";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -15,7 +15,6 @@ Deno.serve(async (req) => {
 
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
-        console.log('[Edge Function] Handling OPTIONS request');
         return new Response('ok', { headers: corsHeaders });
     }
 
@@ -30,7 +29,6 @@ Deno.serve(async (req) => {
             );
         }
 
-        console.log("[Edge Function] Verifying JWT...");
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -51,20 +49,27 @@ Deno.serve(async (req) => {
 
 
         // 2. Parse Request Body
-        console.log("[Edge Function] Reading request body...");
-        const body = await req.json(); // Read once
-        console.log("[Edge Function] Request body:", JSON.stringify(body));
+        const body = await req.json();
+        const { filename, filetype, filesize } = body;
 
-        const { filename, filetype } = body;
-
-        // 3. Strict Input Validation (CRITICAL SECURITY FIX)
+        // 3. Strict Input Validation (SECURITY FIX)
         const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
         // Basic Validation
         if (!filename || !filetype || !ALLOWED_MIME_TYPES.includes(filetype)) {
-            console.error(`[Edge Function] Invalid input. Filename: ${filename}, Filetype: ${filetype}`);
             return new Response(
                 JSON.stringify({ error: "Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed." }),
+                {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+            );
+        }
+
+        if (!filesize || typeof filesize !== 'number' || filesize > MAX_FILE_SIZE) {
+            return new Response(
+                JSON.stringify({ error: "Invalid file size. Max limit is 5MB." }),
                 {
                     status: 400,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -79,48 +84,43 @@ Deno.serve(async (req) => {
         const R2_BUCKET_NAME = Deno.env.get('R2_BUCKET_NAME');
 
         if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME) {
-            console.error("[Edge Function] Missing R2 Environment Variables");
-            return new Response(
-                JSON.stringify({ error: "Server Configuration Error: Missing R2 credentials" }),
-                {
-                    status: 500,
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-                }
-            );
+            throw new Error("Server Configuration Error: Missing R2 credentials");
         }
 
-        console.log("[Edge Function] Initializing S3 Client...");
         const S3 = new S3Client({
             region: 'auto',
             endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-            forcePathStyle: true,
             credentials: {
                 accessKeyId: R2_ACCESS_KEY_ID,
                 secretAccessKey: R2_SECRET_ACCESS_KEY,
             },
         });
 
-        // Use User ID in filename for basic path isolation (optional but good practice)
-        // const key = `recipes/${user.id}/${crypto.randomUUID()}-${filename}`;
-        // Staying consistent with current single folder structure for now
         const key = `recipes/${crypto.randomUUID()}-${filename}`;
-        console.log(`[Edge Function] Generated key: ${key}`);
 
-        const command = new PutObjectCommand({
+        // 4. Generate Presigned POST Policy (Flooding Protection)
+        // This enforces content-length-range on the server side (R2)
+        const { url, fields } = await createPresignedPost(S3, {
             Bucket: R2_BUCKET_NAME,
             Key: key,
-            ContentType: filetype,
+            Conditions: [
+                ['content-length-range', 0, MAX_FILE_SIZE], // Strict Size Limit
+                ['eq', '$Content-Type', filetype], // Strict Type Limit
+            ],
+            Fields: {
+                // Determine Success Status (204 is common for CORS usage)
+                success_action_status: '201',
+                'Content-Type': filetype,
+            },
+            Expires: 600, // 10 minutes
         });
-
-        console.log("[Edge Function] Generating presigned URL...");
-        const presignedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
-        console.log("[Edge Function] Presigned URL generated successfully.");
 
         const publicUrl = `https://pub-b961e51ead5a440db1b7069b36b1e006.r2.dev/${key}`;
 
         return new Response(
             JSON.stringify({
-                uploadUrl: presignedUrl,
+                uploadUrl: url,
+                fields: fields,
                 publicUrl: publicUrl,
                 key: key
             }),
