@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, Sparkles, ChefHat, Globe, Wand2 } from 'lucide-react';
 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
     const { user } = useAuth();
