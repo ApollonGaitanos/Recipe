@@ -81,18 +81,13 @@ Deno.serve(async (req) => {
 
         // INTEGRITY CHECK
         if (recipe.image_url !== imageUrl) {
-            // Maybe the UI is stale? But we shouldn't delete something that isn't linked?
-            // Or maybe we treat it as valid if we just want to execute the cleanup? 
-            // Let's warn but proceed if the goal is to delete 'imageUrl'. 
-            // Actually, for security, only delete what is currently the active image to prevent arbitrary file deletion.
-            // Wait, if I upload 4 times, I might want to delete the *previous* ones... 
-            // But the user specifically asked for "delete photos from recipes".
-            // So we assume deleting the CURRENT recipe photo.
-            if (!imageUrl.includes(recipe.image_url)) {
-                // Using includes because logic might be fuzzy with params? No, should be exact.
-                console.warn('[delete-image] Warning: Request imageUrl does not match DB image_url. Proceeding strictly based on ownership, but this might be a stale request.');
-                // For "100% secure", we should probably only allow deleting the attached image.
-            }
+            // STRICT SECURITY: Only allow deleting the currently attached image.
+            console.error(`[delete-image] Blocked attempt to delete unmatched image. Recipe: ${recipeId}, Request: ${imageUrl}, DB: ${recipe.image_url}`);
+
+            return new Response(
+                JSON.stringify({ error: 'Forbidden: You can only delete the active recipe image' }),
+                { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
         }
 
         // 4. Extract Key from URL

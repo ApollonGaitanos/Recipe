@@ -13,6 +13,62 @@ serve(async (req) => {
         })
     }
 
+    // --- SSRF Protection Helper (STRICT) ---
+    const isSafeUrl = (urlString: string): boolean => {
+        try {
+            const url = new URL(urlString);
+
+            // 1. Protocol must be HTTPS
+            if (url.protocol !== 'https:') return false;
+
+            // 2. Block IP Literals (IPv4 & IPv6)
+            const isIp = /^(\d{1,3}\.){3}\d{1,3}$|^\[[\da-fA-F:]+\]$|^[\da-fA-F:]+$/.test(url.hostname);
+            if (isIp) return false;
+
+            // 3. Block Localhost / Local domains explicitly
+            if (url.hostname === 'localhost' || url.hostname.endsWith('.local')) return false;
+
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    // --- Safe Fetcher (Handles Redirects Manually) ---
+    async function safeFetch(initialUrl: string, headers: any, maxRedirects = 5) {
+        let currentUrl = initialUrl;
+        let redirectCount = 0;
+
+        while (redirectCount < maxRedirects) {
+            if (!isSafeUrl(currentUrl)) {
+                throw new Error(`Security Violation: Access to ${currentUrl} is blocked.`);
+            }
+
+            console.log(`[SafeFetch] Requesting: ${currentUrl}`);
+
+            // Manual redirect handling to validate every hop
+            const response = await fetch(currentUrl, {
+                headers: headers,
+                redirect: 'manual'
+            });
+
+            if (response.status >= 300 && response.status < 400) {
+                const location = response.headers.get('Location');
+                if (!location) throw new Error("Redirect response missing Location header");
+
+                // Handle relative or absolute redirects
+                const nextUrl = new URL(location, currentUrl).toString();
+                currentUrl = nextUrl;
+                redirectCount++;
+                continue;
+            }
+
+            return response;
+        }
+
+        throw new Error("Too many redirects");
+    }
+
     try {
         const { url } = await req.json()
 
@@ -21,12 +77,10 @@ serve(async (req) => {
             throw new Error('URL is required')
         }
 
-        // Fetch the recipe page
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
-            }
-        })
+        // Fetch the recipe page using SafeFetch
+        const response = await safeFetch(url, {
+            'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
+        });
 
         if (!response.ok) {
             throw new Error(`Failed to fetch URL: ${response.statusText}`)
