@@ -17,6 +17,24 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
 
     if (!isOpen) return null;
 
+    const handleAction = () => {
+        if (isPermanent && mode === 'translate' && step === 'select') {
+            setStep('confirm');
+            return;
+        }
+        onConfirm(mode === 'translate' ? targetLang : null);
+    };
+
+    const isTranslate = mode === 'translate';
+
+    const handleClose = () => {
+        if (step === 'confirm') {
+            setStep('select');
+        } else {
+            onClose();
+        }
+    };
+
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
