@@ -12,7 +12,6 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
     // --- State Management ---
     const [inputValue, setInputValue] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [progress, setProgress] = useState(0);
     const [error, setError] = useState(null);
 
     // --- Effects ---
@@ -32,7 +31,6 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
         if (!isOpen) {
             const timer = setTimeout(() => {
                 setInputValue('');
-                setProgress(0);
                 setIsProcessing(false);
                 setError(null);
             }, 200);
@@ -44,20 +42,11 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
         if (!inputValue.trim()) return;
 
         setIsProcessing(true);
-        setProgress(0);
         setError(null);
 
         try {
-            // Simulate progress for UX
-            const interval = setInterval(() => {
-                setProgress(prev => Math.min(prev + 10, 90));
-            }, 500);
-
             // Call parser with (input, language, mode)
             const result = await parseRecipe(inputValue, language, 'create');
-
-            clearInterval(interval);
-            setProgress(100);
 
             onImport(result);
             onClose();
@@ -155,7 +144,10 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
                             }`}
                     >
                         {isProcessing ? (
-                            <span>Creating... {Math.round(progress)}%</span>
+                            <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Processing...
+                            </span>
                         ) : (
                             <>
                                 Create Recipe

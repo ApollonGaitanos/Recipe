@@ -108,7 +108,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
         if (!inputValue.trim() && !selectedImage) return;
 
         setIsParsing(true);
-        setScanProgress(0);
         setError(null);
 
         try {
@@ -117,7 +116,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
 
             if (selectedImage) {
                 // Image Import
-                setScanProgress(20);
                 const base64 = await resizeImage(selectedImage);
                 // Call parser with (input, language, mode)
                 result = await parseRecipe({ imageBase64: base64, imageType: 'image/jpeg', text: inputValue, mode: 'extract' }, language, 'extract');
@@ -135,7 +133,6 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
             setError(error.message || "An unexpected error occurred. Please try again.");
         } finally {
             setIsParsing(false);
-            setScanProgress(0);
         }
     };
 
@@ -257,7 +254,10 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                             }`}
                     >
                         {isParsing ? (
-                            <span>Analyzing... {Math.round(scanProgress)}%</span>
+                            <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Processing...
+                            </span>
                         ) : (
                             <>
                                 Import Recipe

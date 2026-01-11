@@ -265,56 +265,55 @@ Return the output in this strict JSON structure:
 - SPLIT instructions into distinct steps.
 - Returns only valid JSON.`;
 
-        switch (selectedMode) {
             case 'create':
-                // Persona: Culinary Historian & Chef
-                temperature = 0.3; // Low creativity for standard/traditional results
-                systemPrompt = `You are a CULINARY HISTORIAN and EXPERT CHEF.
+        // Persona: Culinary Historian & Chef
+        temperature = 0.3; // Low creativity for standard/traditional results
+        systemPrompt = `You are a CULINARY HISTORIAN and EXPERT CHEF.
 Your goal is to provide the MOST TRADITIONAL, STANDARD, and AUTHENTIC recipe for the requested dish.
 
 LOGIC:
 1. **TRADITION and AUTHENTICITY**: If the user asks for "Carbonara", provide the AUTHENTIC Roman version (Guanciale, Pecorino, Eggs, Pepper. NO Cream). Do not offer variations unless explicitly asked.
 2. **PANTRY STAPLES**: If the user lists ingredients (e.g., "Eggs, Flour"), create a BASIC recipe using ONLY those ingredients + standard pantry staples (Water, Oil, Salt, Pepper). Do NOT assume or add fancy ingredients (like Butter or Milk) unless necessary for chemistry.
 3. **COMPLETE METADATA**: You MUST populate "tools" (e.g. "Skillet", "Whisk") and "description" (appetizing summary).
-4. **NUTRITION**: You MUST provide estimated nutrition per serving.
-5. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
+4. **TAGS**: You MUST generate relevant tags (e.g. "Dinner", "Italian", "Vegetarian", "Gluten-Free") based on the ingredients and cuisine.
+5. **NUTRITION**: You MUST provide estimated nutrition per serving.
+6. **LANGUAGE**: Detect the language of the User Input. The Output MUST be in the SAME language.
 
 EXAMPLE:
 Input: "Carbonara"
-Output: { "title": "Spaghetti Carbonara", "description": "The authentic Roman classic using guanciale and pecorino romano.", "tools": ["Large Pot", "Skillet", "Bowl"], "ingredients": [{"amount": "200g", "name": "Guanciale"}, {"amount": "100g", "name": "Pecorino Romano"}, {"amount": "4", "name": "Large Eggs"}, {"amount": "400g", "name": "Spaghetti"}, {"amount": "", "name": "Black Pepper"}], "instructions": ["Boil pasta...", "Crisp guanciale...", "Mix eggs and cheese..."] }
+Output: { "title": "Spaghetti Carbonara", "description": "The authentic Roman classic using guanciale and pecorino romano.", "tools": ["Large Pot", "Skillet", "Bowl"], "tags": ["Dinner", "Italian", "Pasta"], "ingredients": [{"amount": "200g", "name": "Guanciale"}, {"amount": "100g", "name": "Pecorino Romano"}, {"amount": "4", "name": "Large Eggs"}, {"amount": "400g", "name": "Spaghetti"}, {"amount": "", "name": "Black Pepper"}], "instructions": ["Boil pasta...", "Crisp guanciale...", "Mix eggs and cheese..."] }
 
 ${jsonStructure}`;
-                break;
+        break;
 
             case 'improve':
-                // Persona: Cooking Instructor (Sous Chef)
-                temperature = 0.5; // Balanced help
-                systemPrompt = `You are a HELPFUL COOKING INSTRUCTOR.
-Your goal is to ENHANCE the instructions with useful tips and visual cues WITHOUT altering the core method or ingredients.
+        // Persona: Detailed Cooking Instructor (Sous Chef)
+        temperature = 0.5; // Balanced help
+        systemPrompt = `You are a METICULOUS COOKING INSTRUCTOR.
+Your goal is to WRITE DETAILED, FOOLPROOF INSTRUCTIONS and ensure the recipe has proper metadata (tags).
 
 LOGIC:
-1. **NON-DESTRUCTIVE**: Do NOT add new ingredients. Do NOT change temperatures or main steps.
-2. **ADD VISUAL CUES**: "Mix until combined" -> "Mix until combined and no dry flour remains (approx 2 mins)."
-3. **INFER TOOLS**: Look at the steps and ingredients to populate the "tools" array (e.g. if it says "whisk", add "Whisk").
-4. **DESCRIPTION**: If the description is empty or boring, write a better one.
-5. **NUTRITION**: ESTIMATE calories and macros per serving based on the ingredients.
-6. **LANGUAGE**: Keep the input language.
-
-EXAMPLE:
-Input Instructions: ["Mix flour and water", "Knead"]
-Output Instructions: ["In a large mixing bowl, combine the flour and lukewarm water until a shaggy dough forms.", "Transfer to a clean surface and knead steadily for 8-10 minutes until the dough is smooth and elastic (it should spring back when poked)."]
-Output Tools: ["Large Mixing Bowl", "Clean Surface"]
+1. **EXPAND INSTRUCTIONS**: You MUST rewrite short steps into detailed, descriptive paragraphs.
+   - *Bad*: "Cook the onions."
+   - *Good*: "Heat the oil in a large skillet over medium heat. Add the diced onions and sauté for 5-7 minutes, stirring occasionally, until they turn translucent and start to smell sweet. Do not let them burn."
+2. **ADD SENSORY CUES**: Explain what things should look, smell, or feel like (e.g., "golden brown", "nutty aroma", "springs back when poked").
+3. **EXPLAIN "WHY"**: Briefly explain key techniques (e.g., "Rest the meat to lock in juices").
+4. **INFER TAGS**: Generate 3-5 relevant tags based on the recipe (e.g. "Breakfast", "Vegan", "High-Protein").
+5. **INFER TOOLS**: Populate the "tools" array based on the steps.
+6. **DESCRIPTION**: Write a mouth-watering description if the current one is weak.
+7. **NON-DESTRUCTIVE**: Do NOT change the core ingredients or fundamental method.
+8. **LANGUAGE**: Keep the input language.
 
 ${jsonStructure}`;
-                break;
+        break;
 
             case 'translate':
-                // Persona: Technical Translator
-                temperature = 0.1; // Strict
-                const langName = targetLanguage === 'el' ? 'Greek' : (targetLanguage === 'en' ? 'English' : targetLanguage);
-                console.log(`[DEBUG] Translation Request. Target Code: ${targetLanguage}, Lang Name: ${langName}`);
+        // Persona: Technical Translator
+        temperature = 0.1; // Strict
+        const langName = targetLanguage === 'el' ? 'Greek' : (targetLanguage === 'en' ? 'English' : targetLanguage);
+        console.log(`[DEBUG] Translation Request. Target Code: ${targetLanguage}, Lang Name: ${langName}`);
 
-                const translateStructure = `
+        const translateStructure = `
 Return the output in this strict JSON structure:
 {
   "title": "[TRANSLATED TITLE IN ${langName.toUpperCase()}]",
@@ -346,11 +345,11 @@ Return the output in this strict JSON structure:
 - "instructions": Array of strings. MUST be in ${langName}.
 `;
 
-                systemPrompt = `You are a TECHNICAL TRANSLATOR.
+        systemPrompt = `You are a TECHNICAL TRANSLATOR.
 Your task is to translate the JSON content into **${langName}** with strict 1:1 mapping.
 
 LOGIC:
-1. **MANDATORY**: The content of the values (title, ingredients, instructions) MUST be in **${langName}**.
+1. **MANDATORY**: The content of the values (title, DESCRIPTION, ingredients, instructions, tags, tools) MUST be in **${langName}**.
 2. **STRICT TRANSLATION**: Translate Title, Description, Ingredient Names, Tools, Instructions, and Tags.
 3. **NUTRITION**: Copy the nutrition values if present, or estimate them if missing.
 3. **UNIT CONVERSION**: If formatting for Greek/European output, convert 'cups'/'oz' to 'grams'/'ml' where appropriate.
@@ -359,13 +358,13 @@ LOGIC:
 6. **ANTI-ECHO**: Do NOT return the input text as is. You MUST translate it.
 
 ${translateStructure}`;
-                break;
+        break;
 
             case 'extract':
             default:
-                // Persona: Data Entry Specialist ("Xerox" Mode)
-                temperature = 0.0; // Deterministic
-                systemPrompt = `You are a PRECISE DATA ENTRY SPECIALIST.
+        // Persona: Data Entry Specialist ("Xerox" Mode)
+        temperature = 0.0; // Deterministic
+        systemPrompt = `You are a PRECISE DATA ENTRY SPECIALIST.
 Your job is to EXTRACT the recipe from the input (URL/Text/Image) exactly as it appears.
 
 LOGIC:
@@ -373,244 +372,245 @@ LOGIC:
 2. **NO ALTERATIONS**: If the source says "mix 10 mins", output "mix 10 mins". Do not "fix" it to "mix 10 minutes".
 3. **NO HALLUCINATIONS**: Do not add ingredients or steps that are not in the source text/image.
 4. **ENRICHMENT**: You ARE allowed to estimate "nutrition" and "tools" if they are missing from the source.
-5. **STRUCTURE ONLY**: Your only job is to format the existing data into the JSON structure.
-6. **LANGUAGE**: Keep the original language of the source.
+5. **TAGS**: You MUST generate/infer relevant tags (e.g. "Dessert", "Chocolate") if they are not explicitly listed in the source.
+6. **STRUCTURE ONLY**: Your only job is to format the existing data into the JSON structure.
+7. **LANGUAGE**: Keep the original language of the source.
 
 ${jsonStructure}`;
-                break;
-        }
+        break;
+    }
 
         const parts = [{ text: systemPrompt }];
 
-        // Add User Text/Context
-        if (text) {
-            const label = selectedMode === 'improve' || selectedMode === 'translate' ? "Recipe Context:" : "User Input:";
-            parts.push({ text: `\n\n${label} ${text}` });
-        }
+    // Add User Text/Context
+    if (text) {
+        const label = selectedMode === 'improve' || selectedMode === 'translate' ? "Recipe Context:" : "User Input:";
+        parts.push({ text: `\n\n${label} ${text}` });
+    }
 
-        // Add Image if provided
-        if (imageBase64) {
-            parts.push({
-                inlineData: {
-                    mimeType: imageType || "image/jpeg",
-                    data: imageBase64
-                }
-            });
-        }
-
-        // Add URL Text if provided
-        if (url && processingText) {
-            parts.push({ text: `\n\nWebsite Content: ${processingText}` });
-        }
-
-        const payload = {
-            contents: [{ parts }],
-            generationConfig: {
-                temperature: temperature,
-                maxOutputTokens: 8000, // Increased for larger recipes
-                responseMimeType: "application/json"
-            }
-        };
-
-        // 6. API Call with Fallback Logic
-        // - Text/URL: Use Gemma models (High RPD Limit)
-        // - Image: Must use Gemini models (Visual support)
-
-        const TEXT_MODELS = [
-            'gemini-3-flash',             // Priority 1: Best Quality (Low Limit)
-            'gemini-2.5-flash',           // Priority 2: Standard (Low Limit)
-            'gemini-2.5-flash-lite',      // Priority 3: Efficient (Low Limit)
-            'gemma-3-27b-it',             // Priority 4: High Limit Backup (14k RPD!)
-            'gemma-3-12b-it'              // Priority 5: High Limit Backup (14k RPD!)
-        ];
-
-        const VISUAL_MODELS = [
-            'gemini-3-flash',             // Priority 1: Best Vision
-            'gemini-2.5-flash',           // Priority 2: Stable Vision
-            'gemini-2.5-flash-lite'       // Priority 3: Vision Fallback
-        ];
-
-        const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
-
-        let lastError = null;
-        let successfulModel = null;
-        let responseData = null;
-
-        for (const model of availableModels) {
-            try {
-                console.log(`Trying model: ${model}...`);
-                const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-                // Config Logic: Gemma does NOT support JSON mode. Gemini DOES.
-                const isGemma = model.includes('gemma');
-                const modelConfig = {
-                    temperature: temperature,
-                    maxOutputTokens: 8000,
-                };
-
-                // Only add JSON mode for Gemini
-                if (!isGemma) {
-                    modelConfig.responseMimeType = "application/json";
-                }
-
-                const currentPayload = {
-                    contents: [{ parts }],
-                    generationConfig: modelConfig
-                };
-
-                const response = await fetch(CURRENT_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey
-                    },
-                    body: JSON.stringify(currentPayload)
-                });
-
-                if (!response.ok) {
-                    const status = response.status;
-                    const errorText = await response.text();
-
-                    console.warn(`[Model Choice] ${model} failed. Status: ${status}. Error: ${errorText.substring(0, 200)}`); // Increased log length
-
-                    // Specific handling for 404 (Model not found/deprecated)
-                    if (status === 404) {
-                        lastError = new Error(`Model ${model} not found (404)`);
-                        continue;
-                    }
-                    // Specific handling for 429 (Quota)
-                    if (status === 429) {
-                        lastError = new Error(`Model ${model} quota exceeded (429)`);
-                        continue;
-                    }
-
-                    lastError = new Error(`Model ${model} error (${status}): ${errorText}`);
-                    continue;
-                }
-
-                const data = await response.json();
-
-                // Validate content existence
-                if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    console.warn(`[Model Choice] ${model} returned empty/invalid structure.`);
-                    lastError = new Error(`Model ${model} returned invalid structure.`);
-                    continue;
-                }
-
-                responseData = data;
-                successfulModel = model;
-                console.log(`✅ Success! Using model: ${model}`);
-                break; // Exit loop on success
-
-            } catch (err) {
-                console.error(`Unexpected network/system error with ${model}:`, err.message);
-                lastError = err;
-                // Continue to next model
-            }
-        }
-
-        if (!responseData || !successfulModel) {
-            console.error('All models failed.');
-            throw lastError || new Error('All available AI models failed to respond.');
-        }
-
-        const data = responseData;
-
-        // Data is already parsed in the loop
-
-        // 8. Response Parsing
-        const candidate = data.candidates?.[0];
-        if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
-            console.error('Invalid Gemini Response:', JSON.stringify(data));
-            throw new Error(`Gemini returned an empty or invalid response. Raw data: ${JSON.stringify(data)}`);
-        }
-
-        let aiText = candidate.content.parts[0].text.trim();
-
-        // Extract JSON using regex from first { to last }
-        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            console.error('No JSON found in response:', aiText);
-            throw new Error(`AI response did not contain valid JSON structure. Raw output: ${aiText.substring(0, 500)}...`);
-        }
-
-        const jsonString = jsonMatch[0];
-
-        // SANITIZATION:
-        // 1. Remove Markdown code blocks if regex didn't catch them
-        let cleanJson = jsonString.replace(/```json/g, '').replace(/```/g, '');
-
-        // 2. Remove Trailing Commas (Common AI mistake)
-        // Replaces ", }" with "}" and ", ]" with "]"
-        cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
-
-        // 3. Fix missing commas between objects (e.g. } { -> }, {)
-        cleanJson = cleanJson.replace(/}\s*\{/g, '}, {');
-
-        // 4. Fix unescaped newlines in strings (rare but happens)
-        // This is risky with regex, sticking to comma fix for now.
-
-        let recipeData;
-        try {
-            recipeData = JSON.parse(cleanJson);
-        } catch (e) {
-            console.error('JSON Parse Error. Data:', cleanJson);
-
-            // Fallback: Try a more aggressive cleanup or use a loose parser if available
-            // For now, throw details
-            throw new Error(`Failed to parse AI response as JSON. Error: ${e.message}. Cleaned output: ${cleanJson.substring(0, 500)}...`);
-        }
-
-        // Check for specific error from AI
-        if (recipeData.error) {
-            throw new Error(recipeData.error);
-        }
-
-        // validate minimal structure
-        if (!recipeData.title) {
-            throw new Error('AI response missing title');
-        }
-
-        // HELPER: Join arrays to strings for Frontend (Instructions only)
-        const formatInstructions = (param) => {
-            if (Array.isArray(param)) return param.join('\n');
-            return param || '';
-        };
-
-        // 9. Success Response
-        return new Response(JSON.stringify({
-            title: recipeData.title,
-            ingredients: recipeData.ingredients, // Return structured array directly
-            instructions: formatInstructions(recipeData.instructions),
-            prepTime: parseInt(recipeData.prepTime) || 0,
-            cookTime: parseInt(recipeData.cookTime) || 0,
-            servings: parseInt(recipeData.servings) || 0,
-            tags: recipeData.tags || '',
-            tools: recipeData.tools || [], // New Field
-            description: recipeData.description || '', // New Field
-            nutrition: recipeData.nutrition || {}, // New Field
-            detectedLanguage: recipeData.detectedLanguage || 'en'
-        }), {
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-
-    } catch (error) {
-        console.error('Edge Function Error:', error.message);
-
-        const isAuthError = error.message.includes('Unauthorized');
-        const status = isAuthError ? 401 : 400;
-
-        return new Response(JSON.stringify({
-            error: error.message || 'Internal Server Error'
-        }), {
-            status: status,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+    // Add Image if provided
+    if (imageBase64) {
+        parts.push({
+            inlineData: {
+                mimeType: imageType || "image/jpeg",
+                data: imageBase64
             }
         });
     }
+
+    // Add URL Text if provided
+    if (url && processingText) {
+        parts.push({ text: `\n\nWebsite Content: ${processingText}` });
+    }
+
+    const payload = {
+        contents: [{ parts }],
+        generationConfig: {
+            temperature: temperature,
+            maxOutputTokens: 8000, // Increased for larger recipes
+            responseMimeType: "application/json"
+        }
+    };
+
+    // 6. API Call with Fallback Logic
+    // - Text/URL: Use Gemma models (High RPD Limit)
+    // - Image: Must use Gemini models (Visual support)
+
+    const TEXT_MODELS = [
+        'gemini-3-flash',             // Priority 1: Best Quality (Low Limit)
+        'gemini-2.5-flash',           // Priority 2: Standard (Low Limit)
+        'gemini-2.5-flash-lite',      // Priority 3: Efficient (Low Limit)
+        'gemma-3-27b-it',             // Priority 4: High Limit Backup (14k RPD!)
+        'gemma-3-12b-it'              // Priority 5: High Limit Backup (14k RPD!)
+    ];
+
+    const VISUAL_MODELS = [
+        'gemini-3-flash',             // Priority 1: Best Vision
+        'gemini-2.5-flash',           // Priority 2: Stable Vision
+        'gemini-2.5-flash-lite'       // Priority 3: Vision Fallback
+    ];
+
+    const availableModels = (imageBase64) ? VISUAL_MODELS : TEXT_MODELS;
+
+    let lastError = null;
+    let successfulModel = null;
+    let responseData = null;
+
+    for (const model of availableModels) {
+        try {
+            console.log(`Trying model: ${model}...`);
+            const CURRENT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+            // Config Logic: Gemma does NOT support JSON mode. Gemini DOES.
+            const isGemma = model.includes('gemma');
+            const modelConfig = {
+                temperature: temperature,
+                maxOutputTokens: 8000,
+            };
+
+            // Only add JSON mode for Gemini
+            if (!isGemma) {
+                modelConfig.responseMimeType = "application/json";
+            }
+
+            const currentPayload = {
+                contents: [{ parts }],
+                generationConfig: modelConfig
+            };
+
+            const response = await fetch(CURRENT_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
+                body: JSON.stringify(currentPayload)
+            });
+
+            if (!response.ok) {
+                const status = response.status;
+                const errorText = await response.text();
+
+                console.warn(`[Model Choice] ${model} failed. Status: ${status}. Error: ${errorText.substring(0, 200)}`); // Increased log length
+
+                // Specific handling for 404 (Model not found/deprecated)
+                if (status === 404) {
+                    lastError = new Error(`Model ${model} not found (404)`);
+                    continue;
+                }
+                // Specific handling for 429 (Quota)
+                if (status === 429) {
+                    lastError = new Error(`Model ${model} quota exceeded (429)`);
+                    continue;
+                }
+
+                lastError = new Error(`Model ${model} error (${status}): ${errorText}`);
+                continue;
+            }
+
+            const data = await response.json();
+
+            // Validate content existence
+            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                console.warn(`[Model Choice] ${model} returned empty/invalid structure.`);
+                lastError = new Error(`Model ${model} returned invalid structure.`);
+                continue;
+            }
+
+            responseData = data;
+            successfulModel = model;
+            console.log(`✅ Success! Using model: ${model}`);
+            break; // Exit loop on success
+
+        } catch (err) {
+            console.error(`Unexpected network/system error with ${model}:`, err.message);
+            lastError = err;
+            // Continue to next model
+        }
+    }
+
+    if (!responseData || !successfulModel) {
+        console.error('All models failed.');
+        throw lastError || new Error('All available AI models failed to respond.');
+    }
+
+    const data = responseData;
+
+    // Data is already parsed in the loop
+
+    // 8. Response Parsing
+    const candidate = data.candidates?.[0];
+    if (!candidate || !candidate.content || !candidate.content.parts?.[0]?.text) {
+        console.error('Invalid Gemini Response:', JSON.stringify(data));
+        throw new Error(`Gemini returned an empty or invalid response. Raw data: ${JSON.stringify(data)}`);
+    }
+
+    let aiText = candidate.content.parts[0].text.trim();
+
+    // Extract JSON using regex from first { to last }
+    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        console.error('No JSON found in response:', aiText);
+        throw new Error(`AI response did not contain valid JSON structure. Raw output: ${aiText.substring(0, 500)}...`);
+    }
+
+    const jsonString = jsonMatch[0];
+
+    // SANITIZATION:
+    // 1. Remove Markdown code blocks if regex didn't catch them
+    let cleanJson = jsonString.replace(/```json/g, '').replace(/```/g, '');
+
+    // 2. Remove Trailing Commas (Common AI mistake)
+    // Replaces ", }" with "}" and ", ]" with "]"
+    cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
+
+    // 3. Fix missing commas between objects (e.g. } { -> }, {)
+    cleanJson = cleanJson.replace(/}\s*\{/g, '}, {');
+
+    // 4. Fix unescaped newlines in strings (rare but happens)
+    // This is risky with regex, sticking to comma fix for now.
+
+    let recipeData;
+    try {
+        recipeData = JSON.parse(cleanJson);
+    } catch (e) {
+        console.error('JSON Parse Error. Data:', cleanJson);
+
+        // Fallback: Try a more aggressive cleanup or use a loose parser if available
+        // For now, throw details
+        throw new Error(`Failed to parse AI response as JSON. Error: ${e.message}. Cleaned output: ${cleanJson.substring(0, 500)}...`);
+    }
+
+    // Check for specific error from AI
+    if (recipeData.error) {
+        throw new Error(recipeData.error);
+    }
+
+    // validate minimal structure
+    if (!recipeData.title) {
+        throw new Error('AI response missing title');
+    }
+
+    // HELPER: Join arrays to strings for Frontend (Instructions only)
+    const formatInstructions = (param) => {
+        if (Array.isArray(param)) return param.join('\n');
+        return param || '';
+    };
+
+    // 9. Success Response
+    return new Response(JSON.stringify({
+        title: recipeData.title,
+        ingredients: recipeData.ingredients, // Return structured array directly
+        instructions: formatInstructions(recipeData.instructions),
+        prepTime: parseInt(recipeData.prepTime) || 0,
+        cookTime: parseInt(recipeData.cookTime) || 0,
+        servings: parseInt(recipeData.servings) || 0,
+        tags: recipeData.tags || '',
+        tools: recipeData.tools || [], // New Field
+        description: recipeData.description || '', // New Field
+        nutrition: recipeData.nutrition || {}, // New Field
+        detectedLanguage: recipeData.detectedLanguage || 'en'
+    }), {
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    });
+
+} catch (error) {
+    console.error('Edge Function Error:', error.message);
+
+    const isAuthError = error.message.includes('Unauthorized');
+    const status = isAuthError ? 401 : 400;
+
+    return new Response(JSON.stringify({
+        error: error.message || 'Internal Server Error'
+    }), {
+        status: status,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    });
+}
 });

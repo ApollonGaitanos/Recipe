@@ -28,6 +28,13 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
         }
     };
 
+    // Reset state when modal opens
+    React.useEffect(() => {
+        if (isOpen) {
+            setStep('select');
+        }
+    }, [isOpen]);
+
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
