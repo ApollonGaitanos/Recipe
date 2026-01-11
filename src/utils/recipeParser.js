@@ -18,9 +18,12 @@ async function extractWithAI(input) {
         // This solves "Invalid JWT" issues by ensuring the client handles header attachment and refreshing.
         // Explicitly get session to ensure we are sending the User Token, not Anon Key.
         const { data: { session } } = await supabase.auth.getSession();
-        const headers = session?.access_token
-            ? { Authorization: `Bearer ${session.access_token}` }
-            : {};
+
+        if (!session) {
+            throw new Error("You must be signed in to use AI features.");
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
 
         const { data, error } = await supabase.functions.invoke('ai-extract-recipe', {
             body: body,
