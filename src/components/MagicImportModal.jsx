@@ -140,6 +140,8 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
     };
 
 
+    if (!isOpen) return null;
+
     // Use Portal to render at document body level to avoid overflow/z-index issues
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">

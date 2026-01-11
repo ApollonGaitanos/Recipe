@@ -72,6 +72,8 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
 
 
 
+    if (!isOpen) return null;
+
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
