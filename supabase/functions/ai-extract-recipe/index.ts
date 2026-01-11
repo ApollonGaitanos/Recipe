@@ -81,11 +81,22 @@ serve(async (req) => {
     }
 
     try {
-        // 1. VERIFY AUTHENTICATION (Optional: Check presence of header)
+        // 1. VERIFY AUTHENTICATION (STRICT)
         const authHeader = req.headers.get('Authorization');
         if (!authHeader) {
-            // Allow anon for now, but logged warnings could be useful
-            console.log("Warning: No Authorization header provided (Anon request)");
+            throw new Error("Unauthorized: Missing Authorization header");
+        }
+
+        const supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader } } }
+        );
+
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+        if (authError || !user) {
+            throw new Error("Unauthorized: Invalid Token");
         }
 
 

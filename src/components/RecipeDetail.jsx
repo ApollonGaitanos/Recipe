@@ -550,13 +550,15 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                             <h2 className="text-3xl font-serif font-bold text-zinc-900 dark:text-white">{t('instructionsSection')}</h2>
                             <div className="flex gap-2">
 
-                                <button
-                                    onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold"
-                                >
-                                    <Globe size={14} />
-                                    Translate AI
-                                </button>
+                                {user && (
+                                    <button
+                                        onClick={() => setActionModal({ isOpen: true, mode: 'translate' })}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold"
+                                    >
+                                        <Globe size={14} />
+                                        Translate AI
+                                    </button>
+                                )}
 
                                 {/* Make a Copy Button */}
                                 {!isOwner && (

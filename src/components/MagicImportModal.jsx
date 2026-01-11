@@ -137,138 +137,165 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
         }
     };
 
-    if (!isOpen) return null;
+    import { useAuth } from '../context/AuthContext';
 
-    // Use Portal to render at document body level to avoid overflow/z-index issues
-    return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
-            />
+    export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) {
+        const { t, language } = useLanguage();
+        const { user } = useAuth();
 
-            {/* Modal Content */}
-            <div className="relative w-full max-w-[600px] max-h-[90vh] bg-white dark:bg-surface-dark rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200">
+        // ... State ...
 
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
-                    <div className="flex items-center gap-2">
-                        {onBack && (
-                            <button
-                                onClick={onBack}
-                                className="mr-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                            >
-                                <ChevronLeft size={24} />
-                            </button>
-                        )}
-                        <Sparkles size={20} className="text-highlight" />
-                        <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
-                            Magic Import
-                        </h3>
-                    </div>
+        if (!isOpen) return null;
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                        >
-                            <X size={20} />
+        if (!user) {
+            // Optionally render a "Login Required" state or just return null
+            // For now, since it handles mostly creates, we can just close or show empty.
+            // Better UX: Show a "Please Login" message inside the modal.
+            return createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+                    <div className="relative bg-white dark:bg-surface-dark p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-white/5 text-center">
+                        <h3 className="text-xl font-bold mb-2">Login Required</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">You must be logged in to use Magic Import.</p>
+                        <button onClick={onClose} className="bg-primary text-white px-6 py-2 rounded-xl font-bold">
+                            Close
                         </button>
                     </div>
-                </div>
+                </div>,
+                document.body
+            );
+        }
 
-                {/* Content */}
-                <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20] overflow-y-auto">
+        // Use Portal to render at document body level to avoid overflow/z-index issues
+        return createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                {/* Backdrop */}
+                <div
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                    onClick={onClose}
+                />
 
-                    {/* Error Message */}
-                    {error && (
-                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
-                            <X size={20} className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
-                            <div className="flex-1">
-                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">Error processing request</h4>
-                                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                            </div>
-                        </div>
-                    )}
+                {/* Modal Content */}
+                <div className="relative w-full max-w-[600px] max-h-[90vh] bg-white dark:bg-surface-dark rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200">
 
-                    {/* Source Input */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            Source
-                        </label>
-                        <div className="relative">
-                            <textarea
-                                value={inputValue}
-                                onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
-                                placeholder="Paste full recipe text or enter a website URL..."
-                                className={`w-full h-40 rounded-xl border p-4 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all ${error
-                                    ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
-                                    : 'border-[#dce5df] dark:border-[#2a4030]'
-                                    } bg-white dark:bg-[#112116]`}
-                            />
-                            <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
-                                <FileText size={20} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Image Upload (Only for Import) */}
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleFileSelect}
-                        className="hidden"
-                    />
-
-                    {!previewUrl ? (
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
-                        >
-                            <ImageIcon size={18} />
-                            Add Image (Optional)
-                        </button>
-                    ) : (
-                        <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
-                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#dce5df] dark:border-[#2a4030] bg-white dark:bg-[#1a2c20]">
+                        <div className="flex items-center gap-2">
+                            {onBack && (
                                 <button
-                                    onClick={handleRemoveImage}
-                                    className="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                    onClick={onBack}
+                                    className="mr-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                                 >
-                                    <X size={18} />
+                                    <ChevronLeft size={24} />
                                 </button>
+                            )}
+                            <Sparkles size={20} className="text-highlight" />
+                            <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
+                                Magic Import
+                            </h3>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={onClose}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 flex flex-col gap-4 bg-white dark:bg-[#1a2c20] overflow-y-auto">
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
+                                <X size={20} className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
+                                <div className="flex-1">
+                                    <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">Error processing request</h4>
+                                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Source Input */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Source
+                            </label>
+                            <div className="relative">
+                                <textarea
+                                    value={inputValue}
+                                    onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
+                                    placeholder="Paste full recipe text or enter a website URL..."
+                                    className={`w-full h-40 rounded-xl border p-4 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all ${error
+                                        ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
+                                        : 'border-[#dce5df] dark:border-[#2a4030]'
+                                        } bg-white dark:bg-[#112116]`}
+                                />
+                                <div className="absolute bottom-4 right-4 text-gray-300 pointer-events-none">
+                                    <FileText size={20} />
+                                </div>
                             </div>
                         </div>
-                    )}
 
-                    {/* Button */}
-                    <button
-                        onClick={handleParse}
-                        disabled={isParsing || (!inputValue && !selectedImage)}
-                        className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-primary/20 transition-all ${isParsing || (!inputValue && !selectedImage)
-                            ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
-                            : 'bg-primary hover:opacity-90 hover:-translate-y-0.5'
-                            }`}
-                    >
-                        {isParsing ? (
-                            <span>Analyzing... {Math.round(scanProgress)}%</span>
+                        {/* Image Upload (Only for Import) */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
+
+                        {!previewUrl ? (
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
+                            >
+                                <ImageIcon size={18} />
+                                Add Image (Optional)
+                            </button>
                         ) : (
-                            <>
-                                Import Recipe
-                                <ArrowRight size={18} />
-                            </>
+                            <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button
+                                        onClick={handleRemoveImage}
+                                        className="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                            </div>
                         )}
-                    </button>
 
-                    <p className="text-center text-xs text-gray-400">
-                        Magic Import analyzes your source to extract ingredients and steps.
-                    </p>
+                        {/* Button */}
+                        <button
+                            onClick={handleParse}
+                            disabled={isParsing || (!inputValue && !selectedImage)}
+                            className={`mt-2 w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg shadow-primary/20 transition-all ${isParsing || (!inputValue && !selectedImage)
+                                ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none'
+                                : 'bg-primary hover:opacity-90 hover:-translate-y-0.5'
+                                }`}
+                        >
+                            {isParsing ? (
+                                <span>Analyzing... {Math.round(scanProgress)}%</span>
+                            ) : (
+                                <>
+                                    Import Recipe
+                                    <ArrowRight size={18} />
+                                </>
+                            )}
+                        </button>
+
+                        <p className="text-center text-xs text-gray-400">
+                            Magic Import analyzes your source to extract ingredients and steps.
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </div>,
-        document.body
-    );
-}
+            </div>,
+            document.body
+        );
+    }
