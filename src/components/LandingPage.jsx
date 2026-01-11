@@ -12,29 +12,29 @@ export default function LandingPage() {
     const features = [
         {
             icon: Globe,
-            title: "Discover Global Flavors",
-            description: "Browse a growing collection of recipes from chefs worldwide. Find your next favorite dish in seconds.",
+            title: t('landing.features.global.title'),
+            description: t('landing.features.global.desc'),
             color: "text-blue-500",
             bg: "bg-blue-50 dark:bg-blue-900/10"
         },
         {
             icon: BookOpen,
-            title: "Your Digital Kitchen",
-            description: "Save, organize, and manage your personal cookbook. Keep your family secrets safe and accessible anywhere.",
+            title: t('landing.features.kitchen.title'),
+            description: t('landing.features.kitchen.desc'),
             color: "text-emerald-600",
             bg: "bg-emerald-50 dark:bg-emerald-900/10"
         },
         {
             icon: Sparkles,
-            title: "AI Sous-Chef",
-            description: "Enhance your cooking with AI. Generate descriptions, translate recipes, and get smart suggestions instantly.",
+            title: t('landing.features.ai.title'),
+            description: t('landing.features.ai.desc'),
             color: "text-purple-600",
             bg: "bg-purple-50 dark:bg-purple-900/10"
         },
         {
             icon: Import,
-            title: "Magic Import",
-            description: "Found a recipe online? Paste the URL and let our Magic Import tool extract the ingredients and steps for you.",
+            title: t('landing.features.magic.title'),
+            description: t('landing.features.magic.desc'),
             color: "text-amber-500",
             bg: "bg-amber-50 dark:bg-amber-900/10"
         }
@@ -60,7 +60,7 @@ export default function LandingPage() {
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-                        The modern way to cook, discover, and organize your favorite recipes.
+                        {t('landing.subtitle')}
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -69,14 +69,14 @@ export default function LandingPage() {
                             className="w-full sm:w-auto px-8 py-4 rounded-full bg-primary text-white text-lg font-bold hover:bg-primary/90 hover:-translate-y-1 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
                         >
                             <Globe size={20} />
-                            Start Exploring
+                            {t('landing.startExploring')}
                         </button>
                         {!user && (
                             <button
                                 onClick={() => navigate('/discover')}
                                 className="w-full sm:w-auto px-8 py-4 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-lg font-bold hover:bg-gray-50 dark:hover:bg-white/10 transition-all"
                             >
-                                Log In to Save
+                                {t('landing.loginToSave')}
                             </button>
                         )}
                     </div>
@@ -108,22 +108,22 @@ export default function LandingPage() {
                 <div className="w-full max-w-6xl mx-auto px-4 py-16 border-t border-gray-100 dark:border-white/5">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 dark:text-white mb-4">
-                            Know Your Tools
+                            {t('landing.toolsTitle')}
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            Master your kitchen with these powerful built-in features.
+                            {t('landing.toolsDesc')}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                         {[
-                            { icon: Languages, label: "Translate", desc: "Instantly translate recipes to your preferred language." },
-                            { icon: Users, label: "Smart Scaling", desc: "Adjust serving sizes and ingredients automatically." },
-                            { icon: ChefHat, label: "Private Chef", desc: "Get AI-powered tips and ingredient substitutions." },
-                            { icon: Import, label: "Magic Import", desc: "Extract recipes from any website URL." },
-                            { icon: Copy, label: "Quick Copy", desc: "Copy any recipe and edit it to your preferences." },
-                            { icon: Share2, label: "Share", desc: "Share your culinary creations with friends." },
-                            { icon: Sparkles, label: "Enhance", desc: "Let AI improve your recipe descriptions." }
+                            { icon: Languages, label: t('landing.tools.translate.label'), desc: t('landing.tools.translate.desc') },
+                            { icon: Users, label: t('landing.tools.scaling.label'), desc: t('landing.tools.scaling.desc') },
+                            { icon: ChefHat, label: t('landing.tools.chef.label'), desc: t('landing.tools.chef.desc') },
+                            { icon: Import, label: t('landing.tools.import.label'), desc: t('landing.tools.import.desc') },
+                            { icon: Copy, label: t('landing.tools.copy.label'), desc: t('landing.tools.copy.desc') },
+                            { icon: Share2, label: t('landing.tools.share.label'), desc: t('landing.tools.share.desc') },
+                            { icon: Sparkles, label: t('landing.tools.enhance.label'), desc: t('landing.tools.enhance.desc') }
                         ].map((item, idx) => (
                             <div key={idx} className="flex flex-col items-center text-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
@@ -139,16 +139,16 @@ export default function LandingPage() {
                 {/* FOOTER CTA */}
                 <div className="w-full bg-primary/5 dark:bg-surface-hover py-16 mt-8 rounded-3xl mx-4 max-w-[1440px] mb-8 text-center px-6">
                     <h2 className="text-3xl font-serif font-bold text-gray-900 dark:text-white mb-4">
-                        Ready to cook something amazing?
+                        {t('landing.ctaTitle')}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                        Join our community of food lovers and start building your own digital cookbook today.
+                        {t('landing.ctaDesc')}
                     </p>
                     <button
                         onClick={() => navigate('/discover')}
                         className="px-8 py-3 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold hover:opacity-90 transition-all flex items-center gap-2 mx-auto"
                     >
-                        Display Recipes <ArrowRight size={18} />
+                        {t('landing.displayRecipes')} <ArrowRight size={18} />
                     </button>
                 </div>
 

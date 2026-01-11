@@ -206,6 +206,60 @@ const translations = {
             air_fryer: "Air Fryer",
             slow_cooker: "Slow Cooker",
             grilling: "Grilling"
+        },
+        common: {
+            language: "Language",
+            theme: "Theme"
+        },
+        landing: {
+            subtitle: "The modern way to cook, discover, and organize your favorite recipes.",
+            startExploring: "Start Exploring",
+            loginToSave: "Log In to Save",
+            features: {
+                global: { title: "Discover Global Flavors", desc: "Browse a growing collection of recipes from chefs worldwide. Find your next favorite dish in seconds." },
+                kitchen: { title: "Your Digital Kitchen", desc: "Save, organize, and manage your personal cookbook. Keep your family secrets safe and accessible anywhere." },
+                ai: { title: "AI Sous-Chef", desc: "Enhance your cooking with AI. Generate descriptions, translate recipes, and get smart suggestions instantly." },
+                magic: { title: "Magic Import", desc: "Found a recipe online? Paste the URL and let our Magic Import tool extract the ingredients and steps for you." }
+            },
+            toolsTitle: "Know Your Tools",
+            toolsDesc: "Master your kitchen with these powerful built-in features.",
+            ctaTitle: "Ready to cook something amazing?",
+            ctaDesc: "Join our community of food lovers and start building your own digital cookbook today.",
+            displayRecipes: "Display Recipes",
+            tools: {
+                translate: { label: "Translate", desc: "Instantly translate recipes to your preferred language." },
+                scaling: { label: "Smart Scaling", desc: "Adjust serving sizes and ingredients automatically." },
+                chef: { label: "Private Chef", desc: "Get AI-powered tips and ingredient substitutions." },
+                import: { label: "Magic Import", desc: "Extract recipes from any website URL." },
+                copy: { label: "Quick Copy", desc: "Copy any recipe and edit it to your preferences." },
+                share: { label: "Share", desc: "Share your culinary creations with friends." },
+                enhance: { label: "Enhance", desc: "Let AI improve your recipe descriptions." }
+            }
+        },
+        myKitchen: {
+            kitchenTitle: "{user}'s Kitchen",
+            recipesCount: "{count} Recipes",
+            linkCopied: "Link Copied!",
+            tabs: {
+                myRecipes: "My Recipes",
+                saved: "Saved Collection",
+                drafts: "Drafts",
+                recipes: "Recipes"
+            },
+            searchPlaceholder: "Search your recipes...",
+            sort: {
+                recent: "Most Recent",
+                oldest: "Oldest First",
+                az: "A-Z"
+            },
+            empty: {
+                savedTitle: "No saved recipes yet",
+                kitchenTitle: "No recipes found in your kitchen",
+                savedDesc: "Bookmark recipes you like to see them here!",
+                kitchenDesc: "Start cooking and add your first masterpiece!",
+                browse: "Browse Recipes",
+                create: "Create First Recipe"
+            }
         }
     },
     el: {
@@ -404,6 +458,60 @@ const translations = {
             air_fryer: "Air Fryer",
             slow_cooker: "Γάστρα/Αργό",
             grilling: "Σχάρας"
+        },
+        common: {
+            language: "Γλώσσα",
+            theme: "Θέμα"
+        },
+        landing: {
+            subtitle: "Ο σύγχρονος τρόπος να μαγειρεύετε, να ανακαλύπτετε και να οργανώνετε τις αγαπημένες σας συνταγές.",
+            startExploring: "Ξεκινήστε την Εξερεύνηση",
+            loginToSave: "Συνδεθείτε για Αποθήκευση",
+            features: {
+                global: { title: "Ανακαλύψτε Γεύσεις του Κόσμου", desc: "Περιηγηθείτε σε μια συλλογή συνταγών από σεφ όλου του κόσμου. Βρείτε το επόμενο αγαπημένο σας πιάτο." },
+                kitchen: { title: "Η Ψηφιακή σας Κουζίνα", desc: "Αποθηκεύστε και οργανώστε το προσωπικό σας βιβλίο μαγειρικής. Κρατήστε τα οικογενειακά μυστικά ασφαλή και προσβάσιμα παντού." },
+                ai: { title: "AI Βοηθός Σεφ", desc: "Βελτιώστε τη μαγειρική σας με AI. Δημιουργήστε περιγραφές, μεταφράστε συνταγές και λάβετε έξυπνες προτάσεις άμεσα." },
+                magic: { title: "Μαγική Εισαγωγή", desc: "Βρήκατε μια συνταγή online; Επικολλήστε το URL και αφήστε το εργαλείο μας να εξάγει τα υλικά και τα βήματα για εσάς." }
+            },
+            toolsTitle: "Γνωρίστε τα Εργαλεία σας",
+            toolsDesc: "Γίνετε master της κουζίνας με αυτές τις ισχυρές ενσωματωμένες λειτουργίες.",
+            ctaTitle: "Έτοιμοι να μαγειρέψετε κάτι εκπληκτικό;",
+            ctaDesc: "Γίνετε μέλος της κοινότητάς μας και ξεκινήστε να χτίζετε το δικό σας ψηφιακό βιβλίο μαγειρικής σήμερα.",
+            displayRecipes: "Προβολή Συνταγών",
+            tools: {
+                translate: { label: "Μετάφραση", desc: "Μεταφράστε άμεσα συνταγές στη γλώσσα προτίμησής σας." },
+                scaling: { label: "Έξυπνη Κλιμάκωση", desc: "Προσαρμόστε τις μερίδες και τα υλικά αυτόματα." },
+                chef: { label: "Προσωπικός Σεφ", desc: "Λάβετε συμβουλές και αντικαταστάσεις υλικών με τη βοήθεια AI." },
+                import: { label: "Μαγική Εισαγωγή", desc: "Εξάγετε συνταγές από οποιοδήποτε URL ιστοσελίδας." },
+                copy: { label: "Γρήγορη Αντιγραφή", desc: "Αντιγράψτε οποιαδήποτε συνταγή και επεξεργαστείτε την όπως θέλετε." },
+                share: { label: "Κοινοποίηση", desc: "Μοιραστείτε τις μαγειρικές σας δημιουργίες με φίλους." },
+                enhance: { label: "Βελτίωση", desc: "Αφήστε το AI να βελτιώσει τις περιγραφές των συνταγών σας." }
+            }
+        },
+        myKitchen: {
+            kitchenTitle: "Κουζίνα: {user}",
+            recipesCount: "{count} Συνταγές",
+            linkCopied: "Ο Σύνδεσμος Αντιγράφηκε!",
+            tabs: {
+                myRecipes: "Οι Συνταγές μου",
+                saved: "Αποθηκευμένες",
+                drafts: "Πρόχειρα",
+                recipes: "Συνταγές"
+            },
+            searchPlaceholder: "Αναζήτηση στις συνταγές σας...",
+            sort: {
+                recent: "Πιο Πρόσφατα",
+                oldest: "Παλαιότερα Πρώτα",
+                az: "Α-Ω"
+            },
+            empty: {
+                savedTitle: "Καμία αποθηκευμένη συνταγή",
+                kitchenTitle: "Δεν βρέθηκαν συνταγές στην κουζίνα σας",
+                savedDesc: "Αποθηκεύστε συνταγές που σας αρέσουν για να τις δείτε εδώ!",
+                kitchenDesc: "Ξεκινήστε το μαγείρεμα και προσθέστε το πρώτο σας αριστούργημα!",
+                browse: "Εξερεύνηση Συνταγών",
+                create: "Δημιουργία Πρώτης Συνταγής"
+            }
         }
     }
 };
@@ -421,13 +529,21 @@ export default function LanguageContext({ children }) {
         setLanguage(prev => prev === 'en' ? 'el' : 'en');
     };
 
-    const t = (key) => {
+    const t = (key, params = {}) => {
         const keys = key.split('.');
         let value = translations[language];
         for (const k of keys) {
             value = value?.[k];
         }
-        return value || key;
+        let text = value || key;
+
+        if (text && typeof text === 'string') {
+            Object.keys(params).forEach(param => {
+                text = text.replace(`{${param}}`, params[param]);
+            });
+        }
+
+        return text;
     };
 
     return (

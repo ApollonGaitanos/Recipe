@@ -213,10 +213,10 @@ export default function Layout({ children, fullWidth = false }) {
                             {/* Settings / System Toggles */}
                             <div className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-xl mb-2">
                                 <button onClick={toggleLanguage} className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-white dark:bg-black/20 border border-gray-100 dark:border-white/5 text-sm font-medium">
-                                    <Globe size={16} /> Language
+                                    <Globe size={16} /> {t('common.language')}
                                 </button>
                                 <button onClick={toggleTheme} className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-white dark:bg-black/20 border border-gray-100 dark:border-white/5 text-sm font-medium">
-                                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} Theme
+                                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} {t('common.theme')}
                                 </button>
                             </div>
 

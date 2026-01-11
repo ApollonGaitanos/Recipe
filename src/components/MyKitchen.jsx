@@ -124,9 +124,9 @@ export default function MyKitchen() {
                         <div className="flex flex-col gap-4 w-full">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white dark:text-white font-serif flex items-center flex-wrap gap-3">
-                                    <span>{displayUsername}'s Kitchen</span>
+                                    <span>{t('myKitchen.kitchenTitle', { user: displayUsername })}</span>
                                     <span className="text-lg md:text-xl font-medium text-white/80 dark:text-[#a0b3a6]">
-                                        ({recipeCount} Recipes)
+                                        ({t('myKitchen.recipesCount', { count: recipeCount })})
                                     </span>
                                     <div className="relative flex items-center">
                                         <button
@@ -161,7 +161,7 @@ export default function MyKitchen() {
 
                                         {/* Copied Toast / Tooltip */}
                                         <div className={`absolute left-full ml-2 px-3 py-1 bg-black text-white text-xs font-bold rounded-lg transition-all duration-200 ${showCopied ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 pointer-events-none'}`}>
-                                            Link Copied!
+                                            {t('myKitchen.linkCopied')}
                                         </div>
                                     </div>
                                 </h1>
@@ -175,11 +175,11 @@ export default function MyKitchen() {
                         <div className="flex items-center mt-12">
                             <div className="flex items-center gap-8">
                                 {(isOwner ? [
-                                    { id: 'my_recipes', label: 'My Recipes' },
-                                    { id: 'saved', label: 'Saved Collection' },
-                                    { id: 'drafts', label: 'Drafts' }
+                                    { id: 'my_recipes', label: t('myKitchen.tabs.myRecipes') },
+                                    { id: 'saved', label: t('myKitchen.tabs.saved') },
+                                    { id: 'drafts', label: t('myKitchen.tabs.drafts') }
                                 ] : [
-                                    { id: 'my_recipes', label: 'Recipes' }
+                                    { id: 'my_recipes', label: t('myKitchen.tabs.recipes') }
                                 ]).map(tab => (
                                     <button
                                         key={tab.id}
@@ -210,7 +210,7 @@ export default function MyKitchen() {
                             </div>
                             <input
                                 type="text"
-                                placeholder="Search your recipes..."
+                                placeholder={t('myKitchen.searchPlaceholder')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="block w-full pl-10 pr-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow shadow-sm font-medium"
@@ -219,9 +219,9 @@ export default function MyKitchen() {
 
                         <div className="flex items-center gap-3 w-full sm:w-auto">
                             <select className="px-4 py-2.5 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer">
-                                <option>Most Recent</option>
-                                <option>Oldest First</option>
-                                <option>A-Z</option>
+                                <option>{t('myKitchen.sort.recent')}</option>
+                                <option>{t('myKitchen.sort.oldest')}</option>
+                                <option>{t('myKitchen.sort.az')}</option>
                             </select>
 
                             {isOwner && (
@@ -230,7 +230,7 @@ export default function MyKitchen() {
                                     className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#111813] dark:bg-white text-white dark:text-[#111813] text-sm font-bold hover:opacity-90 transition-opacity ml-auto"
                                 >
                                     <Plus className="w-4 h-4" />
-                                    <span className="hidden sm:inline">New Recipe</span>
+                                    <span className="hidden sm:inline">{t('newRecipe')}</span>
                                 </button>
                             )}
                         </div>
@@ -254,16 +254,16 @@ export default function MyKitchen() {
                                 <Search className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-[#111813] dark:text-white mb-2">
-                                {activeTab === 'saved' ? 'No saved recipes yet' : 'No recipes found in your kitchen'}
+                                {activeTab === 'saved' ? t('myKitchen.empty.savedTitle') : t('myKitchen.empty.kitchenTitle')}
                             </h3>
                             <p className="text-[#63886f] dark:text-[#a0b3a6] text-center max-w-sm mb-6">
-                                {activeTab === 'saved' ? 'Bookmark recipes you like to see them here!' : 'Start cooking and add your first masterpiece!'}
+                                {activeTab === 'saved' ? t('myKitchen.empty.savedDesc') : t('myKitchen.empty.kitchenDesc')}
                             </p>
                             <button
                                 onClick={() => navigate('/add')}
                                 className="px-6 py-2.5 rounded-full bg-primary text-white font-bold hover:opacity-90 transition-opacity"
                             >
-                                {activeTab === 'saved' ? 'Browse Recipes' : 'Create First Recipe'}
+                                {activeTab === 'saved' ? t('myKitchen.empty.browse') : t('myKitchen.empty.create')}
                             </button>
                         </div>
                     )}
