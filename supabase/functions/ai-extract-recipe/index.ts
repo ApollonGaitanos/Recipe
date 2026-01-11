@@ -599,13 +599,16 @@ ${jsonStructure}`;
 
     } catch (error) {
         console.error('Edge Function Error:', error.message);
+
+        const isAuthError = error.message.includes('Unauthorized');
+        const status = isAuthError ? 401 : 400;
+
         return new Response(JSON.stringify({
             error: error.message || 'Internal Server Error'
         }), {
-            status: 400,
+            status: status,
             headers: {
                 'Content-Type': 'application/json',
-                // CORS Headers for Error Response too
                 'Access-Control-Allow-Origin': '*'
             }
         });
