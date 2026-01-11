@@ -65,7 +65,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                             {isTranslate ? <Globe size={18} /> : <Sparkles size={18} />}
                         </div>
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
-                            {step === 'confirm' ? 'Warning: Permanent Change' : (isTranslate ? t('translate') : t('improve'))}
+                            {step === 'confirm' ? t('translation.warningTitle') : (isTranslate ? t('translate') : t('improve'))}
                         </h3>
                     </div>
                     <button
@@ -84,17 +84,17 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                             <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex gap-3 text-amber-800 dark:text-amber-200">
                                 <span className="text-2xl">⚠️</span>
                                 <div className="text-sm">
-                                    <p className="font-bold mb-1">Are you sure?</p>
-                                    <p className="opacity-90">This will <strong>permanently overwrite</strong> your existing recipe (ingredients & instructions) with the translation.</p>
+                                    <p className="font-bold mb-1">{t('translation.warningDescTitle')}</p>
+                                    <p className="opacity-90"><span dangerouslySetInnerHTML={{ __html: t('translation.warningDesc') }} /></p>
                                 </div>
                             </div>
                             <p className="text-sm text-gray-500 text-center">
-                                To keep the original, you might want to Translate in "View Mode" instead.
+                                {t('translation.keepOriginal')}
                             </p>
                         </div>
                     ) : isTranslate ? (
                         <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Choose the target language for this recipe:</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('translation.selectLang')}</p>
 
                             <div className="relative">
                                 <select
@@ -117,24 +117,24 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                             </div>
 
                             <p className="text-xs text-center text-gray-400 mt-2">
-                                AI will translate ingredients, instructions, and convert measurements.
+                                {t('translation.aiNotice')}
                             </p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3 animate-in slide-in-from-left duration-300">
                             <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
                                 <span className="text-lg">👩‍🍳</span>
-                                <span className="font-medium text-sm">Adds pro tips & visual cues</span>
+                                <span className="font-medium text-sm">{t('translation.tips')}</span>
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
                                 <span className="text-lg">🔍</span>
-                                <span className="font-medium text-sm">Explains 'Why' without changing steps</span>
+                                <span className="font-medium text-sm">{t('translation.explain')}</span>
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl text-purple-900 dark:text-purple-200">
                                 <span className="text-lg">✨</span>
-                                <span className="font-medium text-sm">Makes instructions clearer & easier</span>
+                                <span className="font-medium text-sm">{t('translation.clearer')}</span>
                             </div>
-                            <p className="text-center text-xs text-gray-400 mt-2">The AI Sous Chef will improve your recipe description and steps.</p>
+                            <p className="text-center text-xs text-gray-400 mt-2">{t('translation.enhanceNotice')}</p>
                         </div>
                     )}
                 </div>
@@ -146,7 +146,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                         onClick={handleClose}
                         disabled={isProcessing}
                     >
-                        {step === 'confirm' ? 'Back' : t('cancel')}
+                        {step === 'confirm' ? t('back') : t('cancel')}
                     </button>
                     <button
                         className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg transition-all ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:-translate-y-0.5'
@@ -158,12 +158,12 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                         disabled={isProcessing}
                     >
                         {isProcessing ? (
-                            <span>Processing...</span>
+                            <span>{t('processing')}</span>
                         ) : (
                             <>
                                 {step === 'confirm'
-                                    ? "Yes, Overwrite"
-                                    : (isTranslate ? "Translate Now" : "Enhance Recipe")
+                                    ? t('translation.overwrite')
+                                    : (isTranslate ? t('translation.translateNow') : t('translation.enhanceNow'))
                                 }
                                 <ChevronRight size={16} />
                             </>

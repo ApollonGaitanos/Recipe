@@ -157,7 +157,7 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                     return (
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-highlight">
-                                {mealType}
+                                {t(`filters.${mealType.toLowerCase()}`)}
                             </span>
                         </div>
                     );

@@ -349,11 +349,11 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
 
                             <button className="flex items-center gap-2 px-5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 <Share2 className="w-3.5 h-3.5" />
-                                <span>share</span>
+                                <span>{t('share')}</span>
                             </button>
                             <button onClick={handleDownload} disabled={isDownloading} className="flex items-center gap-2 px-5 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 <Printer className="w-3.5 h-3.5" />
-                                <span>print</span>
+                                <span>{t('print')}</span>
                             </button>
                             {!isOwner && (
                                 <button
@@ -364,7 +364,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                             : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300')}
                                 >
                                     <Bookmark className={'w-3.5 h-3.5 ' + (isSaved ? 'fill-current' : '')} />
-                                    <span>{isSaved ? 'Saved' : 'Save'}</span>
+                                    <span>{isSaved ? t('saved') : t('save')}</span>
                                 </button>
                             )}
                         </div>
@@ -456,7 +456,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <span className="text-highlight">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
                                     </span>
-                                    Tools
+                                    {t('form.toolsSection')}
                                 </h3>
                                 <ul className="space-y-3">
                                     {parseSmartList(recipe.tools).map((tool, idx) => (
@@ -474,23 +474,23 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                         {/* Nutrition Card */}
                         {(recipe.calories || recipe.protein || recipe.carbs || recipe.fat) && (
                             <div className="bg-white dark:bg-[#0D1811] rounded-3xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Nutrition per serving</h4>
+                                <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">{t('nutritionPerServing')}</h4>
                                 <div className="grid grid-cols-4 gap-2 text-center">
                                     <div>
                                         <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.calories || '-'}</div>
-                                        <div className="text-xs text-zinc-500">Cals</div>
+                                        <div className="text-xs text-zinc-500">{t('card.cals')}</div>
                                     </div>
                                     <div>
                                         <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.protein ? `${recipe.protein}g` : '-'}</div>
-                                        <div className="text-xs text-zinc-500">Protein</div>
+                                        <div className="text-xs text-zinc-500">{t('card.protein')}</div>
                                     </div>
                                     <div>
                                         <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.carbs ? `${recipe.carbs}g` : '-'}</div>
-                                        <div className="text-xs text-zinc-500">Carbs</div>
+                                        <div className="text-xs text-zinc-500">{t('card.carbs')}</div>
                                     </div>
                                     <div>
                                         <div className="text-xl font-bold text-zinc-900 dark:text-white">{recipe.fat ? `${recipe.fat}g` : '-'}</div>
-                                        <div className="text-xs text-zinc-500">Fat</div>
+                                        <div className="text-xs text-zinc-500">{t('card.fat')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -537,8 +537,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                                 <Activity className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Difficulty</div>
-                                                <div className="font-semibold text-zinc-900 dark:text-white">{difficulty}</div>
+                                                <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('filters.difficulty')}</div>
+                                                <div className="font-semibold text-zinc-900 dark:text-white">{t(`filters.${difficulty.toLowerCase()}`)}</div>
                                             </div>
                                         </div>
                                     )}
@@ -556,7 +556,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold"
                                     >
                                         <Globe size={14} />
-                                        {t('improve')}
+                                        {t('translate')}
                                     </button>
                                 )}
 

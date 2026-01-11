@@ -73,9 +73,31 @@ const translations = {
         aiFeatures: {
             title: 'AI Features',
             magic: { label: 'Magic Import', desc: 'Import from URL, text, or photo' },
-            chef: { label: 'AI Chef', desc: 'Generate recipe from description' },
             enhance: { label: 'Enhance', desc: 'Improve descriptions and details' },
-            translate: { label: 'Translate', desc: 'Convert to another language' }
+            translate: { label: 'Translate', desc: 'Convert to another language' },
+            inputLabel: 'What are you craving?',
+            chef: {
+                label: 'AI Chef',
+                desc: 'Generate recipe from description',
+                placeholder: "Describe the dish you want to create (e.g. 'A healthy vegetarian lasagna with spinach')...",
+                create: "Create Recipe",
+                disclaimer: "AI-generated recipes may vary. Please review ingredients before cooking."
+            }
+        },
+        translation: {
+            warningTitle: "Warning: Permanent Change",
+            warningDescTitle: "Are you sure?",
+            warningDesc: "This will permanently overwrite your existing recipe (ingredients & instructions).",
+            keepOriginal: "To keep the original, try 'View Mode' instead.",
+            selectLang: "Choose target language:",
+            aiNotice: "AI will translate ingredients, instructions, and convert measurements.",
+            tips: "Adds pro tips & visual cues",
+            explain: "Explains 'Why' without changing steps",
+            clearer: "Makes instructions clearer & easier",
+            enhanceNotice: "The AI Sous Chef will improve your recipe description and steps.",
+            overwrite: "Yes, Overwrite",
+            translateNow: "Translate Now",
+            enhanceNow: "Enhance Recipe"
         },
         form: {
             descriptionLabel: 'Description / Story',
@@ -203,8 +225,14 @@ const translations = {
                 on: "Force AI"
             },
             ready: "Ready",
+            ready: "Ready",
             addImage: "Add Image",
-            preview: "Preview"
+            addImageOptional: "Add Image (Optional)",
+            preview: "Preview",
+            sourceLabel: "Source",
+            sourcePlaceholder: "Paste full recipe text or enter a website URL...",
+            importBtn: "Import Recipe",
+            disclaimer: "Magic Import analyzes your source to extract ingredients and steps."
         },
         visibility: {
             makePublic: "Make Public",
@@ -315,11 +343,24 @@ const translations = {
             baking: "Baking",
             air_fryer: "Air Fryer",
             slow_cooker: "Slow Cooker",
-            grilling: "Grilling"
+            grilling: "Grilling",
+            // Categories
+            mealType: "Meal Type",
+            dietary: "Dietary",
+            difficulty: "Difficulty",
+            cuisine: "Cuisine",
+            // Missing/CamelCase Options
+            glutenTypes: "Gluten-Free",
+            lowCarb: "Low Carb",
+            dairyFree: "Dairy-Free",
+            medium: "Medium",
+            hard: "Hard",
+            french: "French"
         },
         common: {
             language: "Language",
-            theme: "Theme"
+            theme: "Theme",
+            new: "New"
         },
         landing: {
             subtitle: "The modern way to cook, discover, and organize your favorite recipes.",
@@ -437,9 +478,31 @@ const translations = {
         aiFeatures: {
             title: 'Λειτουργίες AI',
             magic: { label: 'Μαγική Εισαγωγή', desc: 'Εισαγωγή από URL, κείμενο ή φωτογραφία' },
-            chef: { label: 'AI Chef', desc: 'Δημιουργία συνταγής από περιγραφή' },
             enhance: { label: 'Βελτίωση', desc: 'Βελτίωση περιγραφών και λεπτομερειών' },
-            translate: { label: 'Μετάφραση', desc: 'Μετάφραση σε άλλη γλώσσα' }
+            translate: { label: 'Μετάφραση', desc: 'Μετάφραση σε άλλη γλώσσα' },
+            inputLabel: 'Τι τραβάει η όρεξή σας;',
+            chef: {
+                label: 'AI Chef',
+                desc: 'Δημιουργία συνταγής από περιγραφή',
+                placeholder: "Περιγράψτε το πιάτο που θέλετε (π.χ. 'Μια υγιεινή λαζάνια λαχανικών με σπανάκι')...",
+                create: "Δημιουργία Συνταγής",
+                disclaimer: "Οι συνταγές AI μπορεί να διαφέρουν. Ελέγξτε τα υλικά πριν το μαγείρεμα."
+            }
+        },
+        translation: {
+            warningTitle: "Προσοχή: Μόνιμη Αλλαγή",
+            warningDescTitle: "Είστε σίγουροι;",
+            warningDesc: "Αυτό θα αντικαταστήσει μόνιμα την υπαρχούσα συνταγή σας (υλικά & οδηγίες).",
+            keepOriginal: "'H δοκιμάστε τη 'Λειτουργία Προβολής' για να κρατήσετε το πρωτότυπο.",
+            selectLang: "Επιλέξτε γλώσσα:",
+            aiNotice: "Το AI θα μεταφράσει υλικά, οδηγίες και θα μετατρέψει μονάδες μέτρησης.",
+            tips: "Προσθέτει επαγγελματικά tips",
+            explain: "Εξηγεί το 'Γιατί' στα βήματα",
+            clearer: "Κάνει τις οδηγίες πιο σαφείς",
+            enhanceNotice: "Ο AI Chef θα βελτιώσει την περιγραφή και τα βήματα της συνταγής σας.",
+            overwrite: "Ναι, Αντικατάσταση",
+            translateNow: "Μετάφραση Τώρα",
+            enhanceNow: "Βελτίωση Συνταγής"
         },
         form: {
             descriptionLabel: 'Περιγραφή / Ιστορία',
@@ -565,8 +628,14 @@ const translations = {
                 on: "Αποκλειστικά AI"
             },
             ready: "Έτοιμο",
+            ready: "Έτοιμο",
             addImage: "Προσθήκη",
-            preview: "Προεπισκόπηση"
+            addImageOptional: "Προσθήκη Εικόνας (Προαιρετικό)",
+            preview: "Προεπισκόπηση",
+            sourceLabel: "Πηγή",
+            sourcePlaceholder: "Επικολλήστε κείμενο συνταγής ή URL ιστοσελίδας...",
+            importBtn: "Εισαγωγή Συνταγής",
+            disclaimer: "Η Μαγική Εισαγωγή αναλύει την πηγή για εξαγωγή υλικών και βημάτων."
         },
         visibility: {
             makePublic: "Δημοσιοποίηση",
@@ -666,11 +735,24 @@ const translations = {
             baking: "Φούρνου",
             air_fryer: "Air Fryer",
             slow_cooker: "Γάστρα/Αργό",
-            grilling: "Σχάρας"
+            grilling: "Σχάρας",
+            // Categories
+            mealType: "Γεύμα",
+            dietary: "Διατροφή",
+            difficulty: "Δυσκολία",
+            cuisine: "Κουζίνα",
+            // Missing/CamelCase Options
+            glutenTypes: "Χωρίς Γλουτένη",
+            lowCarb: "Χαμηλοί Υδατάνθρακες",
+            dairyFree: "Χωρίς Γαλακτοκομικά",
+            medium: "Μέτριο",
+            hard: "Δύσκολο",
+            french: "Γαλλική"
         },
         common: {
             language: "Γλώσσα",
-            theme: "Θέμα"
+            theme: "Θέμα",
+            new: "Νέα"
         },
         landing: {
             subtitle: "Ο σύγχρονος τρόπος να μαγειρεύετε, να ανακαλύπτετε και να οργανώνετε τις αγαπημένες σας συνταγές.",

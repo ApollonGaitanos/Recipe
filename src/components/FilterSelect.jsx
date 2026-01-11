@@ -2,8 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X, Check } from 'lucide-react';
 import { FILTER_CATEGORIES } from '../constants/filters';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function FilterSelect({ selectedTags = [], onChange, compact = false }) {
+    const { t } = useLanguage();
     // State to track which category dropdown is open
     const [openCategory, setOpenCategory] = useState(null);
     const containerRef = useRef(null);
@@ -78,16 +80,16 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
                                     <div className="flex flex-col items-start truncate min-w-0 flex-1">
                                         <span className={`font-bold uppercase tracking-wider truncate w-full text-left ${compact ? 'text-[10px]' : 'text-xs'
                                             } ${activeCount > 0 ? 'text-[#63886f] dark:text-[#8ca395]' : 'text-gray-500'}`}>
-                                            {category.label}
+                                            {t(`filters.${category.id}`)}
                                         </span>
                                         {activeCount > 0 && !compact && (
                                             <span className="text-xs font-medium text-[#111813] dark:text-white truncate w-full text-left">
-                                                {selectedOptions.map(o => o.value).join(', ')}
+                                                {selectedOptions.map(o => t(`filters.${o.id}`)).join(', ')}
                                             </span>
                                         )}
                                         {activeCount > 0 && compact && (
                                             <span className="text-[10px] font-medium text-[#111813] dark:text-white leading-none truncate w-full text-left">
-                                                {selectedOptions.map(o => o.value).join(', ')}
+                                                {selectedOptions.map(o => t(`filters.${o.id}`)).join(', ')}
                                             </span>
                                         )}
                                     </div>
@@ -113,7 +115,7 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
                                                     <div className="flex items-center gap-2.5">
                                                         {option.icon && <option.icon size={14} className={isSelected ? 'text-[#63886f] dark:text-[#8ca395]' : 'text-gray-400'} />}
                                                         {option.flag && <span className="text-base leading-none">{option.flag}</span>}
-                                                        <span>{option.label}</span>
+                                                        <span>{t(`filters.${option.id}`)}</span>
                                                     </div>
                                                     {isSelected && <Check size={14} className="text-[#63886f] dark:text-[#8ca395]" />}
                                                 </button>
@@ -146,7 +148,7 @@ export default function FilterSelect({ selectedTags = [], onChange, compact = fa
                                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 border border-transparent hover:border-red-100 transition-colors"
                             >
                                 {option.flag && <span>{option.flag}</span>}
-                                {option.label}
+                                {t(`filters.${option.id}`)}
                                 <X size={12} />
                             </button>
                         );

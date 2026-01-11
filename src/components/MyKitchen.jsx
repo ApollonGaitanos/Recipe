@@ -277,7 +277,7 @@ export default function MyKitchen() {
                             className="flex items-center gap-2 pl-4 pr-5 py-3.5 bg-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                         >
                             <Plus className="w-6 h-6" />
-                            <span className="font-bold text-base tracking-wide">New</span>
+                            <span className="font-bold text-base tracking-wide">{t('common.new')}</span>
                         </button>
                     </div>
                 )}

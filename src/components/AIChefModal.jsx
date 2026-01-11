@@ -107,7 +107,7 @@ export default function AIChefModal({ isOpen, onClose, onImport, onBack }) {
                         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
                             <X size={20} className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">{t('errorProcessing')}</h4>
+                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">{t('magicImport.errorParams')}</h4>
                                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                             </div>
                         </div>

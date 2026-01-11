@@ -164,7 +164,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                         )}
                         <Sparkles size={20} className="text-highlight" />
                         <h3 className="text-lg font-bold text-[#111813] dark:text-[#e0e6e2]">
-                            Magic Import
+                            {t('aiFeatures.magic.label')}
                         </h3>
                     </div>
 
@@ -186,7 +186,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
                             <X size={20} className="text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
                             <div className="flex-1">
-                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">Error processing request</h4>
+                                <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-1">{t('magicImport.errorParams')}</h4>
                                 <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                             </div>
                         </div>
@@ -195,13 +195,13 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                     {/* Source Input */}
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            Source
+                            {t('magicImport.sourceLabel')}
                         </label>
                         <div className="relative">
                             <textarea
                                 value={inputValue}
                                 onChange={(e) => { setInputValue(e.target.value); if (error) setError(null); }}
-                                placeholder="Paste full recipe text or enter a website URL..."
+                                placeholder={t('magicImport.sourcePlaceholder')}
                                 className={`w-full h-40 rounded-xl border p-4 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all ${error
                                     ? 'border-red-300 dark:border-red-800 focus:ring-red-500'
                                     : 'border-[#dce5df] dark:border-[#2a4030]'
@@ -228,7 +228,7 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                             className="w-full py-4 border-2 border-dashed border-gray-200 dark:border-white/5 rounded-xl flex items-center justify-center gap-2 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:border-primary/50 transition-all font-medium"
                         >
                             <ImageIcon size={18} />
-                            Add Image (Optional)
+                            {t('magicImport.addImageOptional')}
                         </button>
                     ) : (
                         <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#dce5df] dark:border-[#2a4030] group">
@@ -256,18 +256,18 @@ export default function MagicImportModal({ isOpen, onClose, onImport, onBack }) 
                         {isParsing ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Processing...
+                                {t('processing')}
                             </span>
                         ) : (
                             <>
-                                Import Recipe
+                                {t('magicImport.importBtn')}
                                 <ArrowRight size={18} />
                             </>
                         )}
                     </button>
 
                     <p className="text-center text-xs text-gray-400">
-                        Magic Import analyzes your source to extract ingredients and steps.
+                        {t('magicImport.disclaimer')}
                     </p>
                 </div>
             </div>
