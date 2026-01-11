@@ -99,6 +99,49 @@ serve(async (req) => {
             throw new Error("Unauthorized: Invalid Token");
         }
 
+        // 1.5 RATE LIMITING (SECURITY HARDENING)
+        // Enforce 20 requests per user per day to prevent abuse
+        const DAILY_LIMIT = 20;
+        const supabaseAdmin = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        const today = new Date().toISOString().split('T')[0];
+        const { data: usageData, error: usageError } = await supabaseAdmin
+            .from('ai_usage_logs')
+            .select('request_count')
+            .eq('user_id', user.id)
+            .eq('usage_date', today)
+            .single();
+
+        let currentCount = 0;
+        if (usageData) {
+            currentCount = usageData.request_count;
+        }
+
+        if (currentCount >= DAILY_LIMIT) {
+            throw new Error(`Daily AI limit reached (${DAILY_LIMIT} requests). Please try again tomorrow.`);
+        }
+
+        // Increment Usage
+        // We use UPSERT logic: Insert 1 if not exists, else increment
+        // Since we already read it, we can just upsert the new value
+        const { error: upsertError } = await supabaseAdmin
+            .from('ai_usage_logs')
+            .upsert({
+                user_id: user.id,
+                usage_date: today,
+                request_count: currentCount + 1
+            }, { onConflict: 'user_id, usage_date' });
+
+        if (upsertError) {
+            console.error("Rate Limit Update Failed:", upsertError);
+            // We verify permissions? Service role should allow it.
+            // If it fails, we might want to fail open or closed. Failing closed (throwing) is safer for quotas.
+            // throw new Error("System Error: usage tracking failed.");
+        }
+
 
         // 2. Input Parsing
         const { text, imageBase64, imageType, url, targetLanguage, mode } = await req.json()
