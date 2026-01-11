@@ -4,6 +4,8 @@
 
 *Οψοποιία* (Opsopoiia) is a premium, privacy-focused Progressive Web Application (PWA) for managing personal and discovered recipes. It combines a sophisticated "Ancient Greek" aesthetic with cutting-edge AI features to simplify the cooking experience.
 
+> **Technical Deep Dive:** For detailed architecture, security models, and developer setup, please consult the [Technical Guide](TECHNICAL_GUIDE.md).
+
 ---
 
 ## 🏗️ Technology Stack
@@ -11,32 +13,26 @@
 The application is built on a modern, high-performance stack ensuring speed, scalability, and developer experience.
 
 ### **Frontend**
-*   **Framework**: [React 19](https://react.dev/) - Functional components, Hooks, and Context API for state management.
-*   **Build Tool**: [Vite 7](https://vitejs.dev/) - Blazing fast hot-module replacement (HMR) and optimized building.
+*   **Framework**: [React 18](https://react.dev/) - Functional components, Hooks, and Context API.
+*   **Build Tool**: [Vite](https://vitejs.dev/) - Blazing fast hot-module replacement (HMR).
 *   **Styling**: 
-    *   [Tailwind CSS 4](https://tailwindcss.com/) - Utility-first styling with a custom semantic theme configuration.
-    *   **Design System**: "Ancient Greek" theme utilizing CSS variables for dynamic Light/Dark mode switching (Honey Amber/Wine Red palettes).
-*   **Routing**: [React Router 7](https://reactrouter.com/) - Client-side routing with history management.
-*   **Icons**: [Lucide React](https://lucide.dev/) - Consistent, lightweight SVG icons.
+    *   [Tailwind CSS](https://tailwindcss.com/) - Utility-first styling with a custom semantic theme.
+    *   **Theme**: "Ancient Greek" utilizing CSS variables for dynamic Honey Amber / Wine Red palettes (Dark/Light modes).
+*   **Routing**: React Router 6.
+*   **Icons**: [Lucide React](https://lucide.dev/).
 
 ### **Backend & Infrastructure**
 *   **Platform**: [Supabase](https://supabase.com/) (PostgreSQL 15).
-*   **Authentication**: Supabase Auth (Email/Password) with secure session management.
-*   **Database**: PostgreSQL with Row Level Security (RLS) policies for granular access control.
-*   **Real-time Communication**: Supabase Realtime for live updates (Like counts, Feed synchronization).
-*   **Edge Functions**: Deno-based serverless functions for running AI operations securely.
+*   **Authentication**: Supabase Auth (Email/Password) + JWT Verification.
+*   **Database**: PostgreSQL with strict Row Level Security (RLS).
+*   **Edge Functions**: Deno-based serverless functions for secure AI and file operations.
+*   **Storage**: Cloudflare R2 (accessed securely via Edge Functions).
 
-### **Types of Intelligence (AI)**
-*   **Provider**: Google Gemini API (via Supabase Edge Functions).
-*   **Models Strategy**:
-    *   **Text & Logic**: Prioritizes **Gemma 3 (27b/12b)** for high reasoning and RPD (Requests Per Day) limits.
-    *   **Vision**: Prioritizes **Gemini 3 Flash** & **Gemini 2.5 Flash** for multimodal (image) analysis.
-    *   **Fallback**: Robust error handling switches to available stable models if primary ones fail.
-*   **Agent**: Custom prompts for "Chef Persona" (Creative) vs. "Data Extractor" (Strict).
-
-### **Utilities**
-*   **OCR**: [Tesseract.js](https://tesseract.projectnaptha.com/) - Client-side optical character recognition for offline/fast image text extraction.
-*   **PDF Generation**: [html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) - Client-side rendering of recipes to printable PDFs.
+### **AI Intelligence**
+*   **Provider**: Google Gemini API via Secure Edge Proxy.
+*   **Capabilities**:
+    *   **Magic Import**: Extract structured recipes from URLs, Text, or Images.
+    *   **AI Chef**: Enhance instructions, translate content, and generate ideas.
 
 ---
 
@@ -44,35 +40,25 @@ The application is built on a modern, high-performance stack ensuring speed, sca
 
 ### 1. 🪄 Magic Import (AI-Powered)
 The core differentiator of Opsopoiia.
-*   **URL Scraper**: Paste any recipe URL.
-    *   *Triple-Layer Robustness*: Uses Direct Fetch (Browser Mimicry) -> AllOrigins Proxy -> CorsProxy.io to overcome blocking.
-    *   Extracts Title, Tools, Description, Ingredients, and Instructions cleanly.
-*   **Text Parser**: Paste unstructured text (e.g., from a message). AI structures it into JSON.
-*   **Image Recognition**: Upload a photo of a cookbook. Hybrid system uses OCR (Tesseract) for speed or AI (Gemini Vision) for handwriting/layout understanding.
+*   **URL Scraper**: Securely fetches recipe HTML (protected against SSRF) and parses JSON-LD/Microdata.
+*   **Text Parser**: Paste unstructured text; AI structures it into JSON.
+*   **Image Recognition**: Upload a photo of a cookbook. Uses Hybrid OCR/Vision AI to digitize handwriting.
 
 ### 2. 👨‍🍳 AI Chef Assistant
-*   **Improve**: Rewrites instructions to be professional and clear without changing ingredients. Adds "Why" explanations to steps.
-*   **Translate**: Context-aware translation (currently optimized for Greek/English) that converts units (cups -> grams) and maintains culinary nuances.
+*   **Improve**: Rewrites instructions to be professional and clear without changing ingredients.
+*   **Translate**: Context-aware translation (English/Greek) maintaining culinary precision.
 
 ### 3. 🍲 Recipe Management
 *   **CRUD**: Full Create, Read, Update, Delete capabilities.
 *   **Filters**: Advanced filtering by Cuisine, Meal Type, Difficulty, and Dietary restrictions.
-*   **Search**: Accent-insensitive fuzzy search (e.g., "κοτοπουλο" finds "κοτόπουλο").
-*   **Tools & Equipment**: Dedicated tracking for pots, pans, and gadgets required.
+*   **Search**: Accent-insensitive fuzzy search.
+*   **Tools Tracking**: Dedicated list for required pots/pans.
 
 ### 4. 🌍 Social & Discovery
-*   **Public/Private Visibility**: Toggle recipes between ultra-private (encrypted RLS) and the Public Feed.
-*   **Community Feed**: Discover recipes from other users.
-*   **Likes**: Real-time heart system to save favorites.
-*   **Bookmarks (Cookbook)**: Save public recipes to your personal collection.
-*   **Fork/Copy**: Clone a public recipe to your kitchen to edit it safely.
-
-### 5. 🎨 UX & Design
-*   **Theming**: 
-    *   *Light Mode*: "Attic Light" - Warm backgrounds, Wine Red accents.
-    *   *Dark Mode*: "Dorian Dark" - Deep charcoal, Amber Honey accents.
-*   **Internationalization (i18n)**: Full generic language support with Greek (El) and English (En) fully implemented.
-*   **Responsive**: Mobile-first grid layout that adapts to desktops (1-col -> 3-col).
+*   **Privacy First**: Recipes are private by default.
+*   **Community Feed**: Share your best creations.
+*   **Likes & Saves**: Real-time engagement.
+*   **Fork/Copy**: Clone public recipes to edit safely.
 
 ---
 
@@ -81,33 +67,34 @@ The core differentiator of Opsopoiia.
 ```bash
 /
 ├── src/
-│   ├── components/         # Reusable UI components (RecipeCard, AuthModal, etc.)
-│   ├── contexts/           # React Contexts (RecipeContext, AuthContext, ThemeContext)
-│   ├── utils/              # Helper functions (recipeParser.js, ocr.js)
-│   ├── App.jsx             # Main Application Logic
-│   └── main.jsx            # Entry Point
+│   ├── components/         # Reusable UI components
+│   ├── context/            # Global Contexts (Auth, Language, Toast)
+│   ├── services/           # API integrations
+│   ├── utils/              # Parsers & Helper functions
+│   └── App.jsx             # Main Application Logic
 ├── supabase/
-│   ├── functions/          # Deno Edge Functions
-│   │   └── ai-extract-recipe/  # Main AI Logic
-│   └── migrations/         # SQL Schema definitions
-├── public/                 # Static assets
-└── index.html              # HTML entry
+│   ├── functions/          # Deno Edge Functions (scrape-recipe, delete-image)
+│   ├── migrations/         # Database schema changes
+│   └── misc_sql/           # Backup SQL snippets
+├── technical_guide.md      # Detailed Architecture Docs
+└── ...
 ```
 
 ---
 
-## 🔒 Security & Data
-*   **RLS (Row Level Security)**: Database policies ensure users can ONLY read/write their own data unless explicitly set to `is_public`.
-*   **Edge Security**: AI API keys are stored in Supabase Vault/Env variables, never exposed to the client.
-*   **Sanitization**: AI outputs are strictly sanitized to prevent JSON injection or format execution.
+## 🔒 Security Architecture (Hardened)
+*   **Fail-Closed RLS**: Users can ONLY access their own data. Profile visibility is restricted to explicit public columns.
+*   **SSRF Protection**: `scrape-recipe` blocks internal network access (Localhost, Private IPs).
+*   **Integrity Checks**: `delete-image` enforces strict ownership—users can only delete the file currently linked to their recipe.
+*   **Secure Storage**: Cloudflare R2 uploads use short-lived Presigned URLs; Deletes are proxied via Edge Functions.
 
 ---
 
 ## 🚀 Deployment
-*   **Frontend**: Deployed as a holistic SPA (Single Page App).
-*   **Backend**: Managed by Supabase Platform.
-*   **CI/CD**: GitHub Actions integrated for automated checks.
+*   **Frontend**: Deployed via Vercel/Netlify (SPA).
+*   **Backend**: Managed Supabase Project.
+*   **CI/CD**: GitHub Actions integrated.
 
 ---
 
-*Documentation generated automatically by Antigravity.*
+*Documentation maintained by Apollo & Antigravity.*
