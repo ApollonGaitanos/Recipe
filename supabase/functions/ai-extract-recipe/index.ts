@@ -81,15 +81,9 @@ serve(async (req) => {
     }
 
     try {
-        // DIAGNOSTIC LOGGING
-        console.log("Diag: Function Invoked");
-        console.log("Diag: SUPABASE_URL exists?", !!Deno.env.get('SUPABASE_URL'));
-        console.log("Diag: SUPABASE_ANON_KEY exists?", !!Deno.env.get('SUPABASE_ANON_KEY'));
-
         // 1. VERIFY AUTHENTICATION (STRICT)
+        // We handle this manually to ensure standard Supabase Auth headers work
         const authHeader = req.headers.get('Authorization');
-        console.log("Diag: Auth Header Present?", !!authHeader);
-        if (authHeader) console.log("Diag: Auth Header Length:", authHeader.length);
 
         if (!authHeader) {
             throw new Error("Unauthorized: Missing Authorization header");
@@ -103,13 +97,6 @@ serve(async (req) => {
 
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
-        if (authError) {
-            console.error("Diag: Auth Error Detail:", JSON.stringify(authError));
-        }
-        if (!user) {
-            console.error("Diag: User Object is missing");
-        }
-
         if (authError || !user) {
             throw new Error(`Unauthorized: Invalid Token. Details: ${authError?.message || 'No User'}`);
         }
@@ -120,8 +107,8 @@ serve(async (req) => {
         const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
         if (!serviceKey) {
-            // Log warning but allow request (Fail Open) to prevent feature breakage if secrets are missing
-            console.warn("⚠️ WARNING: SUPABASE_SERVICE_ROLE_KEY is missing. Rate limiting is DISABLED.");
+            // FAIL CLOSED: Service key is essential for rate limiting
+            throw new Error("Server Error: SUPABASE_SERVICE_ROLE_KEY is not configured. Rate limiting cannot be enforced.");
         } else {
             const supabaseAdmin = createClient(
                 Deno.env.get('SUPABASE_URL') ?? '',
