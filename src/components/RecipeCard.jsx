@@ -198,9 +198,9 @@ export default function RecipeCard({ recipe, onDelete, hidePublicTag = false }) 
                 isOpen={showUnsaveConfirm}
                 onClose={() => setShowUnsaveConfirm(false)}
                 onConfirm={confirmUnsave}
-                title="Remove from Saved?"
-                description={`Are you sure you want to remove "${recipe.title}" by ${recipe.author_username || 'the Chef'} from your saved recipes?`}
-                confirmText="Remove"
+                title={t('unsaveConfirm')}
+                description={t('unsaveDesc', { title: recipe.title, author: recipe.author_username || t('card.chef') })}
+                confirmText={t('remove')}
                 isDanger={true}
             />
         </div>

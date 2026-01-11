@@ -511,8 +511,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                             <Clock className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Prep Time</div>
-                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 0} mins</div>
+                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('prepTime')}</div>
+                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.prepTime || 0} {t('minSuffix')}</div>
                                         </div>
                                     </div>
                                     <div className="flex-1 flex flex-col md:flex-row items-center gap-4 text-center md:text-left justify-center md:justify-start relative">
@@ -523,8 +523,8 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                             <ChefHat className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cook Time</div>
-                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} mins</div>
+                                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('cookTime')}</div>
+                                            <div className="font-semibold text-zinc-900 dark:text-white">{recipe.cookTime || 0} {t('minSuffix')}</div>
                                         </div>
                                     </div>
 
@@ -556,7 +556,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-bold"
                                     >
                                         <Globe size={14} />
-                                        Translate AI
+                                        {t('improve')}
                                     </button>
                                 )}
 
@@ -567,7 +567,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                         className="btn-secondary-small bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-gray-200 flex items-center gap-2 px-4 py-2 rounded-full text-sm border-none"
                                     >
                                         <GitFork className="w-4 h-4" />
-                                        Make a Copy
+                                        {t('makeCopy')}
                                     </button>
                                 )}
 
@@ -576,14 +576,14 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <>
                                         <button className="btn-secondary text-sm px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2" onClick={onEdit}>
                                             <Edit2 className="w-4 h-4" />
-                                            Edit
+                                            {t('edit')}
                                         </button>
                                         <button
                                             className="btn-secondary text-sm px-4 py-2 rounded-full border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center gap-2 transition-colors"
                                             onClick={() => setShowConfirm(true)}
                                         >
                                             <Trash2 className="w-4 h-4" />
-                                            Delete
+                                            {t('delete')}
                                         </button>
                                     </>
                                 )}
@@ -596,7 +596,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                                     <div className="absolute -left-[43px] md:-left-[51px] top-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-900 border-2 border-primary flex items-center justify-center text-highlight font-bold z-10">
                                         {index + 1}
                                     </div>
-                                    <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Step {index + 1}</h4>
+                                    <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">{t('step')} {index + 1}</h4>
                                     <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
                                         {formatInstruction(step)}
                                     </p>
@@ -625,9 +625,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 isOpen={showUnsaveConfirm}
                 onClose={() => setShowUnsaveConfirm(false)}
                 onConfirm={confirmUnsave}
-                title="Remove from Saved?"
-                description={'Are you sure you want to remove "' + recipe.title + '" by ' + (recipe.author_username || 'the Chef') + ' from your saved recipes?'}
-                confirmText="Remove"
+                title={t('unsaveConfirm')}
+                description={t('unsaveDesc', { title: recipe.title, author: recipe.author_username || 'the Chef' })}
+                confirmText={t('remove')}
                 isDanger={true}
             />
 
@@ -639,9 +639,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     const newRecipe = await duplicateRecipe(recipe);
                     if (newRecipe) navigate('/recipe/' + newRecipe.id);
                 }}
-                title="Make a Copy?"
-                description="This will create a new private copy of this recipe in your kitchen. You can edit it however you like."
-                confirmText="Create Copy"
+                title={t('copyConfirmTitle')}
+                description={t('copyConfirmDesc')}
+                confirmText={t('createCopy')}
                 isDanger={false}
                 Icon={GitFork}
             />
@@ -653,9 +653,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                     setShowMissingOriginModal(false);
                     navigate('/' + recipe.originAuthor);
                 }}
-                title="Original Recipe Unavailable"
-                description={"The original recipe is either private or has been deleted. Would you like to visit " + (recipe.originAuthor || "the author") + "'s kitchen instead?"}
-                confirmText="Visit Kitchen"
+                title={t('originalUnavailableTitle')}
+                description={t('originalUnavailableDesc', { author: recipe.originAuthor || "the author" })}
+                confirmText={t('visitKitchen')}
                 isDanger={false}
                 Icon={Info}
             />
@@ -664,9 +664,9 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
                 isOpen={showDeadLinkModal}
                 onClose={() => setShowDeadLinkModal(false)}
                 onConfirm={() => setShowDeadLinkModal(false)}
-                title="Recipe Unavailable"
-                description="The original recipe source is no longer available and the author is unknown."
-                confirmText="Close"
+                title={t('recipeUnavailableTitle')}
+                description={t('recipeUnavailableDesc')}
+                confirmText={t('close')}
                 isDanger={false}
                 Icon={Info}
                 showCancel={false}

@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 import { X, Sparkles, ChefHat, Globe, Wand2 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
+    const { t } = useLanguage();
     const { user } = useAuth();
     if (!isOpen) return null;
     if (!user) return null;
@@ -13,8 +15,8 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
     const features = [
         {
             id: 'magic',
-            label: 'Magic Import',
-            description: 'Import from URL, text, or photo',
+            label: t('aiFeatures.magic.label'),
+            description: t('aiFeatures.magic.desc'),
             icon: Sparkles,
             color: 'text-purple-500',
             bg: 'bg-purple-50 dark:bg-purple-900/20',
@@ -22,8 +24,8 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
         },
         {
             id: 'chef',
-            label: 'AI Chef',
-            description: 'Generate recipe from description',
+            label: t('aiFeatures.chef.label'),
+            description: t('aiFeatures.chef.desc'),
             icon: ChefHat,
             color: 'text-orange-500',
             bg: 'bg-orange-50 dark:bg-orange-900/20',
@@ -31,8 +33,8 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
         },
         {
             id: 'enhance',
-            label: 'Enhance',
-            description: 'Improve descriptions and details',
+            label: t('aiFeatures.enhance.label'),
+            description: t('aiFeatures.enhance.desc'),
             icon: Wand2,
             color: 'text-blue-500',
             bg: 'bg-blue-50 dark:bg-blue-900/20',
@@ -40,8 +42,8 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
         },
         {
             id: 'translate',
-            label: 'Translate',
-            description: 'Convert to another language',
+            label: t('aiFeatures.translate.label'),
+            description: t('aiFeatures.translate.desc'),
             icon: Globe,
             color: 'text-green-500',
             bg: 'bg-green-50 dark:bg-green-900/20',
@@ -60,7 +62,7 @@ export default function AIFeaturesModal({ isOpen, onClose, onSelect }) {
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/5">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Sparkles size={20} className="text-[#63886f]" />
-                        AI Features
+                        {t('aiFeaturesTitle')}
                     </h3>
                     <button
                         onClick={onClose}

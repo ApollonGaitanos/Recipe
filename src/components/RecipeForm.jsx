@@ -4,6 +4,7 @@ import { Save, X, Sparkles, Lock, Globe, ArrowLeft, Wand2 } from 'lucide-react';
 import { useBlocker } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import VisibilityModal from './VisibilityModal';
 import TranslationModal from './TranslationModal';
 import ConfirmModal from './ConfirmModal';
@@ -24,6 +25,7 @@ import PhotoUpload from './PhotoUpload';
 // Note: RecipeForm now purely handles form state and validation.
 // Persistence is delegated to the onSave prop.
 export default function RecipeForm({ recipeId, onSave, onCancel }) {
+    const { t } = useLanguage();
     const [isDirty, setIsDirty] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
@@ -188,7 +190,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
 
     const handleSaveLocal = async () => {
         if (!formData.title.trim()) {
-            setValidationError('Please enter a recipe title');
+            setValidationError(t('form.validationMissingTitle'));
             return;
         }
 
@@ -397,7 +399,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
         setAiFeaturesOpen(true);
     };
 
-    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading recipe...</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500">{t('loading')}</div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 pb-20 pt-6">
@@ -421,7 +423,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         </div>
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                             {formData.is_public ? <Globe size={16} /> : <Lock size={16} />}
-                            {formData.is_public ? 'Public' : 'Private'}
+                            {formData.is_public ? t('visibility.public') : t('visibility.private')}
                         </span>
                     </label>
                 </div>
@@ -438,7 +440,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         onClick={onCancel}
                         className="px-6 py-2 rounded-full font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors hidden lg:block"
                     >
-                        Cancel
+                        {t('cancel')}
                     </button>
 
                     {/* AI Features Button */}
@@ -447,7 +449,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         className="flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
                     >
                         <Sparkles size={16} className="text-purple-500" />
-                        <span className="hidden sm:inline">AI Features</span>
+                        <span className="hidden sm:inline">{t('aiFeaturesTitle')}</span>
                     </button>
 
                     {/* Save */}
@@ -462,8 +464,8 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         ) : (
                             <>
                                 <Save size={18} />
-                                <span className="hidden sm:inline">Save</span>
-                                <span className="sm:hidden">Save</span>
+                                <span className="hidden sm:inline">{t('save')}</span>
+                                <span className="sm:hidden">{t('save')}</span>
                             </>
                         )}
                     </button>
@@ -507,7 +509,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     <div className="space-y-2">
                         <input
                             className="w-full bg-transparent text-4xl md:text-5xl font-serif font-bold text-[#111813] dark:text-[#e0e6e2] border-b border-[#dce5df] dark:border-[#2a4030] pb-4 focus:border-primary focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 transition-colors"
-                            placeholder="Recipe Title"
+                            placeholder={t('recipeForm.titlePlaceholder')}
                             value={formData.title}
                             onChange={e => handleMetadataChange('title', e.target.value)}
                         />
@@ -584,9 +586,9 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                 isOpen={!!validationError}
                 onClose={() => setValidationError(null)}
                 onConfirm={() => setValidationError(null)}
-                title="Validation Error"
+                title={t('form.validationTitle')}
                 message={validationError}
-                confirmText="OK"
+                confirmText={t('form.ok')}
             />
 
             <BlockerModal

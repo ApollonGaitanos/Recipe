@@ -1,151 +1,152 @@
 import React from 'react';
-import { Clock, Users } from 'lucide-react';
-import FilterSelect from '../FilterSelect';
+import { Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function RecipeMetadata({ formData, handleChange, handleTagChange }) {
+    const { t } = useLanguage();
+    const [showAdvanced, setShowAdvanced] = React.useState(false);
+
+    // Common input styles
+    const inputClasses = "w-full bg-white dark:bg-[#1a2c20] border border-[#dce5df] dark:border-[#2a4030] rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#63886f] focus:border-transparent transition-all";
+    const labelClasses = "block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 ml-1";
+
     return (
         <div className="space-y-6">
 
             {/* Description */}
-            <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">Description / Story <span className="text-gray-400 font-normal normal-case">(optional)</span></label>
+            <div>
                 <textarea
-                    className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-4 py-3 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                    placeholder="Tell us about this dish..."
-                    rows={3}
+                    className={`${inputClasses} min-h-[100px] resize-y`}
+                    placeholder={t('form.placeholderDesc')}
                     value={formData.description}
                     onChange={e => handleChange('description', e.target.value)}
                 />
             </div>
 
-            {/* Metrics Row */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                        <Clock size={14} /> Prep
-                    </label>
-                    <div className="relative">
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="15"
-                            value={formData.prepTime}
-                            onChange={e => handleChange('prepTime', e.target.value)}
-                        />
-                        <span className="absolute right-3 top-2.5 text-xs text-gray-400">min</span>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                        <Clock size={14} /> Cook
-                    </label>
-                    <div className="relative">
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="30"
-                            value={formData.cookTime}
-                            onChange={e => handleChange('cookTime', e.target.value)}
-                        />
-                        <span className="absolute right-3 top-2.5 text-xs text-gray-400">min</span>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                        <Users size={14} /> Serves
+            {/* Core Metrics: Prep, Cook, Servings */}
+            <div className="grid grid-cols-3 gap-3 md:gap-4">
+                <div>
+                    <label className={labelClasses}>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={14} /> {t('form.prep')}
+                        </div>
                     </label>
                     <input
                         type="number"
-                        min="1"
-                        step="1"
-                        onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                        className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                        placeholder="4"
+                        className={inputClasses}
+                        placeholder="0"
+                        value={formData.prepTime}
+                        onChange={e => handleChange('prepTime', e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label className={labelClasses}>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={14} /> {t('form.cook')}
+                        </div>
+                    </label>
+                    <input
+                        type="number"
+                        className={inputClasses}
+                        placeholder="0"
+                        value={formData.cookTime}
+                        onChange={e => handleChange('cookTime', e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label className={labelClasses}>
+                        <div className="flex items-center gap-1.5">
+                            <Users size={14} /> {t('form.serves')}
+                        </div>
+                    </label>
+                    <input
+                        type="number"
+                        className={inputClasses}
+                        placeholder="2"
                         value={formData.servings}
                         onChange={e => handleChange('servings', e.target.value)}
                     />
                 </div>
             </div>
 
-            {/* Nutrition Row */}
-            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                    Nutrition <span className="text-gray-400 font-normal normal-case">(per serving)</span>
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Calories</label>
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="450"
-                            value={formData.calories || ''}
-                            onChange={e => handleChange('calories', e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Protein (g)</label>
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="32"
-                            value={formData.protein || ''}
-                            onChange={e => handleChange('protein', e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Carbs (g)</label>
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="12"
-                            value={formData.carbs || ''}
-                            onChange={e => handleChange('carbs', e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] uppercase font-bold text-gray-500">Fat (g)</label>
-                        <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            onKeyDown={(e) => ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()}
-                            className="w-full rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="28"
-                            value={formData.fat || ''}
-                            onChange={e => handleChange('fat', e.target.value)}
-                        />
-                    </div>
-                </div>
+            {/* Advanced Toggle */}
+            <div className="border-t border-gray-100 dark:border-white/5 pt-4">
+                <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="flex items-center gap-2 text-sm font-bold text-[#63886f] hover:text-[#4d6a56] transition-colors"
+                >
+                    {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {showAdvanced ? t('form.hideNutrition') : t('form.showNutrition')}
+                </button>
             </div>
 
-            {/* Filters (4 Boxes) */}
-            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-white/5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#63886f] dark:text-[#8ca395]">
-                    Filters
-                </label>
-                <FilterSelect
-                    selectedTags={formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : []}
-                    onChange={(newTags) => handleChange('tags', newTags.join(', '))}
-                />
-            </div>
+            {/* Advanced Section: Nutrition & Tags */}
+            {showAdvanced && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-200">
+
+                    {/* Nutrition Grid */}
+                    <div className="space-y-4">
+                        <h4 className="font-serif font-bold text-gray-900 dark:text-white">{t('form.nutrition')}</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className={labelClasses}>{t('form.calories')}</label>
+                                <input
+                                    type="number"
+                                    className={inputClasses}
+                                    placeholder="0"
+                                    value={formData.calories}
+                                    onChange={e => handleChange('calories', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClasses}>{t('form.protein')}</label>
+                                <input
+                                    type="number"
+                                    className={inputClasses}
+                                    placeholder="0g"
+                                    value={formData.protein}
+                                    onChange={e => handleChange('protein', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClasses}>{t('form.carbs')}</label>
+                                <input
+                                    type="number"
+                                    className={inputClasses}
+                                    placeholder="0g"
+                                    value={formData.carbs}
+                                    onChange={e => handleChange('carbs', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelClasses}>{t('form.fat')}</label>
+                                <input
+                                    type="number"
+                                    className={inputClasses}
+                                    placeholder="0g"
+                                    value={formData.fat}
+                                    onChange={e => handleChange('fat', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="space-y-4">
+                        <h4 className="font-serif font-bold text-gray-900 dark:text-white">{t('form.filters')}</h4>
+                        <label className={labelClasses}>{t('form.filters')}</label>
+                        <textarea
+                            className={`${inputClasses} h-[132px] resize-none`}
+                            placeholder={t('placeholders.tags')}
+                            value={formData.tags}
+                            onChange={handleTagChange}
+                        />
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                            {t('form.tagsHelp')}
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

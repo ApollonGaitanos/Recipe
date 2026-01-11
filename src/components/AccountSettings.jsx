@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { User as UserIcon, Settings, LogOut, ChevronRight, Save, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
 import { supabase } from "../supabaseClient";
 import Layout from "./Layout";
@@ -10,8 +11,7 @@ import LogoutModal from "./LogoutModal";
 const AccountSettings = () => {
     const { user, profile, updateProfile, updateProfileTable, signOut, loading: authLoading } = useAuth();
     const navigate = useNavigate();
-    // eslint-disable-next-line no-unused-vars
-    const { theme } = useTheme();
+    const { t } = useLanguage();
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -134,7 +134,7 @@ const AccountSettings = () => {
 
 
     const menuItems = [
-        { id: "edit-profile", label: "Edit Profile", icon: UserIcon }
+        { id: "edit-profile", label: t('settings.editProfile'), icon: UserIcon }
     ];
 
     return (
@@ -143,8 +143,8 @@ const AccountSettings = () => {
                 <div className="max-w-[1280px] mx-auto">
                     {/* Page Title */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-white">Account Settings</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your profile and preferences</p>
+                        <h1 className="text-3xl font-serif font-bold text-gray-900 dark:text-white">{t('settings.title')}</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-2">{t('settings.subtitle')}</p>
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-8">
@@ -177,7 +177,7 @@ const AccountSettings = () => {
                                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-sm font-medium"
                                     >
                                         <LogOut size={18} />
-                                        Log Out
+                                        {t('nav.signOut')}
                                     </button>
                                 </div>
                             </div>
@@ -189,8 +189,8 @@ const AccountSettings = () => {
                                 {/* Profile Header */}
                                 <div className="flex items-center justify-between mb-8 pb-8 border-b border-gray-100 dark:border-gray-800">
                                     <div>
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Public Profile</h2>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">The following will be displayed in Your Kitchen</p>
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{t('settings.publicProfile')}</h2>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('settings.publicProfileDesc')}</p>
                                     </div>
 
                                     {!isEditing && (
@@ -199,7 +199,7 @@ const AccountSettings = () => {
                                             className="px-5 py-2 rounded-lg font-bold text-sm bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-all flex items-center gap-2"
                                         >
                                             <Settings size={16} />
-                                            Edit
+                                            {t('edit')}
                                         </button>
                                     )}
                                 </div>
@@ -208,7 +208,7 @@ const AccountSettings = () => {
                                 <div className="space-y-8">
                                     {/* Username Section */}
                                     <div className={`transition-all duration-200 ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Username</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('settings.username')}</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
@@ -223,7 +223,7 @@ const AccountSettings = () => {
                                                             ? 'px-4 py-3 rounded-xl border border-primary bg-background-light dark:bg-white/5 focus:ring-2 focus:ring-primary/20'
                                                             : 'px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary'
                                                     }`}
-                                                placeholder="username"
+                                                placeholder={t('settings.usernamePlaceholder')}
                                             />
                                             {/* Validation Icons - Only show when editing */}
                                             {isEditing && (
@@ -240,21 +240,21 @@ const AccountSettings = () => {
                                             <div className="mt-2 text-xs flex items-center gap-1 min-h-[1.25rem]">
                                                 {usernameStatus === 'checking' && (
                                                     <span className="text-gray-500 flex items-center gap-1">
-                                                        <Loader2 size={12} className="animate-spin" /> Checking availability...
+                                                        <Loader2 size={12} className="animate-spin" /> {t('auth.processing')}
                                                     </span>
                                                 )}
                                                 {usernameStatus === 'available' && (
                                                     <span className="text-highlight font-medium">
-                                                        ✓ Username is available
+                                                        ✓ {t('settings.usernameAvailable')}
                                                     </span>
                                                 )}
                                                 {usernameStatus === 'unavailable' && (
                                                     <span className="text-red-500 font-bold">
-                                                        ✕ This username is already taken
+                                                        ✕ {t('settings.usernameTaken')}
                                                     </span>
                                                 )}
                                                 {!usernameStatus && (
-                                                    <span className="text-gray-400">Must be unique. Used for public recipes.</span>
+                                                    <span className="text-gray-400">{t('settings.usernameHint')}</span>
                                                 )}
                                             </div>
                                         )}
@@ -262,7 +262,7 @@ const AccountSettings = () => {
 
                                     {/* Bio Section */}
                                     <div className={`transition-all duration-200 max-w-full overflow-hidden ${!isEditing ? 'p-4 -mx-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5' : ''}`}>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bio</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('settings.bio')}</label>
 
                                         {isEditing ? (
                                             <>
@@ -272,17 +272,17 @@ const AccountSettings = () => {
                                                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                                     rows={4}
                                                     className="w-full transition-all outline-none resize-none px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 dark:text-white"
-                                                    placeholder="Tell us a little about yourself..."
+                                                    placeholder={t('settings.bioPlaceholder')}
                                                 />
                                                 <div className="flex justify-end mt-2">
                                                     <p className={`text-xs ${formData.bio.length > 300 ? 'text-amber-500 font-bold' : 'text-gray-500'}`}>
-                                                        {formData.bio.length} / 350 characters
+                                                        {formData.bio.length} / 350 {t('settings.chars')}
                                                     </p>
                                                 </div>
                                             </>
                                         ) : (
                                             <p className="w-full max-w-full bg-transparent text-gray-800 dark:text-gray-200 border-none p-0 break-all whitespace-pre-wrap text-base">
-                                                {formData.bio || "No bio added yet."}
+                                                {formData.bio || t('settings.noBio')}
                                             </p>
                                         )}
                                     </div>
@@ -303,7 +303,7 @@ const AccountSettings = () => {
                                                     });
                                                 }}
                                             >
-                                                Cancel
+                                                {t('cancel')}
                                             </button>
                                             <button
                                                 onClick={handleSave}
@@ -314,13 +314,13 @@ const AccountSettings = () => {
                                                     }`}
                                             >
                                                 {loading ? (
-                                                    <span>Saving...</span>
+                                                    <span>{t('settings.saving')}</span>
                                                 ) : success ? (
-                                                    <span>Saved!</span>
+                                                    <span>{t('settings.saved')}</span>
                                                 ) : (
                                                     <>
                                                         <Save size={18} />
-                                                        Save Changes
+                                                        {t('settings.save')}
                                                     </>
                                                 )}
                                             </button>
