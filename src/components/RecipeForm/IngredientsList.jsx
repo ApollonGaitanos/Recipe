@@ -1,7 +1,9 @@
 import React from 'react';
 import { Trash2, Plus, ChefHat } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function IngredientsList({ ingredients, setIngredients, markDirty }) {
+    const { t } = useLanguage();
 
     const handleAdd = () => {
         setIngredients([...ingredients, { id: Date.now(), amount: '', item: '' }]);
@@ -26,7 +28,7 @@ export default function IngredientsList({ ingredients, setIngredients, markDirty
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-[#111813] dark:text-[#e0e6e2] flex items-center gap-2">
                     <ChefHat size={20} className="text-[#63886f]" />
-                    Ingredients
+                    {t('form.ingredients')}
                 </h3>
             </div>
 
@@ -38,13 +40,13 @@ export default function IngredientsList({ ingredients, setIngredients, markDirty
                         </div>
                         <input
                             className="w-full sm:w-24 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary font-medium text-gray-800 dark:text-gray-200"
-                            placeholder="200g"
+                            placeholder={t('placeholders.amount')}
                             value={ing.amount}
                             onChange={e => handleChange(ing.id, 'amount', e.target.value)}
                         />
                         <input
                             className="flex-1 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="Flour"
+                            placeholder={t('placeholders.item')}
                             value={ing.item}
                             onChange={e => handleChange(ing.id, 'item', e.target.value)}
                         />
@@ -63,7 +65,7 @@ export default function IngredientsList({ ingredients, setIngredients, markDirty
                 onClick={handleAdd}
                 className="mt-6 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
             >
-                <Plus size={18} /> Add Ingredient
+                <Plus size={18} /> {t('form.addIngredient')}
             </button>
         </section>
     );

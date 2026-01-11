@@ -100,7 +100,18 @@ const translations = {
             errorSave: 'Failed to save recipe.',
             showNutrition: 'Show Nutrition & Tags',
             hideNutrition: 'Hide Advanced',
-            tagsHelp: 'Separate tags with commas (e.g. healthy, spicy, breakfast)'
+            tagsHelp: 'Separate tags with commas (e.g. healthy, spicy, breakfast)',
+            ingredients: 'Ingredients',
+            addIngredient: 'Add Ingredient',
+            toolsSection: 'Tools & Equipment',
+            addTool: 'Add Tool',
+            noTools: 'No tools listed yet.',
+            instructions: 'Instructions',
+            addStep: 'Add Step',
+            uploadPhoto: 'Upload Photo',
+            deletePhoto: 'Delete Photo',
+            uploading: 'Compressing & Uploading...',
+            deleting: 'Securely Deleting...'
         },
         confirm: 'Confirm',
         ingredientsSection: 'Ingredients',
@@ -109,7 +120,11 @@ const translations = {
             title: "e.g. Grandma's Apple Pie",
             ingredients: "2 cups flour\n1 tsp salt\n...",
             instructions: "1. Preheat oven...\n2. Mix ingredients...",
-            tags: "dessert, easy, holiday"
+            tags: "dessert, easy, holiday",
+            amount: "200g",
+            item: "Flour",
+            tool: "e.g. Large Skillet",
+            step: "Describe step {number}..."
         },
         auth: {
             welcome: "Welcome Back",
@@ -449,7 +464,18 @@ const translations = {
             errorSave: 'Αποτυχία αποθήκευσης συνταγής.',
             showNutrition: 'Προηγμένες Επιλογές',
             hideNutrition: 'Απόκρυψη',
-            tagsHelp: 'Χωρίστε τα με κόμμα (π.χ. υγιεινό, καυτερό, πρωινό)'
+            tagsHelp: 'Χωρίστε τα με κόμμα (π.χ. υγιεινό, καυτερό, πρωινό)',
+            ingredients: 'Υλικά',
+            addIngredient: 'Προσθήκη Υλικού',
+            toolsSection: 'Εργαλεία & Εξοπλισμός',
+            addTool: 'Προσθήκη Εργαλείου',
+            noTools: 'Δεν έχουν προστεθεί εργαλεία.',
+            instructions: 'Οδηγίες',
+            addStep: 'Προσθήκη Βήματος',
+            uploadPhoto: 'Ανεβάστε Φωτογραφία',
+            deletePhoto: 'Διαγραφή Φωτογραφίας',
+            uploading: 'Μεταφόρτωση...',
+            deleting: 'Διαγραφή...'
         },
         confirm: 'Επιβεβαίωση',
         ingredientsSection: 'Υλικά',
@@ -458,7 +484,11 @@ const translations = {
             title: "π.χ. Μηλόπιτα της Γιαγιάς",
             ingredients: "2 κούπες αλεύρι\n1 κ.γ. αλάτι\n...",
             instructions: "1. Προθερμάνετε τον φούρνο...\n2. Ανακατέψτε τα υλικά...",
-            tags: "γλυκό, εύκολο, γιορτινό"
+            tags: "γλυκό, εύκολο, γιορτινό",
+            amount: "200γρ",
+            item: "Αλεύρι",
+            tool: "π.χ. Μεγάλο τηγάνι",
+            step: "Περιγράψτε το βήμα {number}..."
         },
         auth: {
             welcome: "Καλώς Ήρθατε",

@@ -1,7 +1,9 @@
 import React from 'react';
 import { Trash2, Plus, PenTool } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function ToolsList({ tools, setTools, markDirty }) {
+    const { t } = useLanguage();
 
     // Helper to parse tools array/string into internal list
     // (This might be better in a util, but for now we keep it close to usage if it was used here)
@@ -30,13 +32,13 @@ export default function ToolsList({ tools, setTools, markDirty }) {
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-[#111813] dark:text-[#e0e6e2] flex items-center gap-2">
                     <PenTool size={20} className="text-[#63886f]" />
-                    Tools & Equipment
+                    {t('form.toolsSection')}
                 </h3>
             </div>
 
             <div className="flex flex-col gap-4">
                 {tools.length === 0 && (
-                    <p className="text-gray-400 italic text-sm">No tools listed yet.</p>
+                    <p className="text-gray-400 italic text-sm">{t('form.noTools')}</p>
                 )}
 
                 {tools.map((tool, i) => (
@@ -46,7 +48,7 @@ export default function ToolsList({ tools, setTools, markDirty }) {
                         </div>
                         <input
                             className="flex-1 rounded-lg border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-background-dark px-3 py-2.5 text-sm focus:border-primary focus:ring-primary text-gray-800 dark:text-gray-200"
-                            placeholder="e.g. Large Skillet"
+                            placeholder={t('placeholders.tool')}
                             value={tool.text}
                             onChange={e => handleChange(tool.id, e.target.value)}
                         />
@@ -65,7 +67,7 @@ export default function ToolsList({ tools, setTools, markDirty }) {
                 onClick={handleAdd}
                 className="mt-6 flex items-center gap-2 text-sm font-bold text-highlight hover:text-highlight/80 transition-colors"
             >
-                <Plus size={18} /> Add Tool
+                <Plus size={18} /> {t('form.addTool')}
             </button>
         </section>
     );

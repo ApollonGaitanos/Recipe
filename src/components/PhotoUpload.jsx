@@ -3,8 +3,10 @@ import React, { useState, useRef } from 'react';
 import imageCompression from 'browser-image-compression';
 import { supabase } from '../supabaseClient';
 import { Camera, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
+    const { t } = useLanguage();
     const [uploading, setUploading] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [preview, setPreview] = useState(currentImage);
@@ -131,12 +133,12 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
             {uploading ? (
                 <div className="flex flex-col items-center gap-3 text-[#63886f]">
                     <Loader2 className="w-8 h-8 animate-spin" />
-                    <span className="text-sm font-medium">Compressing & Uploading...</span>
+                    <span className="text-sm font-medium">{t('form.uploading')}</span>
                 </div>
             ) : deleting ? (
                 <div className="flex flex-col items-center gap-3 text-red-500">
                     <Loader2 className="w-8 h-8 animate-spin" />
-                    <span className="text-sm font-medium">Securely Deleting...</span>
+                    <span className="text-sm font-medium">{t('form.deleting')}</span>
                 </div>
             ) : preview ? (
                 <>
@@ -144,7 +146,7 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
                     <button
                         onClick={handleRemove}
                         className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-                        title="Delete Photo"
+                        title={t('form.deletePhoto')}
                     >
                         <X size={16} />
                     </button>
@@ -155,7 +157,7 @@ export default function PhotoUpload({ currentImage, onImageChange, recipeId }) {
                         <Camera className="w-6 h-6" />
                     </div>
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
-                        Upload Photo
+                        {t('form.uploadPhoto')}
                     </span>
                     {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
                 </div>

@@ -423,7 +423,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         </div>
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                             {formData.is_public ? <Globe size={16} /> : <Lock size={16} />}
-                            {formData.is_public ? t('visibility.public') : t('visibility.private')}
+                            {formData.is_public ? t('visibility.publicBadge') : t('visibility.privateBadge')}
                         </span>
                     </label>
                 </div>
@@ -449,7 +449,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                         className="flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 text-[#63886f] hover:from-purple-500/20 hover:to-blue-500/20 transition-all border border-[#dce5df] dark:border-[#2a4030] text-sm font-bold"
                     >
                         <Sparkles size={16} className="text-purple-500" />
-                        <span className="hidden sm:inline">{t('aiFeaturesTitle')}</span>
+                        <span className="hidden sm:inline">{t('aiFeatures.title')}</span>
                     </button>
 
                     {/* Save */}
@@ -509,7 +509,7 @@ export default function RecipeForm({ recipeId, onSave, onCancel }) {
                     <div className="space-y-2">
                         <input
                             className="w-full bg-transparent text-4xl md:text-5xl font-serif font-bold text-[#111813] dark:text-[#e0e6e2] border-b border-[#dce5df] dark:border-[#2a4030] pb-4 focus:border-primary focus:ring-0 placeholder-gray-300 dark:placeholder-gray-600 transition-colors"
-                            placeholder={t('recipeForm.titlePlaceholder')}
+                            placeholder={t('placeholders.title')}
                             value={formData.title}
                             onChange={e => handleMetadataChange('title', e.target.value)}
                         />
