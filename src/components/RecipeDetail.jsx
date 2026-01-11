@@ -675,7 +675,7 @@ export default function RecipeDetail({ id, onBack, onEdit }) {
             <VisibilityModal
                 isOpen={isVisModalOpen}
                 onClose={() => setIsVisModalOpen(false)}
-                onConfirm={() => toggleVisibility(recipe.id, recipe.is_public)}
+                onConfirm={() => toggleVisibility(recipe.id, !recipe.is_public)}
                 isMakingPublic={!recipe.is_public}
             />
 
