@@ -102,44 +102,52 @@ serve(async (req) => {
         // 1.5 RATE LIMITING (SECURITY HARDENING)
         // Enforce 20 requests per user per day to prevent abuse
         const DAILY_LIMIT = 20;
-        const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-        const today = new Date().toISOString().split('T')[0];
-        const { data: usageData, error: usageError } = await supabaseAdmin
-            .from('ai_usage_logs')
-            .select('request_count')
-            .eq('user_id', user.id)
-            .eq('usage_date', today)
-            .single();
+        if (!serviceKey) {
+            // Log warning but allow request (Fail Open) to prevent feature breakage if secrets are missing
+            console.warn("⚠️ WARNING: SUPABASE_SERVICE_ROLE_KEY is missing. Rate limiting is DISABLED.");
+        } else {
+            const supabaseAdmin = createClient(
+                Deno.env.get('SUPABASE_URL') ?? '',
+                serviceKey
+            );
 
-        let currentCount = 0;
-        if (usageData) {
-            currentCount = usageData.request_count;
-        }
+            const today = new Date().toISOString().split('T')[0];
+            const { data: usageData, error: usageError } = await supabaseAdmin
+                .from('ai_usage_logs')
+                .select('request_count')
+                .eq('user_id', user.id)
+                .eq('usage_date', today)
+                .single();
 
-        if (currentCount >= DAILY_LIMIT) {
-            throw new Error(`Daily AI limit reached (${DAILY_LIMIT} requests). Please try again tomorrow.`);
-        }
+            if (usageError && usageError.code !== 'PGRST116') { // PGRST116 is "Row not found" (acceptable)
+                console.error("Rate Limit Check Error:", usageError);
+                // We continue execution (Fail Open) but log the error
+            }
 
-        // Increment Usage
-        // We use UPSERT logic: Insert 1 if not exists, else increment
-        // Since we already read it, we can just upsert the new value
-        const { error: upsertError } = await supabaseAdmin
-            .from('ai_usage_logs')
-            .upsert({
-                user_id: user.id,
-                usage_date: today,
-                request_count: currentCount + 1
-            }, { onConflict: 'user_id, usage_date' });
+            let currentCount = 0;
+            if (usageData) {
+                currentCount = usageData.request_count;
+            }
 
-        if (upsertError) {
-            console.error("Rate Limit Update Failed:", upsertError);
-            // We verify permissions? Service role should allow it.
-            // If it fails, we might want to fail open or closed. Failing closed (throwing) is safer for quotas.
-            // throw new Error("System Error: usage tracking failed.");
+            if (currentCount >= DAILY_LIMIT) {
+                // FAIL CLOSED: Strict limit enforcement
+                throw new Error(`Daily AI limit reached (${DAILY_LIMIT} requests). Please try again tomorrow.`);
+            }
+
+            // Increment Usage
+            const { error: upsertError } = await supabaseAdmin
+                .from('ai_usage_logs')
+                .upsert({
+                    user_id: user.id,
+                    usage_date: today,
+                    request_count: currentCount + 1
+                }, { onConflict: 'user_id, usage_date' });
+
+            if (upsertError) {
+                console.error("Rate Limit Update Failed:", upsertError);
+            }
         }
 
 

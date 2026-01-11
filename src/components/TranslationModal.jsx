@@ -8,32 +8,14 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
     const [targetLang, setTargetLang] = useState(language === 'en' ? 'el' : 'en');
     const [step, setStep] = useState('select'); // 'select' | 'confirm'
 
-    if (!isOpen) return null;
-
-    const handleAction = () => {
-        if (isPermanent && mode === 'translate' && step === 'select') {
-            setStep('confirm');
-            return;
-        }
-        onConfirm(mode === 'translate' ? targetLang : null);
-    };
-
-    const isTranslate = mode === 'translate';
-
-    const handleClose = () => {
-        if (step === 'confirm') {
-            setStep('select');
-        } else {
-            onClose();
-        }
-    };
-
     // Reset state when modal opens
     React.useEffect(() => {
         if (isOpen) {
             setStep('select');
         }
     }, [isOpen]);
+
+    if (!isOpen) return null;
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
