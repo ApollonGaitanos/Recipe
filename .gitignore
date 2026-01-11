@@ -116,4 +116,7 @@ dist
 .pnp.*
 
 # Gemini/Antigravity
-.gemini
+
+# Agent Internal
+.agent/
+
