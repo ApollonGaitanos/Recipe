@@ -49,7 +49,7 @@ export default function LandingPage() {
                     <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/20 animate-in zoom-in duration-500 overflow-hidden relative">
                         {/* Use mix-blend-multiply to make white background transparent on the gradient */}
                         <img
-                            src="/logo.png"
+                            src="/logo.svg"
                             alt="Opsopoiia Logo"
                             className="w-full h-full object-contain p-4 opacity-80"
                         />
