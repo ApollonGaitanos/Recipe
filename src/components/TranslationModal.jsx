@@ -85,7 +85,7 @@ export default function TranslationModal({ isOpen, onClose, mode, onConfirm, isP
                                 <span className="text-2xl">⚠️</span>
                                 <div className="text-sm">
                                     <p className="font-bold mb-1">{t('translation.warningDescTitle')}</p>
-                                    <p className="opacity-90"><span dangerouslySetInnerHTML={{ __html: t('translation.warningDesc') }} /></p>
+                                    <p className="opacity-90">{t('translation.warningDesc')}</p>
                                 </div>
                             </div>
                             <p className="text-sm text-gray-500 text-center">
