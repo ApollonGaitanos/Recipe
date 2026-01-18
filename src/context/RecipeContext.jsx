@@ -111,6 +111,7 @@ export default function RecipeContext({ children }) {
             if (newRecipe.is_public) {
                 setPublicRecipes(prev => [newRecipe, ...prev]);
             }
+            return newRecipe;
         } catch (error) {
             console.error("Error adding recipe:", error);
             throw error;
@@ -290,7 +291,8 @@ export default function RecipeContext({ children }) {
             delete newRecipeData.id;
             delete newRecipeData.createdAt;
 
-            await addRecipe(newRecipeData);
+            const newRecipe = await addRecipe(newRecipeData);
+            return newRecipe;
         } catch (error) {
             console.error("Error duplicating recipe:", error);
             throw error;

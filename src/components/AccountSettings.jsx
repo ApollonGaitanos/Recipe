@@ -63,6 +63,7 @@ const AccountSettings = () => {
                     .from('profiles')
                     .select('username')
                     .eq('username', usernameToCheck)
+                    .neq('id', user.id) // Ignore current user
                     .maybeSingle();
 
                 if (error) throw error;
